@@ -596,7 +596,7 @@ function svgIcon(name, size=28, color='currentColor'){
 const TREE_IMAGE_SPECIES = new Set(['oak','sakura','baobab','pine','maple','willow','redwood','olive','palm','ash']);
 function treeImg(key, size=40){
   if(!TREE_IMAGE_SPECIES.has(key)) return svgIcon(key, size);
-  return `<img src="/tree-icons/${key}.png" alt="${key}" style="width:${size}px;height:${size}px;object-fit:contain;display:inline-block;vertical-align:middle"/>`;
+  return `<img src="/${key}.png" alt="${key}" style="width:${size}px;height:${size}px;object-fit:contain;display:inline-block;vertical-align:middle"/>`;
 }
 function growthBars(level, total, color='currentColor'){
   const w=6, gap=4, maxH=26;
