@@ -333,6 +333,7 @@ nav.top{padding:20px 0;}
 .choice-card:active{transform:scale(.97);}
 .choice-card.selected::after{content:'\2713';position:absolute;top:8px;right:10px;width:20px;height:20px;border-radius:50%;
   background:var(--green);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+.dur-card.selected::after{top:4px;right:4px;width:15px;height:15px;font-size:8px;}
 .bg-blob{position:fixed;border-radius:50%;filter:blur(50px);opacity:.32;z-index:-1;pointer-events:none;animation:floatBlob 10s ease-in-out infinite;}
 .bg-blob.b1{width:260px;height:260px;background:var(--green-light);top:-70px;left:-70px;}
 .bg-blob.b2{width:220px;height:220px;background:var(--gold-light);bottom:14%;right:-70px;animation-delay:2.4s;}
@@ -364,7 +365,7 @@ const state = {
   podSub: 'channel',
   chapSub: 'view',
   user: {
-    callsign: '', email: '', lifeStage: 'Builder', matchPref: 'same', treeSpecies: null,
+    callsign: '', email: '', lifeStage: ['Builder'], matchPref: 'same', treeSpecies: null,
     city: 'Lagos, Nigeria', timezone: 'Africa/Lagos',
     track: 'Land a job', trackKey:'land-a-job',
     plan: 'Pod', tone: 'Gentle', joinMethod: 'random'
@@ -442,7 +443,7 @@ const SCREEN_LABELS = {
   landing:'1 · Landing', identity:'2 · Identity', checkEmail:'2b · Check email', sprintSetup:'2c · Sprint setup', treeAwaits:'2d · Tree awaits', lifeStage:'3 · Life stage', tracks:'4 · Tracks',
   tone:'5 · Tone', join:'6 · Join & fill', confirm:'7 · Confirmation', done:'8 · Done',
   dashboard:'9 · Dashboard', theWeek:'10 · The week', pod:'11-14 · Pod (channel/members/charter/anchor)',
-  noticeBoard:'15 · Notice board', commons:'16 · Commons', pulse:'17 · Pulse', journal:'18 · Journal',
+  noticeBoard:'15 · Notice board', commons:'16 · Commons', pulse:'17 · Root Network', journal:'18 · Journal',
   settings:'19 · Settings', browseChapters:'20 · Browse chapters', chapter:'21-23 · Chapter (view/charter/members)',
   createChapter:'24 · Create chapter', chapterGoal:'25 · Chapter goal', hostDash:'26 · Host dashboard'
 };
@@ -925,12 +926,12 @@ function screenIdentity(){
         ${mode==='signup' ? `
         <div class="section" style="margin-top:0">
           <label class="field-label">Choose your callsign</label>
-          <input id="callsignInput" maxlength="7" placeholder="e.g. NOVA7" value="${state.user.callsign}" oninput="checkCallsign()"/>
-          <div class="faint" id="callsignStatus" style="margin-top:6px">${state.user.callsign.length}/7 characters max · checked on submit</div>
+          <input id="callsignInput" maxlength="7" placeholder="e.g. NOVA7" autocomplete="off" value="${mode==='signup' ? '' : state.user.callsign}" oninput="checkCallsign()"/>
+          <div class="faint" id="callsignStatus" style="margin-top:6px">${(mode==='signup' ? '' : state.user.callsign).length}/7 characters max · checked on submit</div>
         </div>` : ''}
         <div class="section" style="${mode==='signup'?'':'margin-top:0'}">
           <label class="field-label">Your email</label>
-          <input id="emailInput" placeholder="you@email.com" value="${state.user.email}"/>
+          <input id="emailInput" placeholder="you@email.com" autocomplete="off" value="${mode==='signup' ? '' : state.user.email}"/>
         </div>
         <div class="section">
           <label class="field-label">Password</label>
@@ -1110,19 +1111,6 @@ const SPRINT_DURATIONS=[
   {key:'9-12', label:'9–12 weeks', stage:'Oak'},
   {key:'12+', label:'12+ weeks', stage:'Ancient Tree'},
 ];
-const TREE_FLAVOR={
-  oak:{count:118, goal:'Building something that lasts.'},
-  sakura:{count:76, goal:'Letting go of what no longer serves me.'},
-  baobab:{count:142, goal:'Building something that lasts.'},
-  pine:{count:94, goal:'Showing up every single day.'},
-  maple:{count:61, goal:'Making a bold career change.'},
-  willow:{count:88, goal:'Learning to bend without breaking.'},
-  redwood:{count:53, goal:'Writing the book I keep putting off.'},
-  olive:{count:47, goal:'Getting my finances in order.'},
-  palm:{count:39, goal:'Staying steady through a hard season.'},
-  ash:{count:44, goal:'Starting over after a big change.'},
-  sprout:{count:210, goal:'Figuring out what comes next.'},
-};
 function screenSprintSetup(){
   const selected = TREE_SPECIES.find(s=>s.key===state.user.treeSpecies);
   const name = selected ? selected.name : 'Sprout';
@@ -1149,7 +1137,7 @@ function screenSprintSetup(){
         <p class="muted small" style="margin-top:4px">This determines your tree's size.</p>
         <div class="grid section" style="grid-template-columns:repeat(5,1fr);gap:8px">
           ${SPRINT_DURATIONS.map(d=>`
-            <div class="choice-card center ${duration===d.key?'selected':''}" style="padding:10px 4px" onclick="pickSprintDuration('${d.key}')">
+            <div class="choice-card dur-card center ${duration===d.key?'selected':''}" style="padding:20px 4px 10px" onclick="pickSprintDuration('${d.key}')">
               <div class="small" style="font-weight:700">${d.label}</div>
               <div class="faint" style="margin-top:4px">${d.stage}</div>
             </div>`).join('')}
@@ -1163,7 +1151,7 @@ function screenSprintSetup(){
           </div>
           <div class="choice-card ${podMode==='pod'?'selected':''}" onclick="pickPodMode('pod')">
             <div class="small" style="font-weight:700">Pod</div>
-            <div class="faint" style="margin-top:4px">2–5 people.</div>
+            <div class="faint" style="margin-top:4px">4 people.</div>
           </div>
         </div>
         <button class="btn btn-primary btn-block section" onclick="submitSprintSetup()">Plant Your First Seed →</button>
@@ -1178,8 +1166,6 @@ function screenSprintSetup(){
           <p class="small" style="margin-top:10px">Your sprint works the same way. Each day you show up, you grow a root. Every completed week is a ring. Complete the sprint, and your ${name} joins your collection.</p>
           <hr class="rule"/>
           <p class="small center" style="font-style:italic">Your tree doesn't stop growing.<br/>Neither will you.</p>
-          <hr class="rule"/>
-          <p class="faint center">${flavor.count} others have chosen the ${name}.<br/>Most common goal: "${flavor.goal}"</p>
         </div>
       </div>
     </div>
@@ -1200,7 +1186,6 @@ function screenTreeAwaits(){
   const name = selected ? selected.name : 'Sprout';
   const treeIcon = selected ? selected.icon : 'sprout';
   const lore = selected ? selected.lore : "It hasn't chosen a shape yet — but it's already growing.";
-  const flavor = TREE_FLAVOR[state.user.treeSpecies] || TREE_FLAVOR.sprout;
   return `<div class="app-shell center">
     <div class="eyebrow" style="margin-top:14px">Step 3 of 3 — Your ${name} Awaits</div>
     <div style="margin:18px 0" class="tree-anim">${treeImg(treeIcon,84)}</div>
@@ -1209,8 +1194,6 @@ function screenTreeAwaits(){
     <p class="small section" style="max-width:460px;margin-left:auto;margin-right:auto">Your sprint works the same way. Each day you show up, you grow a root. Every completed week is a ring. Complete the sprint, and your ${name} joins your collection.</p>
     <hr class="rule section"/>
     <p class="small" style="font-style:italic">Your tree doesn't stop growing.<br/>Neither will you.</p>
-    <hr class="rule section"/>
-    <p class="faint">${flavor.count} others have chosen the ${name}.<br/>Most common goal: "${flavor.goal}"</p>
     <button class="btn btn-primary btn-block section" onclick="go('lifeStage')">Continue →</button>
   </div>`;
 }
@@ -1234,9 +1217,10 @@ function screenLifeStage(){
     <p class="muted small" style="margin-top:6px">To match you with the right pod, tell us about yourself.</p>
     <div class="card section">
       <div class="small" style="font-weight:700">Your age group</div>
+      <p class="faint" style="margin-top:2px">Choose up to 2.</p>
       <div class="grid grid-4" style="margin-top:12px;grid-template-columns:repeat(5,1fr)">
         ${LIFE_STAGES.map(([e,name,range])=>`
-          <div class="choice-card center ${state.user.lifeStage===name?'selected':''}" style="padding:10px" onclick="pickLifeStage('${name}')">
+          <div class="choice-card center ${state.user.lifeStage.includes(name)?'selected':''}" style="padding:10px" onclick="pickLifeStage('${name}')">
             <div class="small" style="font-weight:700">${range}</div>
             <div class="faint" style="margin-top:2px">${name}</div>
           </div>`).join('')}
@@ -1259,9 +1243,16 @@ function screenLifeStage(){
     <button class="btn btn-primary btn-block section" onclick="submitLifeStage()">Continue →</button>
   </div>`;
 }
-function pickLifeStage(n){ state.user.lifeStage=n; render(); }
+function pickLifeStage(n){
+  const arr = state.user.lifeStage;
+  if(arr.includes(n)){ state.user.lifeStage = arr.filter(x=>x!==n); }
+  else if(arr.length < 2){ state.user.lifeStage = [...arr, n]; }
+  else { toast('You can choose up to 2 age groups'); return; }
+  render();
+}
 function pickMatchPref(p){ state.user.matchPref=p; render(); }
 function submitLifeStage(){
+  if(!state.user.lifeStage.length){ toast('Choose at least one age group'); return; }
   state.user.timezone=document.getElementById('tzInput').value;
   go('tracks');
 }
@@ -1468,6 +1459,9 @@ async function submitConfirmPod(){
 /* ===================== SCREEN 9: DONE ===================== */
 function screenDone(){
   const code = state.podInviteCode || 'GRIT-4';
+  const selectedSpecies = TREE_SPECIES.find(s=>s.key===state.user.treeSpecies);
+  const treeAwaitsName = selectedSpecies ? selectedSpecies.name : 'Sprout';
+  const treeAwaitsIcon = selectedSpecies ? selectedSpecies.icon : 'sprout';
   return `<div class="app-shell">
     <div class="back-link" onclick="go('confirm')">← Back</div>
     <div class="eyebrow" style="margin-top:10px">You're set</div>
@@ -1478,8 +1472,8 @@ function screenDone(){
       <div class="faint" style="margin-top:4px">Share this with up to three people you want in your pod. Seats stay open and real — nobody is simulated.</div>
     </div>` : ''}
     <div class="card section">
-      <div class="small" style="font-weight:700">Your oak tree</div>
-      <div class="center" style="font-size:36px;margin-top:8px">🌰</div>
+      <div class="small" style="font-weight:700">Your ${treeAwaitsName} tree</div>
+      <div class="center" style="margin-top:8px">${treeImg(treeAwaitsIcon,48)}</div>
       <div class="badge badge-green center" style="display:block;text-align:center;margin-top:10px">Week 1 · Just started</div>
       <div class="section">
         <div class="eyebrow">Roots</div>
@@ -1492,13 +1486,17 @@ function screenDone(){
       <div class="section">
         <div class="eyebrow">Branches</div>
         <div class="stack">
-          ${state.roadmap.map(r=>`<div class="checkline"><span class="box"></span><span class="small">Week ${r.w}: ${r.label}</span></div>`).join('')}
+          ${state.roadmap.map(r=>`<div class="checkline ${r.done?'done':''}" style="cursor:pointer" onclick="toggleRoadmapWeek(${r.w})"><span class="box"></span><span class="small">Week ${r.w}: ${r.label}</span></div>`).join('')}
         </div>
       </div>
       <button class="btn btn-outline btn-block" style="margin-top:12px" onclick="toast('Roadmap editing coming soon')">Edit roadmap</button>
     </div>
     <button class="btn btn-primary btn-block section" onclick="go('dashboard')">Go to my dashboard →</button>
   </div>`;
+}
+function toggleRoadmapWeek(w){
+  const item = state.roadmap.find(r=>r.w===w);
+  if(item){ item.done = !item.done; render(); }
 }
 
 /* ===================== SCREEN 10: DASHBOARD ===================== */
@@ -1881,7 +1879,7 @@ function screenCommons(){
       <div class="stack gap8">
         <label class="row gap small"><input type="checkbox" id="cWhoPod" style="width:auto" checked/> My pod (GRIT-4)</label>
         <label class="row gap small"><input type="checkbox" id="cWhoChap" style="width:auto"/> My chapter (Tech Chapter)</label>
-        <label class="row gap small"><input type="checkbox" id="cWhoPulse" style="width:auto"/> The Pulse (everyone)</label>
+        <label class="row gap small"><input type="checkbox" id="cWhoPulse" style="width:auto"/> The Root Network (everyone)</label>
       </div>
       <button class="btn btn-primary btn-block" style="margin-top:14px" onclick="postCommons()">Post to The Commons</button>
     </div>
@@ -1903,7 +1901,7 @@ const REACTIONS = [['witness','Witness'],['celebrate','Celebrate'],['support','S
 function screenPulse(){
   return `<div class="app-shell">
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
-    <div class="eyebrow" style="margin-top:10px">The Pulse</div>
+    <div class="eyebrow" style="margin-top:10px">The Root Network</div>
     <h2 style="font-size:22px">📡 What people are doing. Show up for your pod.</h2>
     <div class="stack gap12 section">
       ${state.pulse.map((p,i)=>`
@@ -1964,7 +1962,7 @@ function screenSettings(){
     <h2 style="font-size:22px">⚙️ Settings</h2>
     <div class="card section">
       <div class="small" style="font-weight:700">Privacy</div>
-      ${sw('pulseVisible','Show my callsign in the Pulse','Off by default. Counts are shared either way.')}
+      ${sw('pulseVisible','Show my callsign in the Root Network','Off by default. Counts are shared either way.')}
       ${sw('chapterVisible','Show my callsign in my chapter','If off, others see you as Anonymous.')}
     </div>
     <div class="card section">
