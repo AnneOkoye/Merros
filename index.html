@@ -1496,9 +1496,13 @@ function screenSprintSetup(){
         </div>
         <p class="faint section">✨ Personalized by AI based on your goals.</p>` : `
         <div class="roadmap-week-grid section">
-          ${roadmapWeeks.map(w=>`<div class="roadmap-week-cell">
+          ${roadmapWeeks.map(w=>{
+            const t = totalWeeks>1 ? (w.week-1)/(totalWeeks-1) : 0;
+            const bg = `hsl(96, ${28+t*22}%, ${94-t*20}%)`;
+            const border = `hsl(96, ${30+t*25}%, ${72-t*22}%)`;
+            return `<div class="roadmap-week-cell" style="background:${bg};border-color:${border}">
             <div class="small" style="font-size:13px;font-weight:700">Week ${w.week}</div>
-          </div>`).join('')}
+          </div>`;}).join('')}
         </div>`}
         <p class="faint section">Daily: One line · Sunday: Weekly reflection</p>
       </div>
@@ -1561,7 +1565,7 @@ function screenSoloSetup(){
     <div class="card section">
       <div class="small" style="font-weight:700">How do you want your reminders to sound?</div>
       <div class="grid grid-3 section">
-        ${TONES.map(t=>`<div class="choice-card ${tone===t.key?'selected':''}" onclick="pickTone('${t.key}')">
+        ${TONES_SOLO.map(t=>`<div class="choice-card ${tone===t.key?'selected':''}" onclick="pickTone('${t.key}')">
           <div style="font-weight:700;font-size:14.5px">${t.title}</div>
           <div class="faint" style="margin-top:6px">${t.desc}</div>
         </div>`).join('')}
@@ -1577,6 +1581,30 @@ function screenSoloSetup(){
     <button class="btn btn-primary btn-block section" id="soloSetupBtn" onclick="submitSoloSetup()">Start my sprint →</button>
   </div>`;
 }
+function buildFinalRoadmap(totalWeeks){
+  const ai = state.user.aiRoadmap;
+  const weeks = [];
+  for(let w=1; w<=totalWeeks; w++){
+    let label = '';
+    if(ai){
+      const parts = [];
+      ai.forEach(g=>{
+        const match = (g.milestones||[]).find(ms=>{
+          const range = String(ms.weeks).split(/[-–]/).map(s=>parseInt(s.trim(),10));
+          const lo = range[0], hi = range.length>1 && !isNaN(range[1]) ? range[1] : range[0];
+          return w>=lo && w<=hi;
+        });
+        if(match) parts.push(match.text);
+      });
+      label = parts.join(' · ') || 'Keep going';
+    } else {
+      const stageIdx = Math.min(ROADMAP_STAGES.length-1, Math.floor((w-1)/totalWeeks*ROADMAP_STAGES.length));
+      label = ROADMAP_STAGES[stageIdx];
+    }
+    weeks.push({w, label, done:false});
+  }
+  return weeks;
+}
 async function submitSoloSetup(){
   const btn=document.getElementById('soloSetupBtn');
   state.user.timezone = document.getElementById('soloTzInput').value;
@@ -1588,6 +1616,8 @@ async function submitSoloSetup(){
     state.realPod = pod;
     state.realMember = member;
     state.podInviteCode = pod.invite_code;
+    const totalWeeks = SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'];
+    state.roadmap = buildFinalRoadmap(totalWeeks);
     const weeks = state.roadmap.map(r=>({week:r.w, label:r.label}));
     await Merros.roadmap.saveRoadmap(member.id, weeks);
     go('done');
@@ -1762,6 +1792,11 @@ const TONES=[
   {key:'Standard',title:'Standard',desc:'Straight talk when a week slips.'},
   {key:'Blunt',title:'Blunt',desc:'Say the hard thing. Nobody joined for comfort.'}
 ];
+const TONES_SOLO=[
+  {key:'Gentle',title:'Gentle',desc:'Encouragement first, no pressure.'},
+  {key:'Standard',title:'Standard',desc:'Straight talk when a week slips.'},
+  {key:'Blunt',title:'Blunt',desc:'Say the hard thing. No sugarcoating.'}
+];
 function screenTone(){
   return `<div class="app-shell">
     ${onboardTop("Before you're placed",4,'lifeStage')}
@@ -1836,6 +1871,8 @@ async function submitConfirmPod(){
     state.realPod = pod;
     state.realMember = member;
     state.podInviteCode = pod.invite_code;
+    const totalWeeks = SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'];
+    state.roadmap = buildFinalRoadmap(totalWeeks);
     const weeks = state.roadmap.map(r=>({week:r.w, label:r.label}));
     await Merros.roadmap.saveRoadmap(member.id, weeks);
     go('done');

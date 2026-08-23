@@ -85,7 +85,7 @@ async function updateSetting(key, value) {
 async function createPod({ track, track_key, tone, plan, name }) {
   const user = await getUser();
   const { data: pod, error } = await sb.from('pods')
-    .insert({ track, track_key, tone, plan, name: name || 'New Pod' }).select().single();
+    .insert({ track, track_key, tone, plan, name: name || 'New Pod', created_by: user.id }).select().single();
   if (error) throw error;
   const { data: member, error: mErr } = await sb.from('pod_members')
     .insert({ pod_id: pod.id, profile_id: user.id, role: 'anchor', anchor_week_start: 1, anchor_week_end: 3 })
