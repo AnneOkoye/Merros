@@ -1904,6 +1904,7 @@ function podMembersCard(){
   </div>`;
 }
 function screenDashboard(){
+  if(state.user.plan==='Solo') return screenSoloDashboard();
   if(state.dashView==='anchor') return dashboardAnchor();
   const focusMsg = state.channel.find(m=>m.text.startsWith('📌 Weekly focus:'));
   const focusText = focusMsg ? focusMsg.text.replace('📌 Weekly focus: ','') : 'Consistency over intensity.';
@@ -1957,6 +1958,61 @@ function screenDashboard(){
       <div class="small">📌 No chapters available yet</div>
       <div class="faint" style="margin-top:4px">Chapters will appear here once the community grows.</div>
       <button class="btn btn-ghost" style="padding-left:0" onclick="go('browseChapters')">Browse chapters →</button>
+    </div>
+  </div>
+  ${bottomNav('dashboard')}`;
+}
+function screenSoloDashboard(){
+  const selected = TREE_SPECIES.find(s=>s.key===state.user.treeSpecies);
+  const name = selected ? selected.name : 'Sprout';
+  const treeIcon = selected ? selected.icon : 'sprout';
+  const goals = state.user.sprintGoals || [];
+  return `<div class="app-shell">
+    <div class="eyebrow">Solo Sprint · ${name}</div>
+    <h2 style="font-size:24px;margin-top:6px">Welcome back, @${state.user.callsign}</h2>
+
+    <div class="card section center">
+      <div class="tree-anim">${treeImg(treeIcon,72)}</div>
+      <p class="small" style="margin-top:8px;font-weight:700">Your ${name} is growing</p>
+      <p class="faint" style="margin-top:2px">${goals.length} goal${goals.length===1?'':'s'} · Week 1</p>
+    </div>
+
+    <div class="card section">
+      <div class="small" style="font-weight:700">Your goals this sprint</div>
+      <div class="stack gap8 section">
+        ${goals.map(g=>`<div class="small">◆ ${g}</div>`).join('') || '<div class="faint">No goals set yet</div>'}
+      </div>
+    </div>
+
+    <div class="card section">
+      <div class="small" style="font-weight:700">What are you working on today?</div>
+      <textarea id="microlineInput" placeholder="Write your daily line..." style="margin-top:10px">${state.microline}</textarea>
+      <div class="row gap wrap" style="margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="postMicroline()">📝 Save today's line</button>
+        <button class="btn btn-sm" style="background:${state.status==='green'?'#3E8E5A':'#fff'};color:${state.status==='green'?'#fff':'#3E8E5A'};border:1px solid #3E8E5A" onclick="setStatus('green')">🟢 On track</button>
+        <button class="btn btn-sm" style="background:${state.status==='yellow'?'#D8A73B':'#fff'};color:${state.status==='yellow'?'#fff':'#D8A73B'};border:1px solid #D8A73B" onclick="setStatus('yellow')">🟡 Unsure</button>
+        <button class="btn btn-sm" style="background:${state.status==='red'?'#C9584A':'#fff'};color:${state.status==='red'?'#fff':'#C9584A'};border:1px solid #C9584A" onclick="setStatus('red')">🔴 Stalled</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="small" style="font-weight:700;margin-bottom:8px">Quick actions</div>
+      <div class="grid grid-2">
+        <button class="btn btn-outline btn-sm" onclick="go('theWeek')">Your Roadmap</button>
+        <button class="btn btn-outline btn-sm" onclick="go('journal')">Journal</button>
+      </div>
+    </div>
+
+    <div class="card section" style="background:var(--bg-alt);border:none">
+      <div class="small">📌 No chapters available yet</div>
+      <div class="faint" style="margin-top:4px">Once you finish your first sprint, you can join or start a Chapter.</div>
+      <button class="btn btn-ghost" style="padding-left:0" onclick="go('browseChapters')">Browse chapters →</button>
+    </div>
+
+    <div class="card section" style="background:var(--green-light);border:none">
+      <div class="small" style="font-weight:700">Want company?</div>
+      <p class="small" style="margin-top:6px">You can switch to a Pod anytime, sharing this same sprint with three other people.</p>
+      <button class="btn btn-outline btn-sm section" onclick="toast('Pod matching coming soon')">Get matched to a pod</button>
     </div>
   </div>
   ${bottomNav('dashboard')}`;
