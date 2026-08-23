@@ -298,6 +298,15 @@ nav.top{padding:20px 0;}
 @media(max-width:720px){.compare-2col{grid-template-columns:1fr;}}
 .solo-first-layout{display:grid;grid-template-columns:1fr 1.3fr;gap:20px;max-width:900px;margin:0 auto;}
 @media(max-width:720px){.solo-first-layout{grid-template-columns:1fr;}}
+.roadmap-week-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:16px;}
+.roadmap-week-grid.has-ai-text{grid-template-columns:repeat(3,1fr);}
+@media(max-width:640px){.roadmap-week-grid{grid-template-columns:repeat(4,1fr);} .roadmap-week-grid.has-ai-text{grid-template-columns:repeat(2,1fr);}}
+.roadmap-week-cell{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;display:flex;flex-direction:column;justify-content:center;min-height:52px;}
+.goal-timeline-block{margin-bottom:20px;}
+.goal-timeline-block:last-child{margin-bottom:0;}
+.timeline-list{margin-top:10px;padding-left:14px;border-left:2px solid var(--border);}
+.timeline-item{position:relative;padding:7px 0 7px 16px;}
+.timeline-dot{position:absolute;left:-21px;top:14px;width:9px;height:9px;border-radius:50%;background:var(--green);}
 .compare-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow);}
 .compare-card h3{font-size:19px;margin-bottom:6px;}
 .compare-card .tagline{color:var(--ink-soft);font-size:13.5px;margin-bottom:18px;}
@@ -1302,7 +1311,7 @@ async function generateAIRoadmap(){
       toast(data.error || 'Could not generate a roadmap. Try again.');
       return;
     }
-    state.user.aiRoadmap = data.milestones;
+    state.user.aiRoadmap = data.goalPlans;
     toast('Your roadmap is ready ✨');
   }catch(e){
     console.error(e);
@@ -1322,56 +1331,62 @@ function screenSprintSetup(){
   const totalWeeks = SPRINT_DURATION_WEEKS[duration];
   const podMode = state.user.podMode || 'pod';
   const roadmapWeeks = buildWeeklyRoadmap(totalWeeks);
+  const goalPlans = state.user.aiRoadmap;
   return `<div class="app-shell">
     <div class="back-link" onclick="go('goalPicker')">← Back to Screen 2</div>
     <div class="eyebrow" style="margin-top:14px">Step 3 of 4: Set Up Your Sprint</div>
-    <div class="section identity-layout">
-      <div class="identity-col">
-        <div class="card">
-          <h2 style="font-size:18px">How long will it take?</h2>
-          <p class="muted small" style="margin-top:4px">Choose your duration. Your tree's size reflects your commitment.</p>
-          <div class="grid section" style="grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px">
-            ${SPRINT_DURATIONS.map(d=>`
-              <div class="choice-card dur-card center ${duration===d.key?'selected':''}" style="padding:12px 4px" onclick="pickSprintDuration('${d.key}')">
-                <div class="small" style="font-weight:700">${d.label}</div>
-                <div class="faint" style="margin-top:4px">${d.stage}</div>
-              </div>`).join('')}
-          </div>
-          <p class="faint" style="margin-top:12px">Selected: ${totalWeeks} weeks → ${SPRINT_DURATIONS.find(d=>d.key===duration).stage}</p>
-        </div>
-        <div class="card section">
-          <div class="row between" style="align-items:flex-start">
-            <div>
-              <h2 style="font-size:18px">Your roadmap</h2>
-              <p class="muted small" style="margin-top:4px">${totalWeeks} weeks · ${podMode==='solo'?'Solo':'Pod'} · ${goals.length} goal${goals.length===1?'':'s'} · ${name}</p>
-            </div>
-          </div>
-          <button class="btn btn-outline btn-block section" id="aiRoadmapBtn" onclick="generateAIRoadmap()" ${state.user._aiRoadmapLoading?'disabled':''}>
-            ${state.user._aiRoadmapLoading ? 'Thinking through your weeks…' : (state.user.aiRoadmap ? '✨ Regenerate with AI' : '✨ Generate my roadmap with AI')}
-          </button>
-          <div class="row wrap gap section">
-            ${roadmapWeeks.map(w=>`<div class="card center" style="padding:10px 8px;min-width:64px;${w.aiText?'max-width:140px':''}">
-              <div class="${w.aiText?'faint':'small'}" style="font-size:${w.aiText?'11px':'13px'};${w.aiText?'':'font-weight:700'}">Week ${w.week}</div>
-              ${w.aiText ? `<div class="small" style="font-weight:700;margin-top:2px">${w.aiText}</div>` : ''}
+    <div class="section">
+      <div class="card">
+        <h2 style="font-size:18px">How long will it take?</h2>
+        <p class="muted small" style="margin-top:4px">Choose your duration. Your tree's size reflects your commitment.</p>
+        <div class="grid section" style="grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px">
+          ${SPRINT_DURATIONS.map(d=>`
+            <div class="choice-card dur-card center ${duration===d.key?'selected':''}" style="padding:12px 4px" onclick="pickSprintDuration('${d.key}')">
+              <div class="small" style="font-weight:700">${d.label}</div>
+              <div class="faint" style="margin-top:4px">${d.stage}</div>
             </div>`).join('')}
-          </div>
-          ${state.user.aiRoadmap ? '<p class="faint section">✨ Personalized by AI based on your goals.</p>' : ''}
-          <p class="faint section">Daily: One line · Sunday: Weekly reflection</p>
         </div>
-        <button class="btn btn-primary btn-block section" onclick="submitSprintSetup()">Plant Your First Seed →</button>
-        ${onboardStepFooter(3,4,'Meet Your Tree')}
+        <p class="faint" style="margin-top:12px">Selected: ${totalWeeks} weeks → ${SPRINT_DURATIONS.find(d=>d.key===duration).stage}</p>
       </div>
-      <div class="identity-col">
-        <div class="card">
-          <div class="eyebrow">Your ${name} awaits</div>
-          <div style="margin:10px 0" class="tree-anim">${treeImg(treeIcon,64)}</div>
-          <p class="small">You chose the ${name}.</p>
-          <p class="small" style="margin-top:8px;font-style:italic">"${lore}"</p>
-          <p class="small" style="margin-top:10px">Your sprint works the same way. Each day you show up, you grow a root. Every completed week is a ring. Complete the sprint, and your ${name} joins your collection.</p>
-          <hr class="rule"/>
-          <p class="small center" style="font-style:italic">Your tree doesn't stop growing.<br/>Neither will you.</p>
+      <div class="card section">
+        <h2 style="font-size:18px">Your roadmap</h2>
+        <p class="muted small" style="margin-top:4px">${totalWeeks} weeks · ${podMode==='solo'?'Solo':'Pod'} · ${goals.length} goal${goals.length===1?'':'s'} · ${name}</p>
+        <button class="btn btn-outline btn-block section" id="aiRoadmapBtn" onclick="generateAIRoadmap()" ${state.user._aiRoadmapLoading?'disabled':''}>
+          ${state.user._aiRoadmapLoading ? 'Thinking through your weeks…' : (goalPlans ? '✨ Regenerate with AI' : '✨ Generate my roadmap with AI')}
+        </button>
+        ${goalPlans ? `
+        <div class="goal-timeline section">
+          ${goalPlans.map((g,gi)=>`
+            <div class="goal-timeline-block">
+              <div class="small" style="font-weight:700">Goal ${gi+1}: ${g.goal}</div>
+              <div class="timeline-list">
+                ${g.milestones.map(m=>`<div class="timeline-item">
+                  <span class="timeline-dot"></span>
+                  <span class="faint" style="font-weight:700;margin-right:6px">Week ${m.weeks}:</span>
+                  <span class="small">${m.text}</span>
+                </div>`).join('')}
+              </div>
+            </div>`).join('')}
         </div>
+        <p class="faint section">✨ Personalized by AI based on your goals.</p>` : `
+        <div class="roadmap-week-grid section">
+          ${roadmapWeeks.map(w=>`<div class="roadmap-week-cell">
+            <div class="small" style="font-size:13px;font-weight:700">Week ${w.week}</div>
+          </div>`).join('')}
+        </div>`}
+        <p class="faint section">Daily: One line · Sunday: Weekly reflection</p>
       </div>
+      <div class="card section center">
+        <div class="eyebrow">Your ${name} awaits</div>
+        <div style="margin:16px 0" class="tree-anim">${treeImg(treeIcon,130)}</div>
+        <p class="small">You chose the ${name}.</p>
+        <p class="small" style="margin-top:8px;font-style:italic;max-width:480px;margin-left:auto;margin-right:auto">"${lore}"</p>
+        <p class="small" style="margin-top:10px;max-width:520px;margin-left:auto;margin-right:auto">Your sprint works the same way. Each day you show up, you grow a root. Every completed week is a ring. Complete the sprint, and your ${name} joins your collection.</p>
+        <hr class="rule"/>
+        <p class="small" style="font-style:italic">Your tree doesn't stop growing.<br/>Neither will you.</p>
+      </div>
+      <button class="btn btn-primary btn-block section" onclick="submitSprintSetup()">Plant Your First Seed →</button>
+      ${onboardStepFooter(3,4,'Meet Your Tree')}
     </div>
   </div>`;
 }
