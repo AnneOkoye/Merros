@@ -655,6 +655,132 @@ async function submitWaitlist(){
     toast('Something went wrong. Try again.');
   }
 }
+/* ===================== ROOTPRINT ENGINE =====================
+   Generates a unique, deterministic tree-ring medallion from a person's
+   real sprint data. Same inputs always produce the same image - nothing
+   is stored except the hash and a few summary stats, so the medallion
+   itself never needs to be saved as an image file. */
+const ROOTPRINT_SENTIMENT_POS = ['good','great','proud','happy','excited','win','done','finished','strong','better','progress','grateful','calm','confident','love','joy','accomplished','clear','focused','glad','relieved'];
+const ROOTPRINT_SENTIMENT_NEG = ['tired','hard','stuck','bad','anxious','worried','behind','failed','frustrated','sad','stressed','overwhelmed','difficult','struggle','doubt','exhausted','discouraged','rough'];
+const ROOTPRINT_SPECIES_HUES = { oak:0.30, sakura:0.92, baobab:0.10, pine:0.42, maple:0.06, willow:0.38, redwood:0.02, olive:0.22, palm:0.34, ash:0.16, sprout:0.30 };
+
+// Cheap keyword-based sentiment, not a paid AI call - this runs on every
+// journal entry, so it needs to be free and instant, unlike the roadmap
+// feature where a per-use AI cost made sense.
+function rootprintHeuristicSentiment(text){
+  const words = (text||'').toLowerCase().match(/[a-z']+/g) || [];
+  let score = 0;
+  words.forEach(w=>{ if(ROOTPRINT_SENTIMENT_POS.includes(w)) score++; if(ROOTPRINT_SENTIMENT_NEG.includes(w)) score--; });
+  return score;
+}
+
+function rootprintComputeStats(entries){
+  if(!entries || !entries.length) return { entryCount:0, vocabRichness:0, hourVariance:0, sentimentArc:'steady', avgWordCount:0 };
+  let totalWords=0; const uniqueWords=new Set(); const hours=[]; const scores=[];
+  entries.forEach(e=>{
+    const words = (e.text||'').toLowerCase().match(/[a-z']+/g) || [];
+    totalWords += words.length;
+    words.forEach(w=>uniqueWords.add(w));
+    scores.push(rootprintHeuristicSentiment(e.text));
+    if(e.created_at){ const d=new Date(e.created_at); if(!isNaN(d)) hours.push(d.getHours()); }
+  });
+  const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+  const firstHalf = scores.slice(0, Math.floor(scores.length/2));
+  const secondHalf = scores.slice(Math.floor(scores.length/2));
+  const a1=avg(firstHalf), a2=avg(secondHalf);
+  const variance = avg(scores.map(s=>Math.abs(s-avg(scores))));
+  let arc = 'steady';
+  if(variance > 1.4) arc = 'volatile';
+  else if(a2-a1 > 0.6) arc = 'rising';
+  else if(a1-a2 > 0.6) arc = 'falling';
+  const hourVariance = hours.length ? Math.sqrt(avg(hours.map(h=>Math.pow(h-avg(hours),2)))) : 0;
+  return {
+    entryCount: entries.length,
+    vocabRichness: totalWords ? Math.round((uniqueWords.size/totalWords)*1000)/1000 : 0,
+    hourVariance: Math.round(hourVariance*100)/100,
+    sentimentArc: arc,
+    avgWordCount: entries.length ? Math.round(totalWords/entries.length) : 0,
+  };
+}
+
+async function rootprintSha256Hex(str){
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function generateRootPrint({ callsign, species, weeksCompleted, consistencyPct, entries, witnessedMoments=0 }){
+  const stats = rootprintComputeStats(entries);
+  const seedStr = [
+    'callsign:'+callsign, 'species:'+species, 'weeks:'+weeksCompleted, 'consistency:'+consistencyPct,
+    'arc:'+stats.sentimentArc, 'vocab:'+stats.vocabRichness, 'rhythm:'+stats.hourVariance,
+    'avgwords:'+stats.avgWordCount, 'witnessed:'+witnessedMoments,
+  ].join('|');
+  const hash = await rootprintSha256Hex(seedStr);
+  const svg = rootprintRenderSVG(hash, ROOTPRINT_SPECIES_HUES[species] || 0.3, 220);
+  return { hash, svg, stats, weeksCompleted, consistencyPct, witnessedMoments };
+}
+
+function rootprintHslToRgb(h,s,l){
+  const hue2rgb=(p,q,t)=>{ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; };
+  let r,g,b;
+  if(s===0){ r=g=b=l; } else {
+    const q = l<0.5 ? l*(1+s) : l+s-l*s;
+    const p = 2*l-q;
+    r=hue2rgb(p,q,h+1/3); g=hue2rgb(p,q,h); b=hue2rgb(p,q,h-1/3);
+  }
+  return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
+}
+function rootprintMulberry32(seed){
+  return function(){
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function rootprintRenderSVG(hashHex, speciesHue, size=220){
+  const nums = [];
+  for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
+  const rnd = rootprintMulberry32(parseInt(hashHex.slice(0,8),16));
+  const cx=size/2, cy=size/2, maxR=size/2-16;
+  const numRings = 8 + (nums[0]%6);
+  const ringGap = maxR/numRings;
+  let parts = [];
+  for(let i=0;i<numRings;i++){
+    const baseR = maxR - i*ringGap;
+    const thickness = 2 + (nums[(i*3+1)%nums.length]%5);
+    const hueShift = (nums[(i*3+2)%nums.length]/255 - 0.5)*0.15;
+    const sat = 0.30 + (nums[(i*3+3)%nums.length]/255)*0.35;
+    const light = 0.30 + (i/numRings)*0.42;
+    const hue = ((speciesHue+hueShift)%1+1)%1;
+    const [r,g,b] = rootprintHslToRgb(hue, sat, light);
+    const wobbleSeed = nums[(i*7+11)%nums.length];
+    const wobbleAmp = 1.6 + (wobbleSeed%5);
+    const phase = rnd()*Math.PI*2;
+    const freq = 3 + (wobbleSeed%4);
+    const pts = [];
+    const nPts = 100;
+    for(let p=0;p<nPts;p++){
+      const a=(p/nPts)*Math.PI*2;
+      const wobble = Math.sin(a*freq+phase)*wobbleAmp + Math.sin(a*freq*2.3+phase*1.7)*(wobbleAmp*0.4);
+      const rr = baseR+wobble;
+      pts.push((cx+rr*Math.cos(a)).toFixed(1)+','+(cy+rr*Math.sin(a)).toFixed(1));
+    }
+    parts.push(`<path d="M${pts.join(' L')} Z" fill="none" stroke="rgb(${r},${g},${b})" stroke-width="${thickness}" stroke-linejoin="round"/>`);
+  }
+  const numNotches = nums[5]%5;
+  for(let n=0;n<numNotches;n++){
+    const angle = (nums[(n*2+10)%nums.length]/255)*Math.PI*2;
+    const r1=maxR+5, r2=maxR+15;
+    const x1=cx+r1*Math.cos(angle), y1=cy+r1*Math.sin(angle);
+    const x2=cx+r2*Math.cos(angle), y2=cy+r2*Math.sin(angle);
+    parts.push(`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#C48A40" stroke-width="3"/>`);
+  }
+  parts.push(`<circle cx="${cx}" cy="${cy}" r="4" fill="#503726"/>`);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${parts.join('')}</svg>`;
+}
+
 function svgIcon(name, size=28, color='currentColor'){
   const icons = {
     calendar: `<rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="${color}" stroke-width="1.6"/><line x1="3" y1="9" x2="21" y2="9" stroke="${color}" stroke-width="1.6"/><line x1="7" y1="3" x2="7" y2="7" stroke="${color}" stroke-width="1.6" stroke-linecap="round"/><line x1="17" y1="3" x2="17" y2="7" stroke="${color}" stroke-width="1.6" stroke-linecap="round"/>`,
@@ -2200,8 +2326,35 @@ function screenJournal(){
       <textarea id="journalInput" placeholder="A thought, a win, a frustration..." style="margin-top:10px"></textarea>
       <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveJournal()">Save to journal</button>
     </div>
+    <div class="card section center" id="rootPrintPreviewCard">
+      <div class="eyebrow">RootPrint Preview</div>
+      <p class="faint" style="margin-top:4px">A live preview generated from your journal entries so far. This is not final until a sprint completes.</p>
+      <div id="rootPrintPreviewArea" style="display:flex;justify-content:center;margin-top:14px">
+        <button class="btn btn-outline" onclick="showRootPrintPreview()">Generate preview</button>
+      </div>
+    </div>
   </div>
   ${bottomNav('journal')}`;
+}
+async function showRootPrintPreview(){
+  const area = document.getElementById('rootPrintPreviewArea');
+  if(!area) return;
+  area.innerHTML = `<p class="faint">Generating…</p>`;
+  const entries = state.journal.map(j=>({ text: j.text }));
+  const selected = TREE_SPECIES.find(s=>s.key===state.user.treeSpecies);
+  const species = selected ? selected.key : 'sprout';
+  const result = await generateRootPrint({
+    callsign: state.user.callsign || 'you', species,
+    weeksCompleted: entries.length, consistencyPct: entries.length ? 100 : 0,
+    entries, witnessedMoments: 0,
+  });
+  area.innerHTML = `
+    <div class="center">
+      ${result.svg}
+      <p class="small" style="font-weight:700;margin-top:8px">RootPrint (preview)</p>
+      <p class="faint">${result.stats.entryCount} entr${result.stats.entryCount===1?'y':'ies'} · sentiment: ${result.stats.sentimentArc}</p>
+      <p class="faint" style="margin-top:4px;font-family:monospace;font-size:11px">${result.hash.slice(0,16)}…</p>
+    </div>`;
 }
 function saveJournal(){
   const v=document.getElementById('journalInput').value.trim();

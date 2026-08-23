@@ -214,6 +214,28 @@ async function joinWaitlist(email, plan = 'Fellow') {
   return true;
 }
 
+/* ---------------------------------------------------------------- ROOTPRINT */
+async function saveRootPrint({ species, weeksCompleted, consistencyPct, sentimentArc, witnessedMoments, seedHash }) {
+  const user = await getUser();
+  const { data, error } = await sb.from('root_prints').insert({
+    profile_id: user.id, species, weeks_completed: weeksCompleted, consistency_pct: consistencyPct,
+    sentiment_arc: sentimentArc, witnessed_moments: witnessedMoments, seed_hash: seedHash,
+  }).select().single();
+  if (error) throw error;
+  return data;
+}
+async function getMyRootPrints() {
+  const user = await getUser();
+  const { data, error } = await sb.from('root_prints').select('*').eq('profile_id', user.id).order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+async function getRootPrintById(id) {
+  const { data, error } = await sb.from('root_prints').select('*').eq('id', id).single();
+  if (error) throw error;
+  return data;
+}
+
 /* ---------------------------------------------------------------- POD CHANNEL (realtime) */
 async function postChannelMessage(podId, text) {
   const user = await getUser();
@@ -317,6 +339,7 @@ window.Merros = {
   charter: { proposeRule, voteRule, withdrawRule, getCharter },
   notices: { postNotice, getNotices },
   waitlist: { joinWaitlist },
+  rootprints: { saveRootPrint, getMyRootPrints, getRootPrintById },
   channel: { postChannelMessage, getChannelMessages, subscribeToChannel },
   chapters: { createChapter, listChapters, joinChapter, getChapterMembers, postChapterNotice, getChapterNotices },
   journal: { saveJournalEntry, getJournalEntries },
