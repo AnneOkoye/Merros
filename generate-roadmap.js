@@ -1,18 +1,18 @@
 // /api/generate-roadmap.js
-// Vercel serverless function — turns a person's goal(s) + sprint length into a
-// week-by-week milestone roadmap using Claude (Haiku, the cheapest current model —
-// this task doesn't need a bigger one).
+// Vercel serverless function that turns a person's goal(s) and sprint length into a
+// week-by-week milestone roadmap using Claude (Haiku, the cheapest current model,
+// since this task doesn't need a bigger one).
 //
 // Guardrails (all four discussed with Anne):
-//   1. Login required        — verifies the Supabase session before doing anything
-//   2. Rate limit             — max 5 requests per user per rolling hour (via ai_usage_log table)
-//   3. Input size capped      — max 3 goals, 150 chars each; duration capped at 16 weeks
-//   4. Output size capped     — max_tokens on the Claude call, and each milestone truncated
+//   1. Login required     - verifies the Supabase session before doing anything
+//   2. Rate limit          - max 5 requests per user per rolling hour (via ai_usage_log table)
+//   3. Input size capped   - max 3 goals, 150 chars each; duration capped at 16 weeks
+//   4. Output size capped  - max_tokens on the Claude call, and each milestone truncated
 //
 // Requires one Vercel environment variable: ANTHROPIC_API_KEY
-// (set it in Vercel dashboard → Project → Settings → Environment Variables)
+// (set it in Vercel dashboard, Project, Settings, Environment Variables)
 //
-// Requires the ai_usage_log table — see /supabase-ai-usage.sql, run once in the
+// Requires the ai_usage_log table - see /supabase-ai-usage.sql, run once in the
 // Supabase SQL editor before this endpoint will work.
 
 const SUPABASE_URL = 'https://nvgzejircugthcacidol.supabase.co';
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
   const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_API_KEY) {
-    return res.status(500).json({ error: 'Server not configured — missing ANTHROPIC_API_KEY' });
+    return res.status(500).json({ error: 'Server not configured. Missing ANTHROPIC_API_KEY' });
   }
 
   // ---------- Guardrail 1: must be logged in ----------
@@ -74,11 +74,11 @@ export default async function handler(req, res) {
     if (countResp.ok) {
       const recent = await countResp.json();
       if (Array.isArray(recent) && recent.length >= MAX_REQUESTS_PER_HOUR) {
-        return res.status(429).json({ error: 'Rate limit reached — try again in a bit.' });
+        return res.status(429).json({ error: 'Rate limit reached. Try again in a bit.' });
       }
     }
   } catch (e) {
-    // If the usage-log check itself fails, fail closed is safer than fail open —
+    // If the usage-log check itself fails, fail closed is safer than fail open,
     // but a transient read error shouldn't block a real user, so we log and continue.
     console.error('rate limit check failed', e);
   }
@@ -100,12 +100,13 @@ export default async function handler(req, res) {
     console.error('usage log insert failed', e);
   }
 
-  // ---------- Call Claude (Haiku — cheapest model, right-sized for this task) ----------
-  const prompt = `A person is starting a ${totalWeeks}-week self-improvement sprint. Their goal(s): ${goals.join('; ')}.
+  // ---------- Call Claude (Haiku, cheapest model, right-sized for this task) ----------
+  const goalsNumbered = goals.map((g, i) => `(${i + 1}) ${g}`).join('; ');
+  const prompt = `A person is starting a ${totalWeeks}-week self-improvement sprint with these goal(s): ${goalsNumbered}.
 
-Break this into exactly ${totalWeeks} short weekly milestones, one per week, building logically from getting started toward finishing the goal(s). Each milestone must be under 60 characters, specific and actionable — not a generic motivational phrase.
+For EACH goal separately, break it into 2 to 5 sequential week-range milestones that together span roughly week 1 through week ${totalWeeks} for that goal (ranges like "1-3", "4-6"; a 1 or 2 week sprint can just use single weeks like "1", "2"). Each milestone's text must be under 50 characters, specific and actionable, not a generic motivational phrase.
 
-Respond with ONLY a JSON array of exactly ${totalWeeks} strings, nothing else, no markdown formatting. Example shape: ["Define scope and set up basics","Complete first draft outline"]`;
+Respond with ONLY a JSON array of exactly ${goals.length} objects, nothing else, no markdown formatting. Each object must have this exact shape: {"goal": "<the goal text exactly as given, without the number>", "milestones": [{"weeks": "1-3", "text": "..."}, {"weeks": "4-6", "text": "..."}]}`;
 
   let aiResp;
   try {
@@ -119,7 +120,7 @@ Respond with ONLY a JSON array of exactly ${totalWeeks} strings, nothing else, n
       // Guardrail 4: output size capped
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 700,
+        max_tokens: 900,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -135,18 +136,29 @@ Respond with ONLY a JSON array of exactly ${totalWeeks} strings, nothing else, n
   const aiData = await aiResp.json();
   const text = aiData?.content?.[0]?.text || '';
 
-  let milestones;
+  let goalPlans;
   try {
     const jsonMatch = text.match(/\[[\s\S]*\]/);
-    milestones = JSON.parse(jsonMatch ? jsonMatch[0] : text);
+    goalPlans = JSON.parse(jsonMatch ? jsonMatch[0] : text);
   } catch (e) {
     return res.status(502).json({ error: 'Could not parse AI response' });
   }
 
-  if (!Array.isArray(milestones) || milestones.length !== totalWeeks) {
+  if (!Array.isArray(goalPlans) || goalPlans.length !== goals.length) {
     return res.status(502).json({ error: 'Unexpected AI response shape' });
   }
-  milestones = milestones.map((m) => String(m).slice(0, 80));
+  // Guardrail 4 continued: cap every string field and the milestone count per goal,
+  // and fall back to the original goal text if the model altered it.
+  goalPlans = goalPlans.map((plan, i) => {
+    const milestones = Array.isArray(plan.milestones) ? plan.milestones.slice(0, 6) : [];
+    return {
+      goal: goals[i],
+      milestones: milestones.map((m) => ({
+        weeks: String(m && m.weeks != null ? m.weeks : '').slice(0, 12),
+        text: String(m && m.text != null ? m.text : '').slice(0, 70),
+      })),
+    };
+  });
 
-  return res.status(200).json({ milestones });
+  return res.status(200).json({ goalPlans });
 }
