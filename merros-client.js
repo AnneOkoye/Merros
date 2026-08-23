@@ -40,6 +40,10 @@ async function getUser() {
   const { data: { user } } = await sb.auth.getUser();
   return user;
 }
+async function getAccessToken() {
+  const { data: { session } } = await sb.auth.getSession();
+  return session?.access_token || null;
+}
 function onAuthChange(cb) {
   sb.auth.onAuthStateChange((_event, session) => cb(session?.user ?? null));
 }
@@ -298,7 +302,7 @@ function subscribeToPulse(onInsert) {
 /* ---------------------------------------------------------------- EXPORT */
 window.Merros = {
   sb,
-  auth: { signInWithEmail, signUpWithPassword, signInWithPassword, resetPassword, signOut, getUser, onAuthChange },
+  auth: { signInWithEmail, signUpWithPassword, signInWithPassword, resetPassword, signOut, getUser, getAccessToken, onAuthChange },
   profile: { getMyProfile, updateMyProfile, isCallsignAvailable, getSettings, updateSetting },
   pods: { createPod, joinPodByCode, findOpenPod, joinPod, getMyPod, getPodSeats },
   roadmap: { saveRoadmap, toggleRoadmapItem, getMyRoadmap },
