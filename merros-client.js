@@ -207,6 +207,13 @@ async function getNotices(podId) {
   return data;
 }
 
+/* ---------------------------------------------------------------- WAITLIST (public, no login required) */
+async function joinWaitlist(email, plan = 'Fellow') {
+  const { error } = await sb.from('waitlist_signups').insert({ email, plan_interested: plan });
+  if (error) throw error;
+  return true;
+}
+
 /* ---------------------------------------------------------------- POD CHANNEL (realtime) */
 async function postChannelMessage(podId, text) {
   const user = await getUser();
@@ -309,6 +316,7 @@ window.Merros = {
   checkins: { postCheckin, getPodFeed },
   charter: { proposeRule, voteRule, withdrawRule, getCharter },
   notices: { postNotice, getNotices },
+  waitlist: { joinWaitlist },
   channel: { postChannelMessage, getChannelMessages, subscribeToChannel },
   chapters: { createChapter, listChapters, joinChapter, getChapterMembers, postChapterNotice, getChapterNotices },
   journal: { saveJournalEntry, getJournalEntries },
