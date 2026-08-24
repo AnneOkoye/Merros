@@ -298,10 +298,6 @@ nav.top{padding:20px 0;}
 @media(max-width:720px){.compare-2col{grid-template-columns:1fr;}}
 .solo-first-layout{display:grid;grid-template-columns:1fr 1.3fr;gap:20px;max-width:900px;margin:0 auto;}
 @media(max-width:720px){.solo-first-layout{grid-template-columns:1fr;}}
-.roadmap-week-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:16px;}
-.roadmap-week-grid.has-ai-text{grid-template-columns:repeat(3,1fr);}
-@media(max-width:640px){.roadmap-week-grid{grid-template-columns:repeat(4,1fr);} .roadmap-week-grid.has-ai-text{grid-template-columns:repeat(2,1fr);}}
-.roadmap-week-cell{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;display:flex;flex-direction:column;justify-content:center;min-height:52px;}
 #dashboardTreeVisual{position:relative;overflow:hidden;}
 .rain-drop{position:absolute;top:-10px;width:3px;height:14px;border-radius:2px;
   background:linear-gradient(180deg,rgba(125,175,220,0) 0%,rgba(110,165,215,.85) 60%,rgba(90,150,205,.85) 100%);
@@ -451,11 +447,23 @@ nav.top{padding:20px 0;}
 .goal-chip:active{transform:scale(.93);}
 .goal-chip.selected{transform:scale(1.04);box-shadow:0 3px 10px -3px rgba(0,0,0,.25);}
 .sprint-calendar{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
-.cal-dow{font-size:11px;color:var(--ink-faint);font-weight:700;padding:2px 0;}
-.cal-day{font-size:12.5px;padding:6px 0;border-radius:8px;color:var(--ink-soft);}
-.cal-day.in-sprint{background:var(--green-light);color:var(--ink);font-weight:600;}
-.cal-day.today{background:var(--green);color:#fff;font-weight:800;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
+.cal-dow{font-size:11px;color:var(--ink-faint);font-weight:700;text-align:center;padding:2px 0;}
+.cal-day{min-height:60px;border-radius:8px;padding:4px;cursor:pointer;display:flex;flex-direction:column;transition:background .15s;}
+.cal-day:hover{background:var(--bg-alt);}
+.cal-day.in-sprint{background:var(--green-light);}
+.cal-day.today{background:var(--green);}
+.cal-day.today .cal-day-num{color:#fff;font-weight:800;}
+.cal-day-num{font-size:12px;font-weight:600;color:var(--ink-soft);}
+.cal-day-pins{display:flex;flex-direction:column;gap:2px;margin-top:2px;}
+.cal-pin{font-size:9px;background:var(--card);border-radius:4px;padding:1px 3px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;}
+.cal-day.today .cal-pin{background:rgba(255,255,255,.85);}
+.cal-pin-more{font-size:8.5px;color:var(--ink-faint);}
+@media(max-width:480px){
+  .cal-day{min-height:48px;padding:3px;}
+  .cal-day-num{font-size:10.5px;}
+  .cal-pin{font-size:8px;}
+}
 .choice-card:active{transform:scale(.97);}
 .choice-card.selected{border-width:2px;font-weight:700;}
 .bg-blob{position:fixed;border-radius:50%;filter:blur(50px);opacity:.32;z-index:-1;pointer-events:none;animation:floatBlob 10s ease-in-out infinite;}
@@ -590,6 +598,7 @@ function go(screen){
   if(state.realPod && (screen==='dashboard'||screen==='pod'||screen==='theWeek')) loadPodData();
   if(screen==='dashboard') computeTreeVitality();
   if(screen==='myCollection') setTimeout(loadMyCollectionTrunk, 50);
+  if(screen==='sprintSetup') setTimeout(loadMyRoadmapPins, 50);
 }
 async function computeTreeVitality(){
   try{
@@ -1509,12 +1518,12 @@ const GOAL_CATEGORIES=[
   {name:'Digital Wellness', goals:['Spend less time on social media','Do a digital detox','Be more present','Protect my focus']},
 ];
 const GOAL_CATEGORY_COLORS = {
-  'Career & Money': {accent:'#B8860B', bg:'#FBEFD3', chipBg:'#FDF6E7'},
-  'Health & Wellness': {accent:'var(--green)', bg:'var(--green-light)', chipBg:'#F2F8EE'},
-  'Creativity & Learning': {accent:'#a24f53', bg:'var(--rose-light)', chipBg:'#FCEFF0'},
-  'Life & People': {accent:'#C1642F', bg:'var(--terracotta-light)', chipBg:'#FBEEE4'},
-  'Travel & Adventure': {accent:'#2E7D8C', bg:'#DCF0F3', chipBg:'#EEF9FA'},
-  'Digital Wellness': {accent:'#6B5B95', bg:'#E9E3F5', chipBg:'#F4F1FA'},
+  'Career & Money': {accent:'#B8860B', bold:'#F0B429', deep:'#A9720C'},
+  'Health & Wellness': {accent:'var(--green)', bold:'#5FAE55', deep:'#3D6E3A'},
+  'Creativity & Learning': {accent:'#a24f53', bold:'#D6707A', deep:'#8B3B44'},
+  'Life & People': {accent:'#C1642F', bold:'#E8894F', deep:'#A54E22'},
+  'Travel & Adventure': {accent:'#2E7D8C', bold:'#4FA6B8', deep:'#215C68'},
+  'Digital Wellness': {accent:'#6B5B95', bold:'#8F7DC4', deep:'#4F4270'},
 };
 function screenGoalPicker(){
   const selected = state.user.sprintGoals || [];
@@ -1529,7 +1538,7 @@ function screenGoalPicker(){
         <div class="card section" style="border-left:4px solid ${c.accent}">
           <div class="eyebrow" style="color:${c.accent}">${cat.name}</div>
           <div class="row wrap gap section" style="margin-top:10px">
-            ${cat.goals.map(g=>`<div class="choice-card chip goal-chip ${selected.includes(g)?'selected':''}" style="padding:9px 15px;width:auto;background:${selected.includes(g)?c.accent:c.chipBg};border-color:${c.accent};color:${selected.includes(g)?'#fff':c.accent}" onclick="toggleGoalChip('${g.replace(/'/g,"\\'")}')">${g}</div>`).join('')}
+            ${cat.goals.map(g=>`<div class="choice-card chip goal-chip ${selected.includes(g)?'selected':''}" style="padding:9px 15px;width:auto;background:${selected.includes(g)?c.deep:c.bold};border-color:${c.deep};color:#fff" onclick="toggleGoalChip('${g.replace(/'/g,"\\'")}')">${g}</div>`).join('')}
           </div>
         </div>`;}).join('')}
       <div class="card section">
@@ -1651,13 +1660,13 @@ function screenSprintSetup(){
         <h2 style="font-size:18px">Your roadmap</h2>
         <p class="muted small" style="margin-top:4px">${totalWeeks} weeks · ${podMode==='solo'?'Solo':'Pod'} · ${goals.length} goal${goals.length===1?'':'s'} · ${name}</p>
         ${renderSprintCalendarHTML(totalWeeks, state.user._calendarMonthOffset||0)}
-        ${renderThisWeekPanel(goalPlans, goals)}
+        ${renderPinListHTML()}
         <button class="btn btn-outline btn-block section" id="aiRoadmapBtn" onclick="generateAIRoadmap()" ${state.user._aiRoadmapLoading?'disabled':''}>
           ${state.user._aiRoadmapLoading ? 'Thinking through your weeks…' : (goalPlans ? '✨ Regenerate with AI' : '✨ Generate my roadmap with AI')}
         </button>
         ${goalPlans ? `
         <div class="goal-timeline section">
-          <div class="faint" style="margin-bottom:8px">Full sprint overview</div>
+          <div class="faint" style="margin-bottom:8px">AI overview - pin any of these to a real date above</div>
           ${goalPlans.map((g,gi)=>`
             <div class="goal-timeline-block">
               <div class="small" style="font-weight:700">Goal ${gi+1}: ${g.goal}</div>
@@ -1670,16 +1679,7 @@ function screenSprintSetup(){
               </div>
             </div>`).join('')}
         </div>
-        <p class="faint section">✨ Personalized by AI based on your goals.</p>` : `
-        <div class="roadmap-week-grid section">
-          ${roadmapWeeks.map(w=>{
-            const t = totalWeeks>1 ? (w.week-1)/(totalWeeks-1) : 0;
-            const bg = `hsl(96, ${28+t*22}%, ${94-t*20}%)`;
-            const border = `hsl(96, ${30+t*25}%, ${72-t*22}%)`;
-            return `<div class="roadmap-week-cell" style="background:${bg};border-color:${border}">
-            <div class="small" style="font-size:13px;font-weight:700">Week ${w.week}</div>
-          </div>`;}).join('')}
-        </div>`}
+        <p class="faint section">✨ Personalized by AI based on your goals.</p>` : ''}
         <p class="faint section">Daily: One line · Sunday: Weekly reflection</p>
       </div>
       <div class="card section center">
@@ -1707,13 +1707,24 @@ function renderSprintCalendarHTML(totalWeeks, monthOffset=0){
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const sprintStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const sprintEnd = new Date(sprintStart); sprintEnd.setDate(sprintEnd.getDate() + totalWeeks*7 - 1);
+  const pins = state.user._roadmapPins || [];
   let cells = [];
   for(let i=0;i<firstDay;i++) cells.push('<div></div>');
   for(let d=1; d<=daysInMonth; d++){
     const cellDate = new Date(year, month, d);
+    const dateStr = cellDate.toISOString().slice(0,10);
     const isToday = cellDate.toDateString()===today.toDateString();
     const inSprint = cellDate >= sprintStart && cellDate <= sprintEnd;
-    cells.push(`<div class="cal-day ${isToday?'today':''} ${inSprint?'in-sprint':''}">${d}</div>`);
+    const dayPins = pins.filter(p=>p.pin_date===dateStr);
+    const visiblePins = dayPins.slice(0,3);
+    const extra = dayPins.length - visiblePins.length;
+    cells.push(`<div class="cal-day ${isToday?'today':''} ${inSprint?'in-sprint':''}" onclick="openPinAdder('${dateStr}')">
+      <div class="cal-day-num">${d}</div>
+      <div class="cal-day-pins">
+        ${visiblePins.map(p=>`<div class="cal-pin" title="${p.label}">${p.notify?'🔔 ':''}${p.label.length>10?p.label.slice(0,10)+'…':p.label}</div>`).join('')}
+        ${extra>0?`<div class="cal-pin-more">+${extra} more</div>`:''}
+      </div>
+    </div>`);
   }
   return `<div class="sprint-calendar section">
     <div class="row between" style="align-items:center">
@@ -1721,37 +1732,73 @@ function renderSprintCalendarHTML(totalWeeks, monthOffset=0){
       <div class="small" style="font-weight:700">${monthName}</div>
       <button class="btn btn-ghost btn-sm" onclick="shiftCalendarMonth(1)">${new Date(year,month+1,1).toLocaleString('default',{month:'short'})} →</button>
     </div>
-    <div class="cal-grid" style="margin-top:10px">
+    <div class="cal-grid cal-header-row" style="margin-top:10px">
       ${['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}
     </div>
     <div class="cal-grid">${cells.join('')}</div>
-    <p class="faint" style="margin-top:8px">Your sprint starts today and runs through ${sprintEnd.toLocaleDateString('default',{month:'short',day:'numeric'})}.</p>
+    <p class="faint" style="margin-top:8px">Your sprint starts today and runs through ${sprintEnd.toLocaleDateString('default',{month:'short',day:'numeric'})}. Tap any date to pin something to it.</p>
   </div>`;
 }
 function shiftCalendarMonth(delta){
   state.user._calendarMonthOffset = (state.user._calendarMonthOffset||0) + delta;
   renderKeepScroll();
 }
-function renderThisWeekPanel(goalPlans, goals){
-  let lines = [];
-  if(goalPlans){
-    goalPlans.forEach(g=>{
-      const m = (g.milestones||[]).find(ms=>{
-        const range = String(ms.weeks).split(/[-–]/).map(s=>parseInt(s.trim(),10));
-        const lo=range[0], hi = range.length>1 && !isNaN(range[1]) ? range[1] : range[0];
-        return 1>=lo && 1<=hi;
-      });
-      if(m) lines.push(`<b>${g.goal}:</b> ${m.text}`);
-    });
-  } else {
-    (goals||[]).forEach(g=>lines.push(`<b>${g}:</b> Sprout stage - just getting started`));
+async function loadMyRoadmapPins(){
+  try{
+    state.user._roadmapPins = await Merros.roadmapPins.getMyRoadmapPins();
+    render();
+  }catch(e){ console.error('loadMyRoadmapPins failed', e); }
+}
+async function openPinAdder(dateStr){
+  const label = prompt('Pin something to '+new Date(dateStr+'T00:00:00').toLocaleDateString('default',{month:'short',day:'numeric'})+':');
+  if(!label || !label.trim()) return;
+  const notify = confirm('Get notified on this date? (OK = yes, Cancel = no)');
+  if(notify && 'Notification' in window && Notification.permission==='default'){
+    try{ await Notification.requestPermission(); }catch(e){}
+  }
+  try{
+    await Merros.roadmapPins.addRoadmapPin(dateStr, label.trim(), notify);
+    toast('Pinned to your roadmap');
+    await loadMyRoadmapPins();
+  }catch(e){ console.error(e); toast('Could not save that pin. Try again.'); }
+}
+async function removePin(pinId){
+  try{
+    await Merros.roadmapPins.deleteRoadmapPin(pinId);
+    await loadMyRoadmapPins();
+  }catch(e){ console.error(e); toast('Could not remove that pin.'); }
+}
+async function togglePinNotify(pinId, current){
+  try{
+    const next = !current;
+    if(next && 'Notification' in window && Notification.permission==='default'){
+      await Notification.requestPermission();
+    }
+    await Merros.roadmapPins.toggleRoadmapPinNotify(pinId, next);
+    await loadMyRoadmapPins();
+  }catch(e){ console.error(e); toast('Could not update that pin.'); }
+}
+function renderPinListHTML(){
+  const pins = (state.user._roadmapPins || []).slice().sort((a,b)=>a.pin_date.localeCompare(b.pin_date));
+  if(!pins.length){
+    return `<div class="card section" style="background:var(--bg-alt);border:none">
+      <p class="faint">No pins yet. Tap any date above to add your first one.</p>
+    </div>`;
   }
   return `<div class="card section" style="background:var(--bg-alt);border:none">
-    <div class="small" style="font-weight:700">This Week · Week 1 of ${state.roadmap.length||'?'}</div>
+    <div class="small" style="font-weight:700">Your pinned roadmap</div>
     <div class="stack gap8 section">
-      ${lines.map(l=>`<div class="small">◆ ${l}</div>`).join('') || '<div class="faint">Generate your roadmap with AI to see this week\u2019s focus.</div>'}
+      ${pins.map(p=>{
+        const d = new Date(p.pin_date+'T00:00:00');
+        return `<div class="row between" style="align-items:center">
+          <div class="small">📌 <b>${d.toLocaleDateString('default',{month:'short',day:'numeric'})}</b> · ${p.label}</div>
+          <div class="row gap" style="align-items:center">
+            <span class="faint" style="cursor:pointer" onclick="togglePinNotify(${p.id},${p.notify})" title="Toggle notification">${p.notify?'🔔':'🔕'}</span>
+            <span class="faint" style="cursor:pointer" onclick="removePin(${p.id})" title="Remove pin">✕</span>
+          </div>
+        </div>`;
+      }).join('')}
     </div>
-    <p class="faint" style="margin-top:8px">Daily: One line · Sunday: Weekly reflection</p>
   </div>`;
 }
 function submitSprintSetup(){

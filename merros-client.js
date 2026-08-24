@@ -241,6 +241,32 @@ async function getChapterRings(chapterId) {
   return data;
 }
 
+/* ---------------------------------------------------------------- ROADMAP PINS */
+async function addRoadmapPin(pinDate, label, notify=false) {
+  const user = await getUser();
+  const { data, error } = await sb.from('roadmap_pins').insert({
+    profile_id: user.id, pin_date: pinDate, label, notify,
+  }).select().single();
+  if (error) throw error;
+  return data;
+}
+async function getMyRoadmapPins() {
+  const user = await getUser();
+  const { data, error } = await sb.from('roadmap_pins').select('*').eq('profile_id', user.id).order('pin_date', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+async function deleteRoadmapPin(pinId) {
+  const { error } = await sb.from('roadmap_pins').delete().eq('id', pinId);
+  if (error) throw error;
+  return true;
+}
+async function toggleRoadmapPinNotify(pinId, notify) {
+  const { error } = await sb.from('roadmap_pins').update({ notify }).eq('id', pinId);
+  if (error) throw error;
+  return true;
+}
+
 /* ---------------------------------------------------------------- ROOTPRINT */
 async function saveRootPrint({ species, weeksCompleted, consistencyPct, sentimentArc, witnessedMoments, seedHash }) {
   const user = await getUser();
@@ -368,6 +394,7 @@ window.Merros = {
   waitlist: { joinWaitlist },
   rootprints: { saveRootPrint, getMyRootPrints, getRootPrintById },
   collectionRings: { saveCollectionRing, getMyCollectionRings, saveChapterRing, getChapterRings },
+  roadmapPins: { addRoadmapPin, getMyRoadmapPins, deleteRoadmapPin, toggleRoadmapPinNotify },
   channel: { postChannelMessage, getChannelMessages, subscribeToChannel },
   chapters: { createChapter, listChapters, joinChapter, getChapterMembers, postChapterNotice, getChapterNotices },
   journal: { saveJournalEntry, getJournalEntries },
