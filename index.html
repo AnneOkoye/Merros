@@ -1298,22 +1298,22 @@ function screenIdentity(){
         ${mode==='signup' ? `
         <div class="section" style="margin-top:0">
           <label class="field-label">Choose your callsign</label>
-          <input id="callsignInput" maxlength="7" placeholder="e.g. NOVA7" autocomplete="off" value="${mode==='signup' ? '' : state.user.callsign}" oninput="checkCallsign()"/>
-          <div class="faint" id="callsignStatus" style="margin-top:6px">${(mode==='signup' ? '' : state.user.callsign).length}/7 characters max · checked on submit</div>
+          <input id="callsignInput" maxlength="7" placeholder="e.g. NOVA7" autocomplete="off" value="${state.user.callsign}" oninput="checkCallsign()"/>
+          <div class="faint" id="callsignStatus" style="margin-top:6px">${state.user.callsign.length}/7 characters max · checked on submit</div>
         </div>` : ''}
         <div class="section" style="${mode==='signup'?'':'margin-top:0'}">
           <label class="field-label">Your email</label>
-          <input id="emailInput" placeholder="you@email.com" autocomplete="off" value="${mode==='signup' ? '' : state.user.email}"/>
+          <input id="emailInput" placeholder="you@email.com" autocomplete="off" value="${state.user.email}" oninput="state.user.email=this.value"/>
         </div>
         <div class="section">
           <label class="field-label">Password</label>
-          <input id="passwordInput" type="password" placeholder="At least 6 characters" oninput="checkPasswordStrength()"/>
+          <input id="passwordInput" type="password" placeholder="At least 6 characters" value="${state.user._password||''}" oninput="state.user._password=this.value;checkPasswordStrength()"/>
           <div class="faint" id="passwordStrength" style="margin-top:6px">At least 6 characters</div>
         </div>
         ${mode==='signup' ? `
         <div class="section">
           <label class="field-label">Confirm password</label>
-          <input id="confirmPasswordInput" type="password" placeholder="Type it again" oninput="checkPasswordMatch()"/>
+          <input id="confirmPasswordInput" type="password" placeholder="Type it again" value="${state.user._confirmPassword||''}" oninput="state.user._confirmPassword=this.value;checkPasswordMatch()"/>
           <div class="faint" id="passwordMatch" style="margin-top:6px">&nbsp;</div>
         </div>
         <label class="row gap small section" style="align-items:flex-start">
@@ -1410,6 +1410,7 @@ function pickTreeSpecies(key){ state.user.treeSpecies = state.user.treeSpecies==
 function toggleAuthMode(){ state._authMode = state._authMode==='login' ? 'signup' : 'login'; render(); }
 function checkCallsign(){
   const v=document.getElementById('callsignInput').value;
+  state.user.callsign = v;
   const plaque=document.querySelector('.plaque-card .small');
   if(plaque) plaque.textContent=v||'···';
   const statusEl=document.getElementById('callsignStatus');
