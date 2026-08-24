@@ -1517,13 +1517,17 @@ const GOAL_CATEGORIES=[
   {name:'Travel & Adventure', goals:['Travel more','Visit a new country','Take a solo trip','Explore my own city']},
   {name:'Digital Wellness', goals:['Spend less time on social media','Do a digital detox','Be more present','Protect my focus']},
 ];
+// All six run within the same green family — varying lightness/saturation/warmth
+// only, never hue — ordered darkest→lightest so the palette itself has a logic
+// to it. Health & Wellness keeps the actual brand green (--green/--green-dark)
+// as the anchor in the middle of the run.
 const GOAL_CATEGORY_COLORS = {
-  'Career & Money': {accent:'#B8860B', bold:'#F0B429', deep:'#A9720C'},
-  'Health & Wellness': {accent:'var(--green)', bold:'#5FAE55', deep:'#3D6E3A'},
-  'Creativity & Learning': {accent:'#a24f53', bold:'#D6707A', deep:'#8B3B44'},
-  'Life & People': {accent:'#C1642F', bold:'#E8894F', deep:'#A54E22'},
-  'Travel & Adventure': {accent:'#2E7D8C', bold:'#4FA6B8', deep:'#215C68'},
-  'Digital Wellness': {accent:'#6B5B95', bold:'#8F7DC4', deep:'#4F4270'},
+  'Career & Money':       {accent:'#2F5233', bold:'#4F7A52', deep:'#2F5233'}, // Deep Pine
+  'Health & Wellness':    {accent:'#3D6E3A', bold:'#4F8A4A', deep:'#3D6E3A'}, // Brand Green (unchanged)
+  'Creativity & Learning':{accent:'#4C6B47', bold:'#7A9B72', deep:'#4C6B47'}, // Sage
+  'Life & People':        {accent:'#5C6B2E', bold:'#8A9A4A', deep:'#5C6B2E'}, // Olive (warm)
+  'Travel & Adventure':   {accent:'#2C5C52', bold:'#3E8073', deep:'#2C5C52'}, // Teal-Pine (cool)
+  'Digital Wellness':     {accent:'#4C7D64', bold:'#6FAE8C', deep:'#4C7D64'}, // Soft Mint
 };
 function screenGoalPicker(){
   const selected = state.user.sprintGoals || [];
@@ -1659,6 +1663,8 @@ function screenSprintSetup(){
       <div class="card section">
         <h2 style="font-size:18px">Your roadmap</h2>
         <p class="muted small" style="margin-top:4px">${totalWeeks} weeks · ${podMode==='solo'?'Solo':'Pod'} · ${goals.length} goal${goals.length===1?'':'s'} · ${name}</p>
+        ${renderTodayCardHTML()}
+        ${renderThisWeekCardHTML(totalWeeks)}
         ${renderSprintCalendarHTML(totalWeeks, state.user._calendarMonthOffset||0)}
         ${renderPinListHTML()}
         <button class="btn btn-outline btn-block section" id="aiRoadmapBtn" onclick="generateAIRoadmap()" ${state.user._aiRoadmapLoading?'disabled':''}>
@@ -1671,10 +1677,13 @@ function screenSprintSetup(){
             <div class="goal-timeline-block">
               <div class="small" style="font-weight:700">Goal ${gi+1}: ${g.goal}</div>
               <div class="timeline-list">
-                ${g.milestones.map(m=>`<div class="timeline-item">
-                  <span class="timeline-dot"></span>
-                  <span class="faint" style="font-weight:700;margin-right:6px">Week ${m.weeks}:</span>
-                  <span class="small">${m.text}</span>
+                ${g.milestones.map(m=>`<div class="timeline-item" style="display:flex;align-items:center;justify-content:space-between">
+                  <span style="display:flex;align-items:center">
+                    <span class="timeline-dot"></span>
+                    <span class="faint" style="font-weight:700;margin-right:6px">Week ${m.weeks}:</span>
+                    <span class="small">${m.text}</span>
+                  </span>
+                  <span draggable="true" ondragstart="handlePinDragStart(event,'${m.text.replace(/'/g,"\\'")}')" style="cursor:grab;margin-left:8px;flex:none" title="Drag onto Today or a day this week to schedule it">📌</span>
                 </div>`).join('')}
               </div>
             </div>`).join('')}
@@ -1718,7 +1727,7 @@ function renderSprintCalendarHTML(totalWeeks, monthOffset=0){
     const dayPins = pins.filter(p=>p.pin_date===dateStr);
     const visiblePins = dayPins.slice(0,3);
     const extra = dayPins.length - visiblePins.length;
-    cells.push(`<div class="cal-day ${isToday?'today':''} ${inSprint?'in-sprint':''}" onclick="openPinAdder('${dateStr}')">
+    cells.push(`<div class="cal-day ${isToday?'today':''} ${inSprint?'in-sprint':''}" onclick="openPinAdder('${dateStr}')" ondragover="allowDrop(event)" ondrop="handleDropOnDay(event,'${dateStr}')">
       <div class="cal-day-num">${d}</div>
       <div class="cal-day-pins">
         ${visiblePins.map(p=>`<div class="cal-pin" title="${p.label}">${p.notify?'🔔 ':''}${p.label.length>10?p.label.slice(0,10)+'…':p.label}</div>`).join('')}
@@ -1742,6 +1751,78 @@ function renderSprintCalendarHTML(totalWeeks, monthOffset=0){
 function shiftCalendarMonth(delta){
   state.user._calendarMonthOffset = (state.user._calendarMonthOffset||0) + delta;
   renderKeepScroll();
+}
+
+/* ---- Today / This Week breakdown, built from real roadmap_pins ---- */
+function getCurrentWeekDates(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dow = today.getDay(); // 0=Sun..6=Sat
+  const diffToMonday = dow===0 ? -6 : 1-dow;
+  const monday = new Date(today); monday.setDate(today.getDate()+diffToMonday);
+  return Array.from({length:7},(_,i)=>{ const d=new Date(monday); d.setDate(monday.getDate()+i); return d; });
+}
+function pinsForDate(dateStr){
+  return (state.user._roadmapPins||[]).filter(p=>p.pin_date===dateStr);
+}
+function renderTodayCardHTML(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dateStr = today.toISOString().slice(0,10);
+  const todayPins = pinsForDate(dateStr);
+  return `<div class="card section" style="border:1.5px dashed var(--border)" ondragover="allowDrop(event)" ondrop="handleDropOnDay(event,'${dateStr}')">
+    <div class="row between" style="align-items:center">
+      <div class="small" style="font-weight:700">Today · ${today.toLocaleDateString('default',{weekday:'long',day:'numeric'})}</div>
+      <span class="faint" style="cursor:pointer" onclick="openPinAdder('${dateStr}')">+ add</span>
+    </div>
+    <hr class="rule"/>
+    ${todayPins.length ? `<div class="stack gap8">
+      ${todayPins.map((p,i)=>`<div class="row between" style="align-items:center">
+        <div class="small">Goal ${i+1}: ${p.label}</div>
+        <span class="faint" style="cursor:pointer" onclick="removePin(${p.id})" title="Remove">✕</span>
+      </div>`).join('')}
+    </div>` : `<p class="faint">Nothing pinned for today yet. Drag a 📌 from your AI plan below onto this card, or tap + add.</p>`}
+  </div>`;
+}
+function renderThisWeekCardHTML(totalWeeks){
+  const weekDates = getCurrentWeekDates();
+  const sprintStartDate = state.user.sprintStartDate ? new Date(state.user.sprintStartDate) : new Date();
+  sprintStartDate.setHours(0,0,0,0);
+  const todayZero = new Date(); todayZero.setHours(0,0,0,0);
+  const weekIndex = Math.max(1, Math.floor((todayZero - sprintStartDate)/(7*86400000)) + 1);
+  const todayStr = todayZero.toISOString().slice(0,10);
+  return `<div class="card section">
+    <div class="small" style="font-weight:700">This Week · Week ${weekIndex} of ${totalWeeks}</div>
+    <hr class="rule"/>
+    <div class="stack gap8">
+      ${weekDates.map(d=>{
+        const dStr = d.toISOString().slice(0,10);
+        const isToday = dStr===todayStr;
+        const dayPins = pinsForDate(dStr);
+        const label = d.toLocaleDateString('default',{weekday:'short',day:'numeric'});
+        return `<div class="row between" style="align-items:center;padding:6px 8px;border-radius:8px;${isToday?'background:var(--green-light)':''}" ondragover="allowDrop(event)" ondrop="handleDropOnDay(event,'${dStr}')">
+          <div class="small" style="flex:1">
+            <b>${label}</b> · ${dayPins.length ? dayPins.map(p=>p.label).join(' · ') : '<span class="faint">Rest day</span>'}
+          </div>
+          <span class="faint" style="cursor:pointer;margin-left:8px" onclick="openPinAdder('${dStr}')" title="Add">+</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <p class="faint" style="margin-top:8px">Drag a 📌 from your AI plan below onto Today or any day this week to schedule it there.</p>
+  </div>`;
+}
+function handlePinDragStart(ev, label){
+  ev.dataTransfer.setData('text/plain', label);
+  ev.dataTransfer.effectAllowed = 'copy';
+}
+function allowDrop(ev){ ev.preventDefault(); ev.dataTransfer.dropEffect = 'copy'; }
+async function handleDropOnDay(ev, dateStr){
+  ev.preventDefault();
+  const label = ev.dataTransfer.getData('text/plain');
+  if(!label) return;
+  try{
+    await Merros.roadmapPins.addRoadmapPin(dateStr, label, false);
+    toast('Pinned to ' + new Date(dateStr+'T00:00:00').toLocaleDateString('default',{month:'short',day:'numeric'}));
+    await loadMyRoadmapPins();
+  }catch(e){ console.error(e); toast('Could not pin that. Try again.'); }
 }
 async function loadMyRoadmapPins(){
   try{
@@ -3239,7 +3320,12 @@ function render(){
     });
   });
 }
-render();
+// Show a lightweight placeholder instead of a full screen render here.
+// boot() below is what determines the real starting screen (guest vs.
+// authenticated, with or without a pod) and does the one real paint —
+// this avoids the "flash of wrong content" that showed up as a double
+// render/blink once boot() started completing successfully.
+document.getElementById('app').innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-size:13px">Loading…</div>';
 document.getElementById('jumpSelect').value=state.screen;
 boot();
 
