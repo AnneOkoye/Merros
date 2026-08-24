@@ -302,6 +302,80 @@ nav.top{padding:20px 0;}
 .roadmap-week-grid.has-ai-text{grid-template-columns:repeat(3,1fr);}
 @media(max-width:640px){.roadmap-week-grid{grid-template-columns:repeat(4,1fr);} .roadmap-week-grid.has-ai-text{grid-template-columns:repeat(2,1fr);}}
 .roadmap-week-cell{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;display:flex;flex-direction:column;justify-content:center;min-height:52px;}
+#dashboardTreeVisual{position:relative;overflow:hidden;}
+.rain-drop{position:absolute;top:-10px;width:3px;height:14px;border-radius:2px;
+  background:linear-gradient(180deg,rgba(125,175,220,0) 0%,rgba(110,165,215,.85) 60%,rgba(90,150,205,.85) 100%);
+  animation:rainFall 0.9s ease-in forwards;pointer-events:none;z-index:5;}
+@keyframes rainFall{
+  0%{transform:translateY(0);opacity:0;}
+  15%{opacity:1;}
+  100%{transform:translateY(70px);opacity:0;}
+}
+.tree-watered{animation:treeGlowAbsorb 1.4s ease-out;}
+@keyframes treeGlowAbsorb{
+  0%{filter:drop-shadow(0 0 0px rgba(140,200,120,0)) brightness(1);}
+  45%{filter:drop-shadow(0 0 14px rgba(150,210,130,.75)) brightness(1.12);}
+  100%{filter:drop-shadow(0 0 0px rgba(140,200,120,0)) brightness(1);}
+}
+.tree-wilt-mild{filter:saturate(.85) brightness(.97);transform:rotate(-1.5deg);transition:filter 1s,transform 1s;}
+.tree-wilt-deep{filter:saturate(.62) brightness(.90);transform:rotate(-3.5deg) translateY(3px);transition:filter 1s,transform 1s;animation:none !important;}
+
+/* Canopy Rustle - fires when opening the dashboard after a recent completion */
+.tree-rustle{animation:canopyRustle 0.9s ease-in-out !important;}
+@keyframes canopyRustle{
+  0%,100%{transform:rotate(0deg);}
+  20%{transform:rotate(-4deg);}
+  40%{transform:rotate(3deg);}
+  60%{transform:rotate(-2.5deg);}
+  80%{transform:rotate(1.5deg);}
+}
+.golden-seed{position:absolute;bottom:6px;width:6px;height:6px;border-radius:50%;
+  background:radial-gradient(circle,#FFEDB0 0%,#E8B23D 70%);box-shadow:0 0 6px 1px rgba(232,178,61,.7);
+  animation:seedDrop 1.1s ease-in forwards;pointer-events:none;}
+@keyframes seedDrop{
+  0%{transform:translateY(-46px) scale(0.6);opacity:0;}
+  15%{opacity:1;}
+  85%{opacity:1;}
+  100%{transform:translateY(0) scale(1);opacity:.9;}
+}
+
+/* Steam Evaporation - the recovery-specific version of watering, after a deep wilt */
+.recovery-sunflash{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,244,214,.9) 0%,rgba(255,244,214,0) 65%);
+  animation:sunFlash 1.6s ease-out forwards;}
+@keyframes sunFlash{0%{opacity:0;transform:scale(.6);}30%{opacity:1;}100%{opacity:0;transform:scale(1.3);}}
+.steam-wisp{position:absolute;bottom:20px;width:5px;height:22px;border-radius:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.55) 100%);
+  filter:blur(2px);animation:steamRise 1.8s ease-out forwards;pointer-events:none;}
+@keyframes steamRise{0%{transform:translateY(0) scaleY(1);opacity:0;}20%{opacity:.8;}100%{transform:translateY(-38px) scaleY(1.6);opacity:0;}}
+
+/* Pruning - a clean swipe reveal from wilted to restored */
+.tree-pruned{animation:pruneSwipe 0.6s ease-out;}
+@keyframes pruneSwipe{
+  0%{clip-path:inset(0 100% 0 0);filter:saturate(.6) brightness(.9);}
+  100%{clip-path:inset(0 0 0 0);filter:saturate(1) brightness(1);}
+}
+.fresh-bud{position:absolute;width:5px;height:5px;border-radius:50%;background:#8FCF6E;
+  animation:budPop .7s ease-out forwards;pointer-events:none;}
+@keyframes budPop{0%{transform:scale(0);opacity:0;}50%{opacity:1;}100%{transform:scale(1);opacity:0;}}
+
+/* Scar knot - a small permanent mark near the base once a real recovery has happened */
+.scar-knot{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:9px;height:7px;
+  border-radius:50% 50% 45% 45%;background:#6B4A32;box-shadow:inset 0 -1px 1px rgba(0,0,0,.3);opacity:.85;}
+.root-network-sky{margin:-28px -20px 0;padding:28px 20px 40px;position:relative;overflow:hidden;transition:background 1s;}
+.root-network-sky.day{background:linear-gradient(180deg,#CFE8F5 0%,#F3F8EF 65%);}
+.root-network-sky.night{background:linear-gradient(180deg,#101830 0%,#1E2A46 60%);}
+.root-network-sky.night .eyebrow,.root-network-sky.night h2,.root-network-sky.night .back-link{color:#E8ECF5;}
+.celestial-sun{position:absolute;top:18px;right:26px;width:46px;height:46px;border-radius:50%;
+  background:radial-gradient(circle,#FFE9A8 0%,#F7C948 60%,rgba(247,201,72,0) 75%);
+  box-shadow:0 0 24px 8px rgba(247,201,72,.55);animation:sunPulse 4s ease-in-out infinite;}
+@keyframes sunPulse{0%,100%{transform:scale(1);opacity:.9;}50%{transform:scale(1.08);opacity:1;}}
+.celestial-moon{position:absolute;top:20px;right:30px;width:34px;height:34px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#F5F3E8 0%,#D9D6C8 70%);
+  box-shadow:0 0 18px 5px rgba(230,228,210,.4);animation:moonGlow 5s ease-in-out infinite;}
+@keyframes moonGlow{0%,100%{opacity:.85;}50%{opacity:1;}}
+.celestial-star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;animation:starTwinkle 2.4s ease-in-out infinite;}
+@keyframes starTwinkle{0%,100%{opacity:.25;}50%{opacity:1;}}
 .goal-timeline-block{margin-bottom:20px;}
 .goal-timeline-block:last-child{margin-bottom:0;}
 .timeline-list{margin-top:10px;padding-left:14px;border-left:2px solid var(--border);}
@@ -505,6 +579,34 @@ function toast(msg){
 function go(screen){
   state.screen=screen; window.scrollTo(0,0); render(); document.getElementById('jumpSelect').value=screen;
   if(state.realPod && (screen==='dashboard'||screen==='pod'||screen==='theWeek')) loadPodData();
+  if(screen==='dashboard') computeTreeVitality();
+  if(screen==='myCollection') setTimeout(loadMyCollectionTrunk, 50);
+}
+async function computeTreeVitality(){
+  try{
+    let lastDate = null;
+    if(state.user.plan==='Solo'){
+      const entries = await Merros.journal.getJournalEntries();
+      if(entries && entries.length) lastDate = new Date(entries[0].created_at);
+    } else if(state.realPod){
+      const mine = state.podFeed.filter(f=>f.who===state.user.callsign && f.created_at);
+      if(mine.length) lastDate = new Date(mine[0].created_at);
+    }
+    state.daysSinceLastPost = lastDate ? Math.floor((Date.now()-lastDate.getTime())/86400000) : null;
+    render();
+    setTimeout(triggerCanopyRustle, 120);
+  }catch(e){ console.error('computeTreeVitality failed', e); }
+}
+function wiltClass(){
+  const d = state.daysSinceLastPost;
+  if(d==null || d<2) return '';
+  return d<3 ? 'tree-wilt-mild' : 'tree-wilt-deep';
+}
+function wiltCaption(){
+  const d = state.daysSinceLastPost;
+  if(d==null || d<2) return '';
+  if(d<3) return "It's been a couple of days - a quick line would help.";
+  return "It's been a few days. Come water it whenever you're ready.";
 }
 async function loadPodData(){
   if(!state.realPod) return;
@@ -514,7 +616,7 @@ async function loadPodData(){
       Merros.pods.getPodSeats(state.realPod.id),
       Merros.channel.getChannelMessages(state.realPod.id)
     ]);
-    state.podFeed = feed.map(f=>({who: f.public_profiles?.callsign || '???', tag:'', status: f.status, text: f.text}));
+    state.podFeed = feed.map(f=>({who: f.public_profiles?.callsign || '???', tag:'', status: f.status, text: f.text, created_at: f.created_at}));
     state.realSeats = seats;
     state.channel = msgs.slice().reverse().map(m=>({who: m.public_profiles?.callsign || '???', when: new Date(m.created_at).toLocaleString(), text: m.text}));
     render();
@@ -721,6 +823,63 @@ async function generateRootPrint({ callsign, species, weeksCompleted, consistenc
   return { hash, svg, stats, weeksCompleted, consistencyPct, witnessedMoments };
 }
 
+function rootprintRenderTrunkSVG(rings, speciesHue, size=280){
+  if(!rings || !rings.length){
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="14" fill="none" stroke="#8B5E34" stroke-width="2" opacity=".5"/></svg>`;
+  }
+  const cx=size/2, cy=size/2;
+  const maxR = size/2 - 16;
+  const gap = maxR / Math.max(rings.length, 1);
+  let parts = [];
+  // draw outermost (most recent) first, innermost (oldest) last, so earlier
+  // rings paint on top and stay visible at the center - oldest = core, like a real tree
+  for(let i=rings.length-1; i>=0; i--){
+    const ring = rings[i];
+    const nums = [];
+    for(let k=0;k<ring.seed_hash.length;k+=2) nums.push(parseInt(ring.seed_hash.substr(k,2),16));
+    const baseR = gap * (i+1);
+    const consistency = (ring.consistency_pct||70)/100;
+    const thickness = gap * (0.55 + consistency*0.4);
+    const sentNorm = ring.sentiment_arc==='rising' ? 0.85 : ring.sentiment_arc==='volatile' ? 0.35 : ring.sentiment_arc==='falling' ? 0.25 : 0.6;
+    const hue = ((speciesHue||0.3) + (nums[0]/255-0.5)*0.08 + 1) % 1;
+    const sat = 0.28 + sentNorm*0.4;
+    const light = 0.32 + sentNorm*0.32;
+    const rgb = rootprintHslToRgb(hue, sat, light);
+    // genuine directional lean - thick on the side that was strong, not a perfect circle
+    const leanAngle = (nums[1]/255) * Math.PI*2;
+    const leanStrength = (1-consistency) * gap * 0.9 + 2;
+    const realPts=[];
+    const nPts=90;
+    for(let p=0;p<nPts;p++){
+      const a=(p/nPts)*Math.PI*2;
+      const lean = Math.cos(a-leanAngle)*leanStrength;
+      const wobble = Math.sin(a*(3+nums[2]%3)+nums[3])*1.4;
+      const r = baseR + lean + wobble;
+      realPts.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1));
+    }
+    parts.push(`<polygon points="${realPts.join(' ')}" fill="rgb(${rgb[0]},${rgb[1]},${rgb[2]})"/>`);
+  }
+  parts.push(`<circle cx="${cx}" cy="${cy}" r="4" fill="#4A3322"/>`);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${parts.join('')}</svg>`;
+}
+async function recordCompletedSprintRing(){
+  if(state.user._sprintRingRecorded) return;
+  const totalWeeks = state.roadmap.length;
+  const doneCount = state.roadmap.filter(r=>r.done).length;
+  if(!totalWeeks || doneCount < totalWeeks) return; // not actually finished
+  state.user._sprintRingRecorded = true;
+  try{
+    const species = state.user.treeSpecies || 'sprout';
+    const consistencyPct = Math.round((doneCount/totalWeeks)*100);
+    const arc = state.daysSinceLastPost!=null && state.daysSinceLastPost<1 ? 'rising' : 'steady';
+    const seedStr = `sprint|${state.user.callsign}|${species}|${totalWeeks}|${consistencyPct}|${Date.now()}`;
+    const seedHash = await rootprintSha256Hex(seedStr);
+    await Merros.collectionRings.saveCollectionRing({
+      species, weeksCompleted: totalWeeks, consistencyPct, sentimentArc: arc, seedHash
+    });
+    toast('A new ring joined your Collection 🌳');
+  }catch(e){ console.error('recordCompletedSprintRing failed', e); }
+}
 function rootprintHslToRgb(h,s,l){
   const hue2rgb=(p,q,t)=>{ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; };
   let r,g,b;
@@ -1581,6 +1740,12 @@ function screenSoloSetup(){
     <button class="btn btn-primary btn-block section" id="soloSetupBtn" onclick="submitSoloSetup()">Start my sprint →</button>
   </div>`;
 }
+function currentWeekLabel(){
+  const total = state.roadmap.length || 1;
+  const doneCount = state.roadmap.filter(r=>r.done).length;
+  const current = Math.min(doneCount+1, total);
+  return current+' of '+total;
+}
 function buildFinalRoadmap(totalWeeks){
   const ai = state.user.aiRoadmap;
   const weeks = [];
@@ -1817,70 +1982,103 @@ function pickTone(k){ state.user.tone=k; render(); }
 
 /* ===================== SCREEN 7: JOIN & FILL ===================== */
 function screenJoin(){
-  const filled=state.seats.filter(s=>s.status==='filled').length;
+  if(state.user.isFounder && state.realPod) return screenFounderWaiting();
   return `<div class="app-shell">
     ${onboardTop('How you join',5,'tone')}
+    <h2 style="font-size:22px">How do you want to join?</h2>
+    <p class="muted small" style="margin-top:4px">Each path leads to a real pod with real people. Nothing here is simulated.</p>
+
     <div class="card section">
-      <div class="small" style="font-weight:700">Match me</div>
-      <p class="faint" style="margin-top:4px">We'll place you with three people who match your stage, location, track, and tone.</p>
-      <button class="btn btn-primary btn-block" style="margin-top:12px" onclick="findMatches()">Match me</button>
+      <div class="small" style="font-weight:700">🌱 Start a new pod</div>
+      <p class="faint" style="margin-top:4px">You'll be the first one in. Get an invite code to share, and wait for three real people to join you.</p>
+      <button class="btn btn-primary btn-block" style="margin-top:12px" id="startPodBtn" onclick="startNewPod()">Start a pod →</button>
     </div>
+
     <div class="card section">
-      <div class="small" style="font-weight:700">Use a pod code</div>
-      <div class="row gap" style="margin-top:10px"><input id="podCodeInput" placeholder="Enter pod code" style="max-width:160px"/><button class="btn btn-outline btn-sm" onclick="toast('No pod found with that code (demo)')">Join</button></div>
-    </div>
-    <div class="card section">
-      <div class="small" style="font-weight:700">${filled} of 4 seats filled</div>
-      <div class="stack" style="margin-top:14px">
-        ${state.seats.map((s,i)=>{
-          const filled_=s.status==='filled';
-          const label = s.handle ? (s.role==='you'?'You':s.handle) : 'Waiting for a member';
-          const initial = s.handle ? (s.role==='you'?'Y':s.handle[0].toUpperCase()) : '?';
-          return `
-          <div class="row gap" style="align-items:flex-start">
-            <div style="display:flex;flex-direction:column;align-items:center">
-              <div class="seat-circle ${filled_?'filled':'waiting'}">${initial}</div>
-              ${i<3?'<div class="seat-line"></div>':''}
-            </div>
-            <div class="small" style="padding-top:8px;font-weight:${filled_?'700':'500'};color:${filled_?'var(--ink)':'var(--ink-faint)'}">${label}</div>
-          </div>`;
-        }).join('')}
+      <div class="small" style="font-weight:700">🔑 Join with a pod code</div>
+      <p class="faint" style="margin-top:4px">Someone already started a pod and shared their code with you.</p>
+      <div class="row gap" style="margin-top:10px">
+        <input id="podCodeInput" placeholder="Enter pod code" style="max-width:160px" autocomplete="off"/>
+        <button class="btn btn-outline btn-sm" id="joinCodeBtn" onclick="joinWithCode()">Join</button>
       </div>
-      <p class="faint" style="margin-top:10px">Empty seats stay empty until a real person fills them.</p>
     </div>
-    <button class="btn btn-primary btn-block section" id="joinContinueBtn" onclick="${filled===4?"submitConfirmPod()":"toast('Still waiting on real people to join')"}">
-      ${filled===4?'Continue →':'Waiting for '+(4-filled)+' more'}
-    </button>
+
+    <div class="card section">
+      <div class="small" style="font-weight:700">🔀 Get matched</div>
+      <p class="faint" style="margin-top:4px">We'll look for a real pod with an open seat that fits your stage, track, and tone.</p>
+      <button class="btn btn-outline btn-block" style="margin-top:12px" id="matchMeBtn" onclick="matchMeToPod()">Find me a pod →</button>
+    </div>
+
     ${onboardFooter(5)}
   </div>`;
 }
-function setJoinMethod(m){ state.user.joinMethod=m; render(); }
-function findMatches(){
-  state.seats[2]={handle:'K_T', role:'matched', status:'filled'};
-  state.seats[3]={handle:'RitaO', role:'matched', status:'filled'};
-  toast('Matched with K_T and RitaO');
-  render();
-}
-async function submitConfirmPod(){
-  const btn=document.getElementById('joinContinueBtn');
-  if(btn){ btn.disabled=true; btn.textContent='Creating your pod…'; }
+async function startNewPod(){
+  const btn = document.getElementById('startPodBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Starting your pod…'; }
   try{
     const {pod, member} = await Merros.pods.createPod({
       track: state.user.track, track_key: state.user.trackKey, tone: state.user.tone, plan: state.user.plan
     });
-    state.realPod = pod;
-    state.realMember = member;
-    state.podInviteCode = pod.invite_code;
+    state.realPod = pod; state.realMember = member; state.podInviteCode = pod.invite_code;
+    state.user.isFounder = true;
     const totalWeeks = SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'];
     state.roadmap = buildFinalRoadmap(totalWeeks);
-    const weeks = state.roadmap.map(r=>({week:r.w, label:r.label}));
-    await Merros.roadmap.saveRoadmap(member.id, weeks);
+    await Merros.roadmap.saveRoadmap(member.id, state.roadmap.map(r=>({week:r.w, label:r.label})));
+    render();
+  }catch(e){
+    console.error(e);
+    toast(e && e.message ? e.message : 'Could not start your pod. Try again.');
+    if(btn){ btn.disabled=false; btn.textContent='Start a pod →'; }
+  }
+}
+async function joinWithCode(){
+  const code = document.getElementById('podCodeInput').value.trim();
+  if(!code){ toast('Enter a pod code first'); return; }
+  const btn = document.getElementById('joinCodeBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Joining…'; }
+  try{
+    const {pod, member} = await Merros.pods.joinPodByCode(code);
+    state.realPod = pod; state.realMember = member; state.podInviteCode = pod.invite_code;
+    state.user.isFounder = false;
     go('done');
   }catch(e){
     console.error(e);
-    toast(e && e.message ? e.message : 'Could not create your pod. Try again.');
-    if(btn){ btn.disabled=false; btn.textContent='Continue →'; }
+    toast('No pod found with that code. Check it and try again.');
+    if(btn){ btn.disabled=false; btn.textContent='Join'; }
   }
+}
+async function matchMeToPod(){
+  const btn = document.getElementById('matchMeBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Looking…'; }
+  try{
+    const openPods = await Merros.pods.findOpenPod();
+    if(!openPods.length){
+      toast('No open pods right now - try starting one instead');
+      if(btn){ btn.disabled=false; btn.textContent='Find me a pod →'; }
+      return;
+    }
+    const target = openPods[0];
+    const member = await Merros.pods.joinPod(target.id);
+    state.realPod = target; state.realMember = member; state.podInviteCode = target.invite_code;
+    state.user.isFounder = false;
+    go('done');
+  }catch(e){
+    console.error(e);
+    toast('Could not find a match right now. Try again.');
+    if(btn){ btn.disabled=false; btn.textContent='Find me a pod →'; }
+  }
+}
+function screenFounderWaiting(){
+  return `<div class="app-shell center">
+    <div class="eyebrow" style="margin-top:14px">You started this pod 🌱</div>
+    <h2 style="font-size:24px;margin-top:6px">Share this code with three people</h2>
+    <div class="card section" style="max-width:320px;margin-left:auto;margin-right:auto">
+      <div class="eyebrow center">Your pod code</div>
+      <div style="font-size:32px;font-weight:800;letter-spacing:.08em;margin-top:8px;color:var(--green)">${state.podInviteCode}</div>
+    </div>
+    <p class="small muted section" style="max-width:420px;margin-left:auto;margin-right:auto">Empty seats stay empty until real people join. You can continue to your dashboard now and invite people whenever you're ready.</p>
+    <button class="btn btn-primary btn-block section" onclick="go('done')">Continue to my dashboard →</button>
+  </div>`;
 }
 
 /* ===================== SCREEN 9: DONE ===================== */
@@ -1923,7 +2121,7 @@ function screenDone(){
 }
 function toggleRoadmapWeek(w){
   const item = state.roadmap.find(r=>r.w===w);
-  if(item){ item.done = !item.done; render(); }
+  if(item){ item.done = !item.done; render(); recordCompletedSprintRing(); }
 }
 
 /* ===================== SCREEN 10: DASHBOARD ===================== */
@@ -1948,10 +2146,17 @@ function screenDashboard(){
   const focusWho = focusMsg ? focusMsg.who : 'AM_99';
   return `<div class="app-shell">
     <div class="row between">
-      <div class="eyebrow">Week 2 of 12 · 🌿 Sprout</div>
+      <div class="eyebrow">Week ${currentWeekLabel()} · 🌿 Sprout</div>
       <div class="pill-toggle"><span class="pill ${state.dashView==='podmate'?'active':''}" onclick="setDashView('podmate')">Podmate</span><span class="pill ${state.dashView==='anchor'?'active':''}" onclick="setDashView('anchor')">Anchor view</span></div>
     </div>
     <h2 style="font-size:24px;margin-top:6px">Welcome back, @${state.user.callsign}</h2>
+
+    <div class="card section center" id="dashboardTreeVisual">
+      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(state.user.treeSpecies||'sprout',72)}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
+      <p class="small" style="margin-top:8px;font-weight:700">Your tree is growing</p>
+      ${state.user.isFounder ? '<div class="faint" style="margin-top:4px">🌱 You started this pod</div>' : ''}
+      ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
+    </div>
 
     <div class="card section">
       <div class="small" style="font-weight:700">Weekly Focus</div>
@@ -1983,11 +2188,12 @@ function screenDashboard(){
 
     <div class="section">
       <div class="small" style="font-weight:700;margin-bottom:8px">Quick actions</div>
-      <div class="grid grid-4">
+      <div class="grid grid-4" style="grid-template-columns:repeat(2,1fr);gap:8px">
         <button class="btn btn-outline btn-sm" onclick="go('theWeek')">The Week</button>
         <button class="btn btn-outline btn-sm" onclick="go('pod')">Pod Channel</button>
         <button class="btn btn-outline btn-sm" onclick="setPodSub('members');go('pod')">Members</button>
         <button class="btn btn-outline btn-sm" onclick="go('journal')">Journal</button>
+        <button class="btn btn-outline btn-sm" onclick="go('myCollection')">My Collection</button>
       </div>
     </div>
 
@@ -2008,10 +2214,11 @@ function screenSoloDashboard(){
     <div class="eyebrow">Solo Sprint · ${name}</div>
     <h2 style="font-size:24px;margin-top:6px">Welcome back, @${state.user.callsign}</h2>
 
-    <div class="card section center">
-      <div class="tree-anim">${treeImg(treeIcon,72)}</div>
+    <div class="card section center" id="dashboardTreeVisual">
+      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(treeIcon,72)}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
       <p class="small" style="margin-top:8px;font-weight:700">Your ${name} is growing</p>
       <p class="faint" style="margin-top:2px">${goals.length} goal${goals.length===1?'':'s'} · Week 1</p>
+      ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
     </div>
 
     <div class="card section">
@@ -2037,6 +2244,7 @@ function screenSoloDashboard(){
       <div class="grid grid-2">
         <button class="btn btn-outline btn-sm" onclick="go('theWeek')">Your Roadmap</button>
         <button class="btn btn-outline btn-sm" onclick="go('journal')">Journal</button>
+        <button class="btn btn-outline btn-sm" onclick="go('myCollection')">My Collection</button>
       </div>
     </div>
 
@@ -2057,7 +2265,7 @@ function screenSoloDashboard(){
 function dashboardAnchor(){
   return `<div class="app-shell">
     <div class="row between">
-      <div class="eyebrow">Week 2 of 12 · 🌿 Sprout</div>
+      <div class="eyebrow">Week ${currentWeekLabel()} · 🌿 Sprout</div>
       <div class="pill-toggle"><span class="pill ${state.dashView==='podmate'?'active':''}" onclick="setDashView('podmate')">Podmate</span><span class="pill ${state.dashView==='anchor'?'active':''}" onclick="setDashView('anchor')">Anchor view</span></div>
     </div>
     <h2 style="font-size:24px;margin-top:6px">⚓ You're leading this week.</h2>
@@ -2090,6 +2298,78 @@ function dashboardAnchor(){
   </div>
   ${bottomNav('dashboard')}`;
 }
+function triggerWateringAnimation(){
+  const wasDeepWilt = state.daysSinceLastPost != null && state.daysSinceLastPost >= 3;
+  state.daysSinceLastPost = 0;
+  const container = document.getElementById('dashboardTreeVisual');
+  if(!container) return; // not on a screen with a tree visible right now
+  const treeEl = container.querySelector('.tree-anim');
+  if(!treeEl) return;
+  treeEl.classList.remove('tree-watered','tree-wilt-mild','tree-wilt-deep','tree-pruned');
+  void treeEl.offsetWidth;
+
+  if(wasDeepWilt){
+    // Recovery sequence: pruning swipe reveals the restored tree, a sun-flash and
+    // rising steam replace the plain rain, and this tree keeps a permanent small
+    // scar knot marking that it came back from a real setback.
+    treeEl.classList.add('tree-pruned');
+    for(let i=0;i<4;i++){
+      const bud = document.createElement('div');
+      bud.className = 'fresh-bud';
+      bud.style.left = (25+Math.random()*50)+'%';
+      bud.style.top = (10+Math.random()*30)+'%';
+      bud.style.animationDelay = (Math.random()*0.3)+'s';
+      container.appendChild(bud);
+      setTimeout(()=>bud.remove(), 900);
+    }
+    const flash = document.createElement('div');
+    flash.className = 'recovery-sunflash';
+    container.appendChild(flash);
+    setTimeout(()=>flash.remove(), 1700);
+    for(let i=0;i<5;i++){
+      const wisp = document.createElement('div');
+      wisp.className = 'steam-wisp';
+      wisp.style.left = (30+Math.random()*40)+'%';
+      wisp.style.animationDelay = (0.2+Math.random()*0.5)+'s';
+      container.appendChild(wisp);
+      setTimeout(()=>wisp.remove(), 2200);
+    }
+    state.user.hasRecoveredFromSetback = true;
+    setTimeout(()=>treeEl.classList.remove('tree-pruned'), 700);
+  } else {
+    const dropCount = 7;
+    for(let i=0;i<dropCount;i++){
+      const drop = document.createElement('div');
+      drop.className = 'rain-drop';
+      drop.style.left = (20 + Math.random()*60) + '%';
+      drop.style.animationDelay = (Math.random()*0.35) + 's';
+      container.appendChild(drop);
+      setTimeout(()=>drop.remove(), 1200);
+    }
+    treeEl.classList.add('tree-watered');
+    setTimeout(()=>treeEl.classList.remove('tree-watered'), 1500);
+  }
+  render();
+}
+function triggerCanopyRustle(){
+  if(state.daysSinceLastPost !== 0) return; // only celebrate a genuinely recent completion
+  if(state._rustleShownToday) return;
+  state._rustleShownToday = true;
+  const container = document.getElementById('dashboardTreeVisual');
+  if(!container) return;
+  const treeEl = container.querySelector('.tree-anim');
+  if(!treeEl) return;
+  treeEl.classList.add('tree-rustle');
+  for(let i=0;i<4;i++){
+    const seed = document.createElement('div');
+    seed.className = 'golden-seed';
+    seed.style.left = (30+Math.random()*40)+'%';
+    seed.style.animationDelay = (0.15+Math.random()*0.4)+'s';
+    container.appendChild(seed);
+    setTimeout(()=>seed.remove(), 1400);
+  }
+  setTimeout(()=>treeEl.classList.remove('tree-rustle'), 1000);
+}
 async function postMicroline(){
   const v=document.getElementById('microlineInput').value.trim();
   if(!v){toast('Write a line first');return;}
@@ -2098,12 +2378,14 @@ async function postMicroline(){
     try{
       await Merros.checkins.postCheckin(state.realPod.id, state.realPod.current_week||1, v, state.status, 'microline');
       toast('Micro-line posted');
+      triggerWateringAnimation();
       await loadPodData();
     }catch(e){ console.error(e); toast('Could not post. Try again.'); }
     return;
   }
   state.podFeed.unshift({who:state.user.callsign, tag:'', status:state.status, text:v});
   toast('Micro-line posted (demo)');
+  triggerWateringAnimation();
   render();
 }
 function setStatus(s){ state.status=s; toast('Status set'); render(); }
@@ -2116,7 +2398,7 @@ function postInnovation(){ const v=document.getElementById('innovInput').value.t
 function screenTheWeek(){
   return `<div class="app-shell">
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
-    <div class="eyebrow" style="margin-top:10px">The week · Week 2 of 12</div>
+    <div class="eyebrow" style="margin-top:10px">The week · Week ${currentWeekLabel()}</div>
     <div class="card section">
       <div class="small" style="font-weight:700">Your daily micro-line</div>
       <textarea id="microlineInput2" style="margin-top:10px">${state.microline||'Rewrote the CV draft. Three pages. Feels cleaner.'}</textarea>
@@ -2148,12 +2430,14 @@ async function postMicroline2(){
     try{
       await Merros.checkins.postCheckin(state.realPod.id, state.realPod.current_week||1, v, state.status, 'microline');
       toast('Micro-line posted');
+      triggerWateringAnimation();
       await loadPodData();
     }catch(e){ console.error(e); toast('Could not post. Try again.'); }
     return;
   }
   state.podFeed.unshift({who:state.user.callsign,tag:'',status:state.status,text:v});
   toast('Micro-line posted (demo)');
+  triggerWateringAnimation();
   render();
 }
 function postCheckin(){ const v=document.getElementById('checkinInput').value.trim(); if(!v){toast('Write your check-in first');return;} state.channel.unshift({who:state.user.callsign,when:'just now',text:'Sunday check-in: '+v}); toast('Check-in posted'); go('pod'); }
@@ -2382,15 +2666,25 @@ function postCommons(){
 /* ===================== SCREEN 18: THE PULSE ===================== */
 const REACTIONS = [['witness','Witness'],['celebrate','Celebrate'],['support','Support'],['acknowledge','Acknowledge']];
 function screenPulse(){
+  const hour = new Date().getHours();
+  const isDay = hour >= 6 && hour < 19;
+  const stars = isDay ? '' : Array.from({length:18}).map(()=>{
+    const top = Math.random()*90, left = Math.random()*100, delay = (Math.random()*2.4).toFixed(1);
+    return `<span class="celestial-star" style="top:${top}%;left:${left}%;animation-delay:${delay}s"></span>`;
+  }).join('');
   return `<div class="app-shell">
-    <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
-    <div class="eyebrow" style="margin-top:10px">The Root Network</div>
-    <h2 style="font-size:22px">📡 What people are doing. Show up for your pod.</h2>
+    <div class="root-network-sky ${isDay?'day':'night'}">
+      <div class="${isDay?'celestial-sun':'celestial-moon'}"></div>
+      ${stars}
+      <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
+      <div class="eyebrow" style="margin-top:10px">The Root Network</div>
+      <h2 style="font-size:22px">📡 What people are doing. Show up for your pod.</h2>
+    </div>
     <div class="stack gap12 section">
       ${state.pulse.map((p,i)=>`
         <div class="card">
           ${p.week ? `
-            <div class="small" style="font-weight:700">@${p.who} · Week ${p.week} of 12 · ${p.track}</div>
+            <div class="small" style="font-weight:700">@${p.who} · Week ${p.week} · ${p.track}</div>
             <div class="small" style="margin-top:6px;font-style:italic">"${p.text}"</div>
           ` : `<div class="small">${p.icon||'📝'} ${p.text}</div>`}
           <div class="row gap wrap" style="margin-top:10px">
@@ -2458,6 +2752,38 @@ function saveJournal(){
 }
 
 /* ===================== SCREEN 20: SETTINGS ===================== */
+/* ===================== SCREEN: MY COLLECTION (real trunk, real rings) ===================== */
+function screenMyCollection(){
+  return `<div class="app-shell center">
+    <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
+    <div class="eyebrow" style="margin-top:10px">My Collection</div>
+    <h2 style="font-size:22px">Every ring is a sprint you finished.</h2>
+    <div class="card section" id="myCollectionTrunkArea">
+      <p class="faint">Loading your collection…</p>
+    </div>
+  </div>
+  ${bottomNav('dashboard')}`;
+}
+async function loadMyCollectionTrunk(){
+  const area = document.getElementById('myCollectionTrunkArea');
+  if(!area) return;
+  try{
+    const rings = await Merros.collectionRings.getMyCollectionRings();
+    const selected = TREE_SPECIES.find(s=>s.key===state.user.treeSpecies);
+    const hue = ROOTPRINT_SPECIES_HUES[selected?selected.key:'sprout'] || 0.3;
+    if(!rings.length){
+      area.innerHTML = `<div class="center">${rootprintRenderTrunkSVG([], hue, 240)}<p class="faint section">Finish your first sprint to grow your first ring.</p></div>`;
+      return;
+    }
+    area.innerHTML = `<div class="center">${rootprintRenderTrunkSVG(rings, hue, 280)}
+      <p class="small section" style="font-weight:700">${rings.length} ring${rings.length===1?'':'s'} · ${rings.length} completed sprint${rings.length===1?'':'s'}</p>
+      <p class="faint">The center is your first. The outer edge is today.</p></div>`;
+  }catch(e){
+    console.error('loadMyCollectionTrunk failed', e);
+    area.innerHTML = `<p class="faint">Could not load your collection right now.</p>`;
+  }
+}
+
 function screenSettings(){
   const s=state.settings;
   function sw(key,label,sub){
@@ -2710,6 +3036,30 @@ function submitGoalContribution(){
   if(mine) mine[1]++; else g.contributors.push([state.user.callsign,1]);
   toast('Contribution posted');
   render();
+  if(g.current >= g.target){ recordChapterGoalRings(g); }
+}
+async function recordChapterGoalRings(g){
+  if(g._ringsRecorded) return;
+  g._ringsRecorded = true;
+  try{
+    const seedStr = `chaptergoal|${state.chapter.name}|${g.title}|${g.contributors.length}|${Date.now()}`;
+    const seedHash = await rootprintSha256Hex(seedStr);
+    // A ring for the Chapter's own shared trunk - its collective history
+    await Merros.collectionRings.saveChapterRing({
+      chapterId: state.chapter.id || 1, goalTitle: g.title,
+      contributorCount: g.contributors.length, seedHash
+    });
+    // A personal ring for the current member, since they genuinely contributed
+    const species = state.user.treeSpecies || 'sprout';
+    const myContribution = g.contributors.find(c=>c[0]===state.user.callsign);
+    const consistencyPct = myContribution ? Math.min(100, Math.round((myContribution[1]/g.target)*100)) : 50;
+    const mySeedStr = `chaptergoal-personal|${state.user.callsign}|${g.title}|${Date.now()}`;
+    const mySeedHash = await rootprintSha256Hex(mySeedStr);
+    await Merros.collectionRings.saveCollectionRing({
+      species, weeksCompleted: 1, consistencyPct, sentimentArc: 'rising', seedHash: mySeedHash
+    });
+    toast('Your Chapter finished a shared goal - a new ring for everyone 🌳');
+  }catch(e){ console.error('recordChapterGoalRings failed', e); }
 }
 
 /* ===================== SCREEN 26: HOST DASHBOARD ===================== */
@@ -2755,7 +3105,7 @@ const Screens = {
   dashboard: screenDashboard, theWeek: screenTheWeek, pod: podHub, noticeBoard: screenNoticeBoard,
   commons: screenCommons, pulse: screenPulse, journal: screenJournal, settings: screenSettings,
   browseChapters: screenBrowseChapters, chapter: chapterHub, createChapter: screenCreateChapter,
-  chapterGoal: screenChapterGoal,
+  chapterGoal: screenChapterGoal, myCollection: screenMyCollection,
   hostDash: screenHostDash
 };
 function render(){

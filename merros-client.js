@@ -103,9 +103,7 @@ async function joinPodByCode(invite_code) {
   return { pod, member };
 }
 async function findOpenPod(matchLifeStage) {
-  // Pods with fewer than 4 filled members, optionally filtered by a shared life-stage member
-  const { data, error } = await sb.rpc('noop'); // placeholder if you add a Postgres function later
-  // Simple client-side approach: fetch pods and their member counts
+  // Pods with fewer than 4 filled members
   const { data: pods, error: pErr } = await sb
     .from('pods')
     .select('*, pod_members(count)')
@@ -212,6 +210,35 @@ async function joinWaitlist(email, plan = 'Fellow') {
   const { error } = await sb.from('waitlist_signups').insert({ email, plan_interested: plan });
   if (error) throw error;
   return true;
+}
+
+/* ---------------------------------------------------------------- COLLECTION RINGS */
+async function saveCollectionRing({ species, weeksCompleted, consistencyPct, sentimentArc, seedHash }) {
+  const user = await getUser();
+  const { data, error } = await sb.from('collection_rings').insert({
+    profile_id: user.id, species, weeks_completed: weeksCompleted,
+    consistency_pct: consistencyPct, sentiment_arc: sentimentArc, seed_hash: seedHash,
+  }).select().single();
+  if (error) throw error;
+  return data;
+}
+async function getMyCollectionRings() {
+  const user = await getUser();
+  const { data, error } = await sb.from('collection_rings').select('*').eq('profile_id', user.id).order('created_at', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+async function saveChapterRing({ chapterId, goalTitle, contributorCount, seedHash }) {
+  const { data, error } = await sb.from('chapter_rings').insert({
+    chapter_id: chapterId, goal_title: goalTitle, contributor_count: contributorCount, seed_hash: seedHash,
+  }).select().single();
+  if (error) throw error;
+  return data;
+}
+async function getChapterRings(chapterId) {
+  const { data, error } = await sb.from('chapter_rings').select('*').eq('chapter_id', chapterId).order('created_at', { ascending: true });
+  if (error) throw error;
+  return data;
 }
 
 /* ---------------------------------------------------------------- ROOTPRINT */
@@ -340,6 +367,7 @@ window.Merros = {
   notices: { postNotice, getNotices },
   waitlist: { joinWaitlist },
   rootprints: { saveRootPrint, getMyRootPrints, getRootPrintById },
+  collectionRings: { saveCollectionRing, getMyCollectionRings, saveChapterRing, getChapterRings },
   channel: { postChannelMessage, getChannelMessages, subscribeToChannel },
   chapters: { createChapter, listChapters, joinChapter, getChapterMembers, postChapterNotice, getChapterNotices },
   journal: { saveJournalEntry, getJournalEntries },
