@@ -446,7 +446,16 @@ nav.top{padding:20px 0;}
 .btn-primary{box-shadow:0 6px 16px -6px rgba(79,138,74,.45);}
 .btn-primary:hover{box-shadow:0 9px 20px -6px rgba(79,138,74,.55);transform:translateY(-1px);}
 .btn:active{transform:scale(.96);}
-.choice-card{position:relative;transition:transform .12s,background .12s,border-color .12s;}
+.choice-card{position:relative;transition:transform .12s,background .12s,border-color .12s,color .12s;}
+.goal-chip{transition:transform .15s cubic-bezier(.34,1.56,.64,1),background .15s,color .15s;}
+.goal-chip:active{transform:scale(.93);}
+.goal-chip.selected{transform:scale(1.04);box-shadow:0 3px 10px -3px rgba(0,0,0,.25);}
+.sprint-calendar{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
+.cal-dow{font-size:11px;color:var(--ink-faint);font-weight:700;padding:2px 0;}
+.cal-day{font-size:12.5px;padding:6px 0;border-radius:8px;color:var(--ink-soft);}
+.cal-day.in-sprint{background:var(--green-light);color:var(--ink);font-weight:600;}
+.cal-day.today{background:var(--green);color:#fff;font-weight:800;}
 .choice-card:active{transform:scale(.97);}
 .choice-card.selected{border-width:2px;font-weight:700;}
 .bg-blob{position:fixed;border-radius:50%;filter:blur(50px);opacity:.32;z-index:-1;pointer-events:none;animation:floatBlob 10s ease-in-out infinite;}
@@ -1492,16 +1501,20 @@ async function recheckSession(){
 
 /* ===================== SCREEN 2: YOUR FIRST SPRINT ===================== */
 const GOAL_CATEGORIES=[
-  {name:'Career & Money', goals:['Land a job','Build a business','Relocate abroad','Scholarship or admission','Build wealth','Get a promotion','Career pivot']},
-  {name:'Health & Wellness', goals:['Move daily','Eat well','Sleep better','Run a 5K/10K/Half','Build strength','Meditate / journal','Quit or reduce a habit']},
-  {name:'Creativity & Learning', goals:['Write a book','Learn a creative skill','Read 12 books','Learn a language','Learn to code','Start a podcast / YouTube','Learn to draw / paint']},
-  {name:'Life & People', goals:['Build a network','Clear admin backlog','Deepen relationships','Find a partner','Parent better','Declutter and organize','Volunteer or give back']},
+  {name:'Career & Money', goals:['Land a job','Build a business','Relocate abroad','Scholarship or admission','Build wealth','Get a promotion','Career pivot','Pay off debt','Start a side hustle','Boost my savings']},
+  {name:'Health & Wellness', goals:['Move daily','Eat healthier','Sleep better','Get fitter','Build strength','Meditate / journal','Quit or reduce a habit','Improve my mental health','Drink less alcohol']},
+  {name:'Creativity & Learning', goals:['Write a book','Learn a creative skill','Read more books','Learn a language','Learn to code','Start a podcast / YouTube','Learn to draw / paint','Learn something new']},
+  {name:'Life & People', goals:['Build a network','Clear admin backlog','Deepen relationships','Find a partner','Parent better','Declutter and organize','Volunteer or give back','Make new friends']},
+  {name:'Travel & Adventure', goals:['Travel more','Visit a new country','Take a solo trip','Explore my own city']},
+  {name:'Digital Wellness', goals:['Spend less time on social media','Do a digital detox','Be more present','Protect my focus']},
 ];
 const GOAL_CATEGORY_COLORS = {
-  'Career & Money': {accent:'var(--gold)', bg:'var(--gold-light)'},
-  'Health & Wellness': {accent:'var(--green)', bg:'var(--green-light)'},
-  'Creativity & Learning': {accent:'#a24f53', bg:'var(--rose-light)'},
-  'Life & People': {accent:'var(--terracotta)', bg:'var(--terracotta-light)'},
+  'Career & Money': {accent:'#B8860B', bg:'#FBEFD3', chipBg:'#FDF6E7'},
+  'Health & Wellness': {accent:'var(--green)', bg:'var(--green-light)', chipBg:'#F2F8EE'},
+  'Creativity & Learning': {accent:'#a24f53', bg:'var(--rose-light)', chipBg:'#FCEFF0'},
+  'Life & People': {accent:'#C1642F', bg:'var(--terracotta-light)', chipBg:'#FBEEE4'},
+  'Travel & Adventure': {accent:'#2E7D8C', bg:'#DCF0F3', chipBg:'#EEF9FA'},
+  'Digital Wellness': {accent:'#6B5B95', bg:'#E9E3F5', chipBg:'#F4F1FA'},
 };
 function screenGoalPicker(){
   const selected = state.user.sprintGoals || [];
@@ -1511,12 +1524,12 @@ function screenGoalPicker(){
     <h2 style="font-size:24px;margin-top:6px">Pick 1–3 goals. These become your sprint.</h2>
     <div class="section">
       ${GOAL_CATEGORIES.map(cat=>{
-        const c = GOAL_CATEGORY_COLORS[cat.name] || {accent:'var(--green)', bg:'var(--bg-alt)'};
+        const c = GOAL_CATEGORY_COLORS[cat.name] || {accent:'var(--green)', bg:'var(--bg-alt)', chipBg:'#fff'};
         return `
         <div class="card section" style="border-left:4px solid ${c.accent}">
           <div class="eyebrow" style="color:${c.accent}">${cat.name}</div>
           <div class="row wrap gap section" style="margin-top:10px">
-            ${cat.goals.map(g=>`<div class="choice-card chip ${selected.includes(g)?'selected':''}" style="padding:8px 14px;width:auto;${selected.includes(g)?`background:${c.bg};border-color:${c.accent};color:${c.accent}`:''}" onclick="toggleGoalChip('${g.replace(/'/g,"\\'")}')">${g}</div>`).join('')}
+            ${cat.goals.map(g=>`<div class="choice-card chip goal-chip ${selected.includes(g)?'selected':''}" style="padding:9px 15px;width:auto;background:${selected.includes(g)?c.accent:c.chipBg};border-color:${c.accent};color:${selected.includes(g)?'#fff':c.accent}" onclick="toggleGoalChip('${g.replace(/'/g,"\\'")}')">${g}</div>`).join('')}
           </div>
         </div>`;}).join('')}
       <div class="card section">
@@ -1637,11 +1650,14 @@ function screenSprintSetup(){
       <div class="card section">
         <h2 style="font-size:18px">Your roadmap</h2>
         <p class="muted small" style="margin-top:4px">${totalWeeks} weeks · ${podMode==='solo'?'Solo':'Pod'} · ${goals.length} goal${goals.length===1?'':'s'} · ${name}</p>
+        ${renderSprintCalendarHTML(totalWeeks, state.user._calendarMonthOffset||0)}
+        ${renderThisWeekPanel(goalPlans, goals)}
         <button class="btn btn-outline btn-block section" id="aiRoadmapBtn" onclick="generateAIRoadmap()" ${state.user._aiRoadmapLoading?'disabled':''}>
           ${state.user._aiRoadmapLoading ? 'Thinking through your weeks…' : (goalPlans ? '✨ Regenerate with AI' : '✨ Generate my roadmap with AI')}
         </button>
         ${goalPlans ? `
         <div class="goal-timeline section">
+          <div class="faint" style="margin-bottom:8px">Full sprint overview</div>
           ${goalPlans.map((g,gi)=>`
             <div class="goal-timeline-block">
               <div class="small" style="font-weight:700">Goal ${gi+1}: ${g.goal}</div>
@@ -1682,7 +1698,64 @@ function screenSprintSetup(){
 }
 function pickSprintDuration(key){ state.user.sprintDuration=key; state.user.aiRoadmap=null; renderKeepScroll(); }
 function pickPodMode(m){ state.user.podMode=m; state.user.plan = m==='solo' ? 'Solo' : 'Pod'; renderKeepScroll(); }
+function renderSprintCalendarHTML(totalWeeks, monthOffset=0){
+  const today = new Date();
+  const viewDate = new Date(today.getFullYear(), today.getMonth()+monthOffset, 1);
+  const year = viewDate.getFullYear(), month = viewDate.getMonth();
+  const monthName = viewDate.toLocaleString('default',{month:'long', year:'numeric'});
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const sprintStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const sprintEnd = new Date(sprintStart); sprintEnd.setDate(sprintEnd.getDate() + totalWeeks*7 - 1);
+  let cells = [];
+  for(let i=0;i<firstDay;i++) cells.push('<div></div>');
+  for(let d=1; d<=daysInMonth; d++){
+    const cellDate = new Date(year, month, d);
+    const isToday = cellDate.toDateString()===today.toDateString();
+    const inSprint = cellDate >= sprintStart && cellDate <= sprintEnd;
+    cells.push(`<div class="cal-day ${isToday?'today':''} ${inSprint?'in-sprint':''}">${d}</div>`);
+  }
+  return `<div class="sprint-calendar section">
+    <div class="row between" style="align-items:center">
+      <button class="btn btn-ghost btn-sm" onclick="shiftCalendarMonth(-1)">← ${new Date(year,month-1,1).toLocaleString('default',{month:'short'})}</button>
+      <div class="small" style="font-weight:700">${monthName}</div>
+      <button class="btn btn-ghost btn-sm" onclick="shiftCalendarMonth(1)">${new Date(year,month+1,1).toLocaleString('default',{month:'short'})} →</button>
+    </div>
+    <div class="cal-grid" style="margin-top:10px">
+      ${['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}
+    </div>
+    <div class="cal-grid">${cells.join('')}</div>
+    <p class="faint" style="margin-top:8px">Your sprint starts today and runs through ${sprintEnd.toLocaleDateString('default',{month:'short',day:'numeric'})}.</p>
+  </div>`;
+}
+function shiftCalendarMonth(delta){
+  state.user._calendarMonthOffset = (state.user._calendarMonthOffset||0) + delta;
+  renderKeepScroll();
+}
+function renderThisWeekPanel(goalPlans, goals){
+  let lines = [];
+  if(goalPlans){
+    goalPlans.forEach(g=>{
+      const m = (g.milestones||[]).find(ms=>{
+        const range = String(ms.weeks).split(/[-–]/).map(s=>parseInt(s.trim(),10));
+        const lo=range[0], hi = range.length>1 && !isNaN(range[1]) ? range[1] : range[0];
+        return 1>=lo && 1<=hi;
+      });
+      if(m) lines.push(`<b>${g.goal}:</b> ${m.text}`);
+    });
+  } else {
+    (goals||[]).forEach(g=>lines.push(`<b>${g}:</b> Sprout stage - just getting started`));
+  }
+  return `<div class="card section" style="background:var(--bg-alt);border:none">
+    <div class="small" style="font-weight:700">This Week · Week 1 of ${state.roadmap.length||'?'}</div>
+    <div class="stack gap8 section">
+      ${lines.map(l=>`<div class="small">◆ ${l}</div>`).join('') || '<div class="faint">Generate your roadmap with AI to see this week\u2019s focus.</div>'}
+    </div>
+    <p class="faint" style="margin-top:8px">Daily: One line · Sunday: Weekly reflection</p>
+  </div>`;
+}
 function submitSprintSetup(){
+  state.user.sprintStartDate = new Date().toISOString();
   go('treeAwaits');
 }
 
