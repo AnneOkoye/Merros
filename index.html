@@ -139,7 +139,7 @@ textarea{resize:vertical;min-height:70px;}
 .bottom-nav{max-width:var(--shell-w);margin:0 auto;display:flex;justify-content:space-around;padding:8px 6px;}
 .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:var(--ink-soft);cursor:pointer;
   padding:6px 10px;border-radius:9px;font-weight:600;}
-.nav-item .ni-ico{font-size:17px;}
+.nav-item .ni-ico{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;}
 .nav-item.active{color:var(--green);background:var(--green-light);}
 .side-nav{display:none;}
 @media(min-width:768px){
@@ -152,7 +152,7 @@ textarea{resize:vertical;min-height:70px;}
     cursor:pointer;margin-bottom:28px;padding:0 8px;}
   .side-nav .side-item{display:flex;align-items:center;gap:12px;font-size:14.5px;font-weight:600;color:var(--ink-soft);
     cursor:pointer;padding:11px 12px;border-radius:10px;}
-  .side-nav .side-item .ni-ico{font-size:18px;width:22px;text-align:center;}
+  .side-nav .side-item .ni-ico{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;}
   .side-nav .side-item.active{color:var(--green);background:var(--green-light);}
   .side-nav .side-item:hover:not(.active){background:var(--bg-alt);}
   body:has(.side-nav) .app-shell{margin-left:220px;max-width:calc(var(--shell-w) - 40px);padding-bottom:28px;}
@@ -273,10 +273,6 @@ nav.top{padding:20px 0;}
 .hero-roots-line{position:relative;height:2px;max-width:280px;margin:14px auto 0;background:linear-gradient(90deg,transparent,var(--terracotta) 20%,var(--gold) 50%,var(--terracotta) 80%,transparent);opacity:.55;}
 @keyframes treeSway{0%,100%{transform:rotate(-5deg);}50%{transform:rotate(5deg);}}
 .tree-anim{display:inline-block;transform-origin:bottom center;animation:treeSway 2.8s ease-in-out infinite;}
-@keyframes thanosDissolve{0%{opacity:1;filter:none;transform:scale(1);}55%{opacity:.45;filter:blur(1.5px) saturate(.35);transform:scale(.95);}100%{opacity:0;filter:blur(3px) saturate(0);transform:scale(.88);}}
-.tree-disintegrating{animation:thanosDissolve 1s ease-in forwards !important;}
-@keyframes ashParticleFloat{0%{opacity:.9;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(.15);}}
-.ash-bit{position:absolute;width:4px;height:4px;border-radius:50%;background:#8B9A7C;pointer-events:none;animation:ashParticleFloat 1s ease-out forwards;}
 @keyframes treeMaterialize{0%{opacity:0;transform:scale(.82);filter:blur(3px);}100%{opacity:1;transform:scale(1);filter:blur(0);}}
 .tree-materializing{animation:treeMaterialize .7s cubic-bezier(.34,1.4,.64,1) .05s both, treeSway 2.8s ease-in-out .75s infinite;}
 .identity-layout{display:flex;gap:24px;align-items:flex-start;}
@@ -604,7 +600,7 @@ function go(screen){
   if(state.realPod && (screen==='dashboard'||screen==='pod'||screen==='theWeek')) loadPodData();
   if(screen==='dashboard') computeTreeVitality();
   if(screen==='myCollection') setTimeout(loadMyCollectionTrunk, 50);
-  if(screen==='sprintSetup') setTimeout(loadMyRoadmapPins, 50);
+  if(screen==='sprintSetup'||screen==='dashboard') setTimeout(loadMyRoadmapPins, 50);
 }
 async function computeTreeVitality(){
   try{
@@ -730,13 +726,13 @@ function onboardFooter(step){
 function bottomNav(active){
   const isSolo = state.user.plan==='Solo';
   const items=[
-    ['dashboard','🏠','Dashboard'],
-    isSolo ? ['pulse','🌐','Root Network'] : ['pod','💬','Pod'],
-    ['journal','📖','Journal'],['settings','⚙️','Settings']
+    ['dashboard','home','Dashboard'],
+    isSolo ? ['pulse','globe','Root Network'] : ['pod','chat','Pod'],
+    ['journal','book','Journal'],['settings','gear','Settings']
   ];
   return `<div class="bottom-nav-wrap"><div class="bottom-nav">
     ${items.map(([k,i,l])=>`<div class="nav-item ${active===k?'active':''}" onclick="go('${k}')">
-      <span class="ni-ico">${i}</span><span>${l}</span></div>`).join('')}
+      <span class="ni-ico">${svgIcon(i,18,'currentColor')}</span><span>${l}</span></div>`).join('')}
   </div></div>
   <nav class="side-nav">
     <div class="side-brand" onclick="go('dashboard')">
@@ -744,7 +740,7 @@ function bottomNav(active){
       Merros
     </div>
     ${items.map(([k,i,l])=>`<div class="side-item ${active===k?'active':''}" onclick="go('${k}')">
-      <span class="ni-ico">${i}</span><span>${l}</span></div>`).join('')}
+      <span class="ni-ico">${svgIcon(i,18,'currentColor')}</span><span>${l}</span></div>`).join('')}
   </nav>`;
 }
 
@@ -966,6 +962,117 @@ function rootprintRenderSVG(hashHex, speciesHue, size=220){
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${parts.join('')}</svg>`;
 }
 
+/* ---- RootPrint MEDALLION: crisp, 3D-styled wood-and-brass disc with real
+   curved text rings (your callsign, hash, consistency, sentiment arc),
+   draggable and spinnable with momentum, like a roulette wheel. ---- */
+function rootprintCurvedTextRing(id, cx, cy, r, text, opts={}){
+  const {fontSize=8.5, color='#3A2A18', mono=false} = opts;
+  const sweepPath = `M ${cx} ${cy-r} A ${r} ${r} 0 1 1 ${(cx-0.02).toFixed(2)} ${cy-r}`;
+  return `<path id="${id}" d="${sweepPath}" fill="none"/>
+    <text font-size="${fontSize}" fill="${color}" letter-spacing="1.6" style="font-family:${mono?"'Courier New',monospace":"Georgia,serif"};font-weight:700">
+      <textPath href="#${id}" startOffset="1%">${text}</textPath>
+    </text>`;
+}
+function rootprintRenderMedallionSVG(hashHex, opts={}){
+  const {
+    number=1, callsign='you', speciesHue=0.3,
+    weeksCompleted=0, consistencyPct=0, sentimentArc='steady', dateLabel='',
+  } = opts;
+  const size = 320, cx=size/2, cy=size/2;
+  const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
+  const woodHue = 26 + (nums[0]%12);
+  const uid = 'rp'+hashHex.slice(0,6);
+  let ringParts=[];
+  const numRings=14;
+  for(let i=0;i<numRings;i++){
+    const rr = (size/2-6) * (1 - i/numRings*0.94);
+    const light = 34 + (i%3)*4 + (nums[i%nums.length]%6);
+    ringParts.push(`<circle cx="${cx}" cy="${cy}" r="${rr.toFixed(1)}" fill="none" stroke="hsl(${woodHue},38%,${light}%)" stroke-width="${(1.4+(nums[(i+3)%nums.length]%3)*0.6).toFixed(1)}" opacity="${(0.55+(i%4)*0.1).toFixed(2)}"/>`);
+  }
+  const textRings = [
+    { r: size/2-32, mono:false, text: `MOMENT · ${weeksCompleted} WEEK${weeksCompleted===1?'':'S'} OF JOURNALING · GOAL MET · ${sentimentArc.toUpperCase()} REFLECTION · &#160;&#160;&#160;&#160;` },
+    { r: size/2-54, mono:false, text: `USER · @${(callsign||'YOU').toUpperCase()} · CONSISTENCY · ${consistencyPct}% · ${dateLabel} · &#160;&#160;&#160;&#160;` },
+    { r: size/2-76, mono:true,  text: `HASH · ${hashHex.slice(0,10).toUpperCase()}···${hashHex.slice(-6).toUpperCase()} · VERIFIED · &#160;&#160;&#160;&#160;` },
+  ];
+  const textSvg = textRings.map((tr,i)=> rootprintCurvedTextRing(`${uid}path${i}`, cx, cy, tr.r, tr.text, {mono:tr.mono}) ).join('');
+  return `
+  <div class="rootprint-medallion" id="${uid}" style="width:${size}px;height:${size}px;max-width:100%;position:relative;touch-action:none;cursor:grab;user-select:none;margin:0 auto">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;width:100%;height:auto;filter:drop-shadow(0 10px 22px rgba(40,26,10,.35)) drop-shadow(0 2px 4px rgba(40,26,10,.25))">
+      <defs>
+        <radialGradient id="${uid}wood" cx="50%" cy="42%" r="70%">
+          <stop offset="0%" stop-color="hsl(${woodHue},42%,52%)"/>
+          <stop offset="70%" stop-color="hsl(${woodHue},40%,38%)"/>
+          <stop offset="100%" stop-color="hsl(${woodHue},44%,24%)"/>
+        </radialGradient>
+        <radialGradient id="${uid}brass" cx="45%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#F5DFA0"/><stop offset="55%" stop-color="#C9A24B"/><stop offset="100%" stop-color="#8A6A24"/>
+        </radialGradient>
+        <radialGradient id="${uid}metal" cx="42%" cy="32%" r="70%">
+          <stop offset="0%" stop-color="#EDEDED"/><stop offset="45%" stop-color="#B9B9B9"/><stop offset="100%" stop-color="#6E6E6E"/>
+        </radialGradient>
+      </defs>
+      <g id="${uid}rotor">
+        <circle cx="${cx}" cy="${cy}" r="${size/2-4}" fill="url(#${uid}wood)"/>
+        ${ringParts.join('')}
+        ${textSvg}
+        <circle cx="${cx}" cy="${cy}" r="${size/2-96}" fill="none" stroke="url(#${uid}brass)" stroke-width="4"/>
+        <circle cx="${cx}" cy="${cy}" r="${size/2-102}" fill="url(#${uid}metal)" stroke="#4a4a4a" stroke-width="1"/>
+        <g transform="translate(${cx},${cy-14}) scale(0.72)">
+          <path d="M0 28V6M0 6C-10 6 -16 -2 -16 -12C-8 -12 0 -4 0 6ZM0 6C10 6 16 -2 16 -12C8 -12 0 -4 0 6Z" fill="none" stroke="#2E2A22" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/>
+        </g>
+        <text x="${cx}" y="${cy+34}" text-anchor="middle" font-size="10.5" font-weight="800" letter-spacing="1.5" fill="#2E2A22" style="font-family:'Courier New',monospace">ROOTPRINT #${String(number).padStart(3,'0')}</text>
+      </g>
+    </svg>
+  </div>`;
+}
+// Drag-to-spin, roulette-style: rotor follows the pointer while dragging,
+// then decelerates with friction after release. uid must match the id used
+// by rootprintRenderMedallionSVG above; call this once, right after the
+// medallion's HTML is actually in the DOM.
+function initRootPrintSpin(uid){
+  const el = document.getElementById(uid);
+  const rotor = document.getElementById(uid+'rotor');
+  if(!el || !rotor) return;
+  const cx = el.clientWidth/2, cy = el.clientHeight/2;
+  let angle=0, dragging=false, lastAngle=0, lastT=0, velocity=0, momentumId=null;
+  function getPointerAngle(x,y){
+    const rect = el.getBoundingClientRect();
+    const dx = x-(rect.left+rect.width/2), dy = y-(rect.top+rect.height/2);
+    return Math.atan2(dy,dx)*180/Math.PI;
+  }
+  function applyRotation(){ rotor.setAttribute('transform', `rotate(${angle.toFixed(2)} ${cx} ${cy})`); }
+  function stopMomentum(){ if(momentumId){ cancelAnimationFrame(momentumId); momentumId=null; } }
+  function runMomentum(){
+    velocity *= 0.955;
+    angle += velocity;
+    applyRotation();
+    if(Math.abs(velocity) > 0.03) momentumId = requestAnimationFrame(runMomentum);
+  }
+  el.addEventListener('pointerdown', e=>{
+    stopMomentum(); dragging=true; el.setPointerCapture(e.pointerId);
+    lastAngle = getPointerAngle(e.clientX,e.clientY); lastT = performance.now();
+    el.style.cursor='grabbing';
+  });
+  el.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const a = getPointerAngle(e.clientX,e.clientY);
+    let delta = a-lastAngle;
+    if(delta>180) delta-=360; if(delta<-180) delta+=360;
+    angle += delta;
+    const now = performance.now(), dt = Math.max(now-lastT,1);
+    velocity = delta/(dt/16.7);
+    lastAngle=a; lastT=now;
+    applyRotation();
+  });
+  function release(){
+    if(!dragging) return;
+    dragging=false; el.style.cursor='grab';
+    if(Math.abs(velocity) > 0.5) runMomentum();
+  }
+  el.addEventListener('pointerup', release);
+  el.addEventListener('pointercancel', release);
+}
+
 function svgIcon(name, size=28, color='currentColor'){
   const icons = {
     calendar: `<rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="${color}" stroke-width="1.6"/><line x1="3" y1="9" x2="21" y2="9" stroke="${color}" stroke-width="1.6"/><line x1="7" y1="3" x2="7" y2="7" stroke="${color}" stroke-width="1.6" stroke-linecap="round"/><line x1="17" y1="3" x2="17" y2="7" stroke="${color}" stroke-width="1.6" stroke-linecap="round"/>`,
@@ -988,10 +1095,21 @@ function svgIcon(name, size=28, color='currentColor'){
     person: `<circle cx="12" cy="8" r="3.5" fill="none" stroke="${color}" stroke-width="1.6"/><path d="M5 20c0-4 3-6.5 7-6.5S19 16 19 20" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round"/>`,
     people: `<circle cx="8.5" cy="8" r="3" fill="none" stroke="${color}" stroke-width="1.5"/><circle cx="15.5" cy="8" r="3" fill="none" stroke="${color}" stroke-width="1.5"/><path d="M3 19c0-3.2 2.4-5.3 5.5-5.3S14 15.8 14 19" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/><path d="M11 19c.3-2.8 2.5-4.6 5-4.6S20.7 16.2 21 19" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>`,
     community: `<circle cx="9" cy="10" r="3" fill="none" stroke="${color}" stroke-width="1.5"/><circle cx="16" cy="7" r="2.4" fill="none" stroke="${color}" stroke-width="1.5"/><path d="M4 19c0-3 2.3-5 5-5s5 2 5 5" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/><path d="M14 19c.2-2.4 1.9-4 3.5-4 1.8 0 3.4 1.6 3.5 4" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>`,
+    home: `<path d="M4 11.5L12 4l8 7.5" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.3V20h12v-9.7" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.7 20v-5.2h4.6V20" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/>`,
+    chat: `<path d="M4 5h16v11.5H8.5L4 20.5V5Z" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/>`,
+    book: `<path d="M4 5.3c2-1 5.2-1 8 .1v13.3c-2.8-1.1-6-1.1-8-.1V5.3Z" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 5.3c-2-1-5.2-1-8 .1v13.3c2.8-1.1 6-1.1 8-.1V5.3Z" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/>`,
+    gear: `<circle cx="12" cy="12" r="3.1" fill="none" stroke="${color}" stroke-width="1.6"/><path d="M12 2.6v3M12 18.4v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M2.6 12h3M18.4 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="${color}" stroke-width="1.6" stroke-linecap="round"/>`,
+    globe: `<circle cx="12" cy="12" r="9" fill="none" stroke="${color}" stroke-width="1.6"/><ellipse cx="12" cy="12" rx="4" ry="9" fill="none" stroke="${color}" stroke-width="1.6"/><line x1="3" y1="12" x2="21" y2="12" stroke="${color}" stroke-width="1.6"/>`,
   };
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24">${icons[name]||''}</svg>`;
 }
 const TREE_IMAGE_SPECIES = new Set(['oak','sakura','baobab','pine','maple','willow','redwood','olive','palm','ash']);
+// Visible growth: the dashboard tree gets a little bigger with every micro-line
+// logged this sprint, capping out so it doesn't run away visually.
+function dashboardTreeSize(base=96){
+  const n = state.user._microlineCountThisSprint || 0;
+  return Math.min(base + n*3, base + 70);
+}
 function treeImg(key, size=40){
   if(!TREE_IMAGE_SPECIES.has(key)) return svgIcon(key, size);
   return `<img src="/${key}.png" alt="${key}" style="width:${size}px;height:${size}px;object-fit:contain;display:inline-block;vertical-align:middle"/>`;
@@ -1433,27 +1551,105 @@ function checkPasswordMatch(){
 }
 function renderKeepScroll(){ render(); }
 function pickTreeSpecies(key){ state.user.treeSpecies = state.user.treeSpecies===key ? null : key; renderKeepScroll(); }
+/* HD pixel-dissolve: rasterizes the current tree SVG onto an offscreen
+   canvas, reads its actual pixel colors, and animates each sampled pixel
+   as its own small glowing fragment drifting outward/upward with a slight
+   rotation and easing — so it's the tree's real shape and color breaking
+   apart, not generic dots. Slower and clearer than a simple particle burst. */
+function disintegrateTreeHD(container, svgEl, durationMs, onDone){
+  const rect = svgEl.getBoundingClientRect();
+  const w = Math.max(1, rect.width), h = Math.max(1, rect.height);
+  const scale = 3; // sample at 3x for crisp, HD-density fragments
+  const svgData = new XMLSerializer().serializeToString(svgEl);
+  const svgBlob = new Blob([svgData], {type:'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+  img.onload = function(){
+    const off = document.createElement('canvas');
+    off.width = w*scale; off.height = h*scale;
+    const octx = off.getContext('2d');
+    octx.drawImage(img, 0, 0, w*scale, h*scale);
+    URL.revokeObjectURL(url);
+    let data;
+    try{ data = octx.getImageData(0,0,w*scale,h*scale).data; }
+    catch(e){ console.error('pixel read failed, falling back', e); onDone && onDone(); return; }
+    const particles = [];
+    const step = 3;
+    for(let y=0;y<h*scale;y+=step){
+      for(let x=0;x<w*scale;x+=step){
+        const idx=(y*w*scale+x)*4;
+        const a=data[idx+3];
+        if(a<40) continue;
+        const r=data[idx],g=data[idx+1],b=data[idx+2];
+        particles.push({
+          ox:x/scale, oy:y/scale,
+          vx:(Math.random()-0.5)*1.6,
+          vy:-Math.random()*1.3-0.4,
+          size:(step/scale)*(0.9+Math.random()*0.7),
+          color:`${r},${g},${b}`,
+          delay: (y/(h*scale))*0.25 + Math.random()*0.3, // roots hold a beat longer than the crown
+          rot: Math.random()*Math.PI*2,
+          rotSpeed:(Math.random()-0.5)*0.09,
+        });
+      }
+    }
+    const live = document.createElement('canvas');
+    live.width = w*scale; live.height = h*scale;
+    live.style.cssText = `position:absolute;left:0;top:0;width:${w}px;height:${h}px;pointer-events:none;`;
+    container.style.position = 'relative';
+    container.appendChild(live);
+    svgEl.style.opacity = '0';
+    const lctx = live.getContext('2d');
+    lctx.scale(scale,scale);
+    const start = performance.now();
+    function frame(now){
+      const t = (now-start)/durationMs;
+      lctx.clearRect(0,0,w,h);
+      let anyLeft = false;
+      for(const p of particles){
+        const pt = (t - p.delay) / Math.max(0.001, 1-p.delay);
+        if(pt <= 0){
+          anyLeft = true;
+          lctx.fillStyle = `rgb(${p.color})`;
+          lctx.fillRect(p.ox-p.size/2, p.oy-p.size/2, p.size, p.size);
+          continue;
+        }
+        if(pt >= 1) continue;
+        anyLeft = true;
+        const ease = pt*pt;
+        const px = p.ox + p.vx*ease*70;
+        const py = p.oy + p.vy*ease*70 - ease*ease*24;
+        lctx.save();
+        lctx.globalAlpha = Math.max(0, 1-pt);
+        lctx.translate(px, py);
+        lctx.rotate(p.rot + p.rotSpeed*ease*50);
+        lctx.shadowColor = `rgba(${p.color},.7)`;
+        lctx.shadowBlur = 3;
+        lctx.fillStyle = `rgb(${p.color})`;
+        const sz = p.size*(1-ease*0.45);
+        lctx.fillRect(-sz/2,-sz/2,sz,sz);
+        lctx.restore();
+      }
+      if(t < 1.1 && anyLeft){
+        requestAnimationFrame(frame);
+      } else {
+        live.remove();
+        onDone && onDone();
+      }
+    }
+    requestAnimationFrame(frame);
+  };
+  img.onerror = function(){ URL.revokeObjectURL(url); onDone && onDone(); };
+  img.src = url;
+}
 /* Change tree mid-sprint — allowed once per sprint, with a disintegrate/
    materialize transition instead of an instant swap. */
 function beginTreeChange(newKey){
   if(state.user._treeChangedThisSprint){ toast("You've already changed your tree this sprint."); return; }
   if(newKey === state.user.treeSpecies){ toast('That\'s already your tree'); return; }
   const holder = document.getElementById('settingsTreeVisual');
-  if(!holder){ state.user.treeSpecies=newKey; state.user._treeChangedThisSprint=true; renderKeepScroll(); return; }
-  const svgEl = holder.querySelector('svg');
-  if(svgEl) svgEl.classList.add('tree-disintegrating');
-  for(let i=0;i<24;i++){
-    const bit=document.createElement('span');
-    bit.className='ash-bit';
-    const angle=Math.random()*Math.PI*2, dist=25+Math.random()*65;
-    bit.style.left=(35+Math.random()*30)+'%';
-    bit.style.top=(30+Math.random()*35)+'%';
-    bit.style.setProperty('--px',(Math.cos(angle)*dist)+'px');
-    bit.style.setProperty('--py',(Math.sin(angle)*dist-25)+'px');
-    bit.style.animationDelay=(Math.random()*0.3)+'s';
-    holder.appendChild(bit);
-  }
-  setTimeout(()=>{
+  const svgEl = holder ? holder.querySelector('svg') : null;
+  const finish = ()=>{
     state.user.treeSpecies = newKey;
     state.user._treeChangedThisSprint = true;
     state.user._treeJustMaterialized = true;
@@ -1461,7 +1657,9 @@ function beginTreeChange(newKey){
     renderKeepScroll();
     const sel = TREE_SPECIES.find(s=>s.key===newKey);
     toast('Your tree is now a ' + (sel?sel.name:newKey));
-  }, 1000);
+  };
+  if(!holder || !svgEl){ finish(); return; }
+  disintegrateTreeHD(holder, svgEl, 2200, finish);
 }
 function toggleAuthMode(){ state._authMode = state._authMode==='login' ? 'signup' : 'login'; render(); }
 function checkCallsign(){
@@ -2392,7 +2590,7 @@ function screenDashboard(){
     <h2 style="font-size:24px;margin-top:6px">Welcome back, @${state.user.callsign}</h2>
 
     <div class="card section center" id="dashboardTreeVisual">
-      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(state.user.treeSpecies||'sprout',96)}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
+      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(state.user.treeSpecies||'sprout',dashboardTreeSize(96))}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
       <p class="small" style="margin-top:8px;font-weight:700">Your tree is growing</p>
       ${state.user.isFounder ? '<div class="faint" style="margin-top:4px">🌱 You started this pod</div>' : ''}
       ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
@@ -2405,6 +2603,11 @@ function screenDashboard(){
     </div>
 
     ${podMembersCard()}
+
+    ${renderTodayCardHTML()}
+    ${renderThisWeekCardHTML(SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'])}
+    ${renderSprintCalendarHTML(SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'], state.user._calendarMonthOffset||0)}
+    ${renderPinListHTML()}
 
     <div class="card section">
       <div class="small" style="font-weight:700">What are you working on today?</div>
@@ -2455,7 +2658,7 @@ function screenSoloDashboard(){
     <h2 style="font-size:24px;margin-top:6px">Welcome back, @${state.user.callsign}</h2>
 
     <div class="card section center" id="dashboardTreeVisual">
-      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(treeIcon,96)}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
+      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(treeIcon,dashboardTreeSize(96))}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
       <p class="small" style="margin-top:8px;font-weight:700">Your ${name} is growing</p>
       <p class="faint" style="margin-top:2px">${goals.length} goal${goals.length===1?'':'s'} · Week 1</p>
       ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
@@ -2467,6 +2670,11 @@ function screenSoloDashboard(){
         ${goals.map(g=>`<div class="small">◆ ${g}</div>`).join('') || '<div class="faint">No goals set yet</div>'}
       </div>
     </div>
+
+    ${renderTodayCardHTML()}
+    ${renderThisWeekCardHTML(SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'])}
+    ${renderSprintCalendarHTML(SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'], state.user._calendarMonthOffset||0)}
+    ${renderPinListHTML()}
 
     <div class="card section">
       <div class="small" style="font-weight:700">What are you working on today?</div>
@@ -2482,7 +2690,6 @@ function screenSoloDashboard(){
     <div class="section">
       <div class="small" style="font-weight:700;margin-bottom:8px">Quick actions</div>
       <div class="grid grid-2">
-        <button class="btn btn-outline btn-sm" onclick="go('theWeek')">Your Roadmap</button>
         <button class="btn btn-outline btn-sm" onclick="go('journal')">Journal</button>
         <button class="btn btn-outline btn-sm" onclick="go('myCollection')">My Collection</button>
       </div>
@@ -2589,7 +2796,10 @@ function triggerWateringAnimation(){
     treeEl.classList.add('tree-watered');
     setTimeout(()=>treeEl.classList.remove('tree-watered'), 1500);
   }
-  render();
+  // Deferred so the transient rain/glow/recovery elements actually get seen
+  // before a fresh render (which rebuilds the whole screen from state and
+  // would otherwise wipe them out instantly).
+  setTimeout(render, wasDeepWilt ? 1800 : 1600);
 }
 function triggerCanopyRustle(){
   if(state.daysSinceLastPost !== 0) return; // only celebrate a genuinely recent completion
@@ -2614,6 +2824,7 @@ async function postMicroline(){
   const v=document.getElementById('microlineInput').value.trim();
   if(!v){toast('Write a line first');return;}
   state.microline=v;
+  state.user._microlineCountThisSprint = (state.user._microlineCountThisSprint||0) + 1;
   if(state.realPod){
     try{
       await Merros.checkins.postCheckin(state.realPod.id, state.realPod.current_week||1, v, state.status, 'microline');
@@ -2626,7 +2837,6 @@ async function postMicroline(){
   state.podFeed.unshift({who:state.user.callsign, tag:'', status:state.status, text:v});
   toast('Micro-line posted (demo)');
   triggerWateringAnimation();
-  render();
 }
 function setStatus(s){ state.status=s; toast('Status set'); render(); }
 function postFocus(){ const v=document.getElementById('focusInput').value.trim(); if(!v){toast('Write a focus first');return;} state.channel.unshift({who:state.user.callsign,when:'just now',text:'📌 Weekly focus: '+v}); toast('Posted to pod'); render(); }
@@ -2666,6 +2876,7 @@ async function postMicroline2(){
   const v=document.getElementById('microlineInput2').value.trim();
   if(!v){toast('Write a line first');return;}
   state.microline=v;
+  state.user._microlineCountThisSprint = (state.user._microlineCountThisSprint||0) + 1;
   if(state.realPod){
     try{
       await Merros.checkins.postCheckin(state.realPod.id, state.realPod.current_week||1, v, state.status, 'microline');
@@ -2678,7 +2889,6 @@ async function postMicroline2(){
   state.podFeed.unshift({who:state.user.callsign,tag:'',status:state.status,text:v});
   toast('Micro-line posted (demo)');
   triggerWateringAnimation();
-  render();
 }
 function postCheckin(){ const v=document.getElementById('checkinInput').value.trim(); if(!v){toast('Write your check-in first');return;} state.channel.unshift({who:state.user.callsign,when:'just now',text:'Sunday check-in: '+v}); toast('Check-in posted'); go('pod'); }
 
@@ -2918,7 +3128,7 @@ function screenPulse(){
       ${stars}
       <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
       <div class="eyebrow" style="margin-top:10px">The Root Network</div>
-      <h2 style="font-size:22px">📡 What people are doing. Show up for your pod.</h2>
+      <h2 style="font-size:22px">${state.user.plan==='Solo' ? "What everyone across Merros is doing right now." : "What people are doing. Show up for your pod."}</h2>
     </div>
     <div class="stack gap12 section">
       ${state.pulse.map((p,i)=>`
@@ -2975,13 +3185,22 @@ async function showRootPrintPreview(){
     weeksCompleted: entries.length, consistencyPct: entries.length ? 100 : 0,
     entries, witnessedMoments: 0,
   });
+  const uid = 'rp'+result.hash.slice(0,6);
+  const medallion = rootprintRenderMedallionSVG(result.hash, {
+    number: 1, callsign: state.user.callsign||'you', speciesHue: ROOTPRINT_SPECIES_HUES[species]||0.3,
+    weeksCompleted: result.stats.entryCount, consistencyPct: entries.length?100:0,
+    sentimentArc: result.stats.sentimentArc,
+    dateLabel: new Date().toLocaleDateString('default',{month:'short',year:'numeric'}).toUpperCase(),
+  });
   area.innerHTML = `
     <div class="center">
-      ${result.svg}
-      <p class="small" style="font-weight:700;margin-top:8px">RootPrint (preview)</p>
+      ${medallion}
+      <p class="small" style="font-weight:700;margin-top:10px">RootPrint (preview)</p>
       <p class="faint">${result.stats.entryCount} entr${result.stats.entryCount===1?'y':'ies'} · sentiment: ${result.stats.sentimentArc}</p>
       <p class="faint" style="margin-top:4px;font-family:monospace;font-size:11px">${result.hash.slice(0,16)}…</p>
+      <p class="faint" style="margin-top:8px">🖱️ Drag to spin it</p>
     </div>`;
+  setTimeout(()=>initRootPrintSpin(uid), 30);
 }
 function saveJournal(){
   const v=document.getElementById('journalInput').value.trim();
