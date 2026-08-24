@@ -271,8 +271,14 @@ nav.top{padding:20px 0;}
 .hero-trees-row{position:relative;display:flex;justify-content:center;flex-wrap:wrap;gap:20px;font-size:34px;}
 .hero-tree-item{position:relative;z-index:1;}
 .hero-roots-line{position:relative;height:2px;max-width:280px;margin:14px auto 0;background:linear-gradient(90deg,transparent,var(--terracotta) 20%,var(--gold) 50%,var(--terracotta) 80%,transparent);opacity:.55;}
-@keyframes treeSway{0%,100%{transform:rotate(-2.5deg);}50%{transform:rotate(2.5deg);}}
-.tree-anim{display:inline-block;transform-origin:bottom center;animation:treeSway 4.2s ease-in-out infinite;}
+@keyframes treeSway{0%,100%{transform:rotate(-5deg);}50%{transform:rotate(5deg);}}
+.tree-anim{display:inline-block;transform-origin:bottom center;animation:treeSway 2.8s ease-in-out infinite;}
+@keyframes thanosDissolve{0%{opacity:1;filter:none;transform:scale(1);}55%{opacity:.45;filter:blur(1.5px) saturate(.35);transform:scale(.95);}100%{opacity:0;filter:blur(3px) saturate(0);transform:scale(.88);}}
+.tree-disintegrating{animation:thanosDissolve 1s ease-in forwards !important;}
+@keyframes ashParticleFloat{0%{opacity:.9;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(.15);}}
+.ash-bit{position:absolute;width:4px;height:4px;border-radius:50%;background:#8B9A7C;pointer-events:none;animation:ashParticleFloat 1s ease-out forwards;}
+@keyframes treeMaterialize{0%{opacity:0;transform:scale(.82);filter:blur(3px);}100%{opacity:1;transform:scale(1);filter:blur(0);}}
+.tree-materializing{animation:treeMaterialize .7s cubic-bezier(.34,1.4,.64,1) .05s both, treeSway 2.8s ease-in-out .75s infinite;}
 .identity-layout{display:flex;gap:24px;align-items:flex-start;}
 @media(max-width:900px){.identity-layout{flex-direction:column;}}
 .identity-col{flex:1;min-width:0;}
@@ -722,8 +728,10 @@ function onboardFooter(step){
   </div>`;
 }
 function bottomNav(active){
+  const isSolo = state.user.plan==='Solo';
   const items=[
-    ['dashboard','🏠','Dashboard'],['pod','💬','Pod'],
+    ['dashboard','🏠','Dashboard'],
+    isSolo ? ['pulse','🌐','Root Network'] : ['pod','💬','Pod'],
     ['journal','📖','Journal'],['settings','⚙️','Settings']
   ];
   return `<div class="bottom-nav-wrap"><div class="bottom-nav">
@@ -1030,7 +1038,7 @@ function screenLanding(){
     <hr class="rule section" style="max-width:280px;margin-left:auto;margin-right:auto"/>
     <div class="hero-visual-box">
       <div class="hero-trees-row">
-        ${TREE_VARIANTS.map((v,i)=>`<span class="hero-tree-item tree-anim" style="animation-delay:${(i*0.6).toFixed(1)}s">${treeImg(v,76)}</span>`).join('')}
+        ${TREE_VARIANTS.map((v,i)=>`<span class="hero-tree-item tree-anim" style="animation-delay:${(i*0.6).toFixed(1)}s">${treeImg(v,96)}</span>`).join('')}
       </div>
       <div class="hero-roots-line"></div>
     </div>
@@ -1175,7 +1183,7 @@ function screenLanding(){
       <p class="section-sub">This is what a collection looks like. Yours starts empty.</p>
       <div class="forest-strip">
         <div class="collection-clearing">
-          ${['oak','sakura','baobab','pine'].map((sp,i)=>`<div class="clearing-tree tree-anim" style="animation-delay:${(i*0.5).toFixed(1)}s">${treeImg(sp,64)}</div>`).join('')}
+          ${['oak','sakura','baobab','pine'].map((sp,i)=>`<div class="clearing-tree tree-anim" style="animation-delay:${(i*0.5).toFixed(1)}s">${treeImg(sp,84)}</div>`).join('')}
         </div>
         <hr class="rule"/>
         <p class="small muted center">Every tree is a sprint you finished.</p>
@@ -1359,13 +1367,13 @@ function screenIdentity(){
           ${selected ? `
           <div class="card section" style="background:var(--bg-alt);border:none">
             <div class="eyebrow">${selected.name} (Selected)</div>
-            <div style="margin:8px 0" class="tree-anim">${treeImg(selected.icon,56)}</div>
+            <div style="margin:8px 0" class="tree-anim">${treeImg(selected.icon,74)}</div>
             <p class="small" style="font-style:italic">"${selected.lore}"</p>
           </div>` : `
           <p class="faint section">Pick a tree above, or leave it as the Sprout for now.</p>`}
         </div>
         <div class="card section plaque-card">
-          <div class="tree-anim">${treeImg(displayIcon,40)}</div>
+          <div class="tree-anim">${treeImg(displayIcon,54)}</div>
           <div>
             <div class="small" style="font-weight:700">${state.user.callsign || '···'}</div>
             <div class="faint">${displayEpithet} · Step 1 of 4</div>
@@ -1425,6 +1433,36 @@ function checkPasswordMatch(){
 }
 function renderKeepScroll(){ render(); }
 function pickTreeSpecies(key){ state.user.treeSpecies = state.user.treeSpecies===key ? null : key; renderKeepScroll(); }
+/* Change tree mid-sprint — allowed once per sprint, with a disintegrate/
+   materialize transition instead of an instant swap. */
+function beginTreeChange(newKey){
+  if(state.user._treeChangedThisSprint){ toast("You've already changed your tree this sprint."); return; }
+  if(newKey === state.user.treeSpecies){ toast('That\'s already your tree'); return; }
+  const holder = document.getElementById('settingsTreeVisual');
+  if(!holder){ state.user.treeSpecies=newKey; state.user._treeChangedThisSprint=true; renderKeepScroll(); return; }
+  const svgEl = holder.querySelector('svg');
+  if(svgEl) svgEl.classList.add('tree-disintegrating');
+  for(let i=0;i<24;i++){
+    const bit=document.createElement('span');
+    bit.className='ash-bit';
+    const angle=Math.random()*Math.PI*2, dist=25+Math.random()*65;
+    bit.style.left=(35+Math.random()*30)+'%';
+    bit.style.top=(30+Math.random()*35)+'%';
+    bit.style.setProperty('--px',(Math.cos(angle)*dist)+'px');
+    bit.style.setProperty('--py',(Math.sin(angle)*dist-25)+'px');
+    bit.style.animationDelay=(Math.random()*0.3)+'s';
+    holder.appendChild(bit);
+  }
+  setTimeout(()=>{
+    state.user.treeSpecies = newKey;
+    state.user._treeChangedThisSprint = true;
+    state.user._treeJustMaterialized = true;
+    state.user._treeChangerOpen = false;
+    renderKeepScroll();
+    const sel = TREE_SPECIES.find(s=>s.key===newKey);
+    toast('Your tree is now a ' + (sel?sel.name:newKey));
+  }, 1000);
+}
 function toggleAuthMode(){ state._authMode = state._authMode==='login' ? 'signup' : 'login'; render(); }
 function checkCallsign(){
   const v=document.getElementById('callsignInput').value;
@@ -1693,7 +1731,7 @@ function screenSprintSetup(){
       </div>
       <div class="card section center">
         <div class="eyebrow">Your ${name} awaits</div>
-        <div style="margin:16px 0" class="tree-anim">${treeImg(treeIcon,130)}</div>
+        <div style="margin:16px 0" class="tree-anim">${treeImg(treeIcon,170)}</div>
         <p class="small">You chose the ${name}.</p>
         <p class="small" style="margin-top:8px;font-style:italic;max-width:480px;margin-left:auto;margin-right:auto">"${lore}"</p>
         <p class="small" style="margin-top:10px;max-width:520px;margin-left:auto;margin-right:auto">Your sprint works the same way. Each day you show up, you grow a root. Every completed week is a ring. Complete the sprint, and your ${name} joins your collection.</p>
@@ -1905,7 +1943,7 @@ function screenTreeAwaits(){
         const sy = Math.round(Math.sin(a*Math.PI/180)*62);
         return `<span class="reveal-sparkle" style="--sx:${sx}px;--sy:${sy}px;animation-delay:${(0.28+i*0.04).toFixed(2)}s"></span>`;
       }).join('')}
-      <div class="reveal-tree">${treeImg(treeIcon,100)}</div>
+      <div class="reveal-tree">${treeImg(treeIcon,130)}</div>
     </div>
     <p class="small">You chose the ${name}.</p>
     <p class="small section" style="font-style:italic;max-width:420px;margin-left:auto;margin-right:auto">"${lore}"</p>
@@ -2300,7 +2338,7 @@ function screenDone(){
     </div>` : ''}
     <div class="card section">
       <div class="small" style="font-weight:700">Your ${treeAwaitsName} tree</div>
-      <div class="center" style="margin-top:8px">${treeImg(treeAwaitsIcon,48)}</div>
+      <div class="center tree-anim" style="margin-top:8px">${treeImg(treeAwaitsIcon,64)}</div>
       <div class="badge badge-green center" style="display:block;text-align:center;margin-top:10px">Week 1 · Just started</div>
       <div class="section">
         <div class="eyebrow">Roots</div>
@@ -2354,7 +2392,7 @@ function screenDashboard(){
     <h2 style="font-size:24px;margin-top:6px">Welcome back, @${state.user.callsign}</h2>
 
     <div class="card section center" id="dashboardTreeVisual">
-      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(state.user.treeSpecies||'sprout',72)}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
+      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(state.user.treeSpecies||'sprout',96)}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
       <p class="small" style="margin-top:8px;font-weight:700">Your tree is growing</p>
       ${state.user.isFounder ? '<div class="faint" style="margin-top:4px">🌱 You started this pod</div>' : ''}
       ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
@@ -2417,7 +2455,7 @@ function screenSoloDashboard(){
     <h2 style="font-size:24px;margin-top:6px">Welcome back, @${state.user.callsign}</h2>
 
     <div class="card section center" id="dashboardTreeVisual">
-      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(treeIcon,72)}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
+      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(treeIcon,96)}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
       <p class="small" style="margin-top:8px;font-weight:700">Your ${name} is growing</p>
       <p class="faint" style="margin-top:2px">${goals.length} goal${goals.length===1?'':'s'} · Week 1</p>
       ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
@@ -2994,10 +3032,38 @@ function screenSettings(){
       <div class="switch ${s[key]?'on':''}" onclick="toggleSetting('${key}')"><div class="knob"></div></div>
     </div>`;
   }
+  const currentSpecies = TREE_SPECIES.find(sp=>sp.key===state.user.treeSpecies);
+  const treeChangeUsed = !!state.user._treeChangedThisSprint;
+  const changerOpen = !!state.user._treeChangerOpen;
+  const justMaterialized = !!state.user._treeJustMaterialized;
+  state.user._treeJustMaterialized = false; // one-shot flag, consumed on this render
   return `<div class="app-shell">
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
     <div class="eyebrow" style="margin-top:10px">Settings</div>
     <h2 style="font-size:22px">⚙️ Settings</h2>
+    <div class="card section">
+      <div class="small" style="font-weight:700">Your tree</div>
+      <div id="settingsTreeVisual" class="center" style="margin-top:10px;position:relative;min-height:70px">
+        <div class="tree-anim ${justMaterialized?'tree-materializing':''}">${treeImg(currentSpecies?currentSpecies.icon:'sprout',64)}</div>
+      </div>
+      <p class="faint center" style="margin-top:6px">${currentSpecies?currentSpecies.name:'Sprout'}</p>
+      ${treeChangeUsed
+        ? `<p class="faint" style="margin-top:10px">You've already changed your tree once this sprint. You'll get another change next sprint.</p>`
+        : changerOpen
+          ? `<div class="section">
+              <p class="faint" style="margin-bottom:8px">Pick a new tree. You get one change per sprint, and it's permanent once made.</p>
+              <div class="grid" style="grid-template-columns:repeat(5,1fr);gap:8px">
+                ${TREE_SPECIES.filter(sp=>sp.key!==state.user.treeSpecies).map(sp=>`
+                  <div class="choice-card center" style="padding:8px 4px;cursor:pointer" onclick="beginTreeChange('${sp.key}')">
+                    ${treeImg(sp.icon,30)}
+                    <div class="faint" style="margin-top:4px;font-size:10.5px">${sp.name}</div>
+                  </div>`).join('')}
+              </div>
+              <button class="btn btn-ghost btn-sm section" onclick="state.user._treeChangerOpen=false;renderKeepScroll()">Cancel</button>
+            </div>`
+          : `<button class="btn btn-outline btn-sm section" onclick="state.user._treeChangerOpen=true;renderKeepScroll()">Change my tree (once per sprint) →</button>`
+      }
+    </div>
     <div class="card section">
       <div class="small" style="font-weight:700">Privacy</div>
       ${sw('pulseVisible','Show my callsign in the Root Network','Off by default. Counts are shared either way.')}
