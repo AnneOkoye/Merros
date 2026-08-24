@@ -275,6 +275,12 @@ nav.top{padding:20px 0;}
 .tree-anim{display:inline-block;transform-origin:bottom center;animation:treeSway 2.8s ease-in-out infinite;}
 @keyframes treeMaterialize{0%{opacity:0;transform:scale(.82);filter:blur(3px);}100%{opacity:1;transform:scale(1);filter:blur(0);}}
 .tree-materializing{animation:treeMaterialize .7s cubic-bezier(.34,1.4,.64,1) .05s both, treeSway 2.8s ease-in-out .75s infinite;}
+.tree-shatter-frag{position:absolute;background-repeat:no-repeat;will-change:transform,opacity;transform-style:preserve-3d;}
+@keyframes treeShatterFly{
+  0%{transform:translate3d(0,0,0) rotateX(0) rotateY(0) rotateZ(0);opacity:1;}
+  70%{opacity:1;}
+  100%{transform:translate3d(var(--dx),var(--dy),var(--dz)) rotateX(var(--rx)) rotateY(var(--ry)) rotateZ(var(--rz));opacity:0;}
+}
 .identity-layout{display:flex;gap:24px;align-items:flex-start;}
 @media(max-width:900px){.identity-layout{flex-direction:column;}}
 .identity-col{flex:1;min-width:0;}
@@ -466,6 +472,17 @@ nav.top{padding:20px 0;}
   .cal-day-num{font-size:10.5px;}
   .cal-pin{font-size:8px;}
 }
+.roadmap-week-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
+.roadmap-day-pill{flex:1;min-width:38px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 2px;border-radius:10px;cursor:pointer;background:var(--bg-alt);transition:background .15s,transform .1s;}
+.roadmap-day-pill:active{transform:scale(.95);}
+.roadmap-day-pill.today{background:var(--green-light);}
+.roadmap-day-pill.selected{background:var(--green);}
+.roadmap-day-pill.selected .rdp-dow,.roadmap-day-pill.selected .rdp-num{color:#fff;}
+.roadmap-day-pill .rdp-dow{font-size:9.5px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;}
+.roadmap-day-pill .rdp-num{font-size:14px;font-weight:700;color:var(--ink);}
+.roadmap-day-pill .rdp-dot{width:5px;height:5px;border-radius:50%;background:var(--green-dark);}
+.roadmap-day-pill.selected .rdp-dot{background:#fff;}
 .choice-card:active{transform:scale(.97);}
 .choice-card.selected{border-width:2px;font-weight:700;}
 .bg-blob{position:fixed;border-radius:50%;filter:blur(50px);opacity:.32;z-index:-1;pointer-events:none;animation:floatBlob 10s ease-in-out infinite;}
@@ -597,12 +614,23 @@ function toast(msg){
 
 function go(screen){
   state.screen=screen; window.scrollTo(0,0); render(); document.getElementById('jumpSelect').value=screen;
-  if(state.realPod && (screen==='dashboard'||screen==='pod'||screen==='theWeek')) loadPodData();
-  if(screen==='dashboard') computeTreeVitality();
-  if(screen==='myCollection') setTimeout(loadMyCollectionTrunk, 50);
-  if(screen==='sprintSetup'||screen==='dashboard') setTimeout(loadMyRoadmapPins, 50);
+  // Collect whatever this screen needs to fetch and settle on ONE follow-up
+  // paint once it's all in, instead of each fetch independently repainting
+  // the whole screen the moment it happens to finish. That uncoordinated
+  // multi-repaint was the actual cause of the blinking/glitching.
+  const tasks = [];
+  if(state.realPod && (screen==='dashboard'||screen==='pod'||screen==='theWeek')) tasks.push(fetchPodDataQuiet());
+  if(screen==='dashboard') tasks.push(fetchTreeVitalityQuiet());
+  if(screen==='sprintSetup'||screen==='dashboard') tasks.push(fetchRoadmapPinsQuiet());
+  if(screen==='myCollection') setTimeout(loadMyCollectionTrunk, 50); // scoped to its own sub-area, not a full repaint — safe as-is
+  if(tasks.length){
+    Promise.all(tasks).then(()=>{
+      render();
+      if(screen==='dashboard') setTimeout(triggerCanopyRustle, 120);
+    });
+  }
 }
-async function computeTreeVitality(){
+async function fetchTreeVitalityQuiet(){
   try{
     let lastDate = null;
     if(state.user.plan==='Solo'){
@@ -613,9 +641,12 @@ async function computeTreeVitality(){
       if(mine.length) lastDate = new Date(mine[0].created_at);
     }
     state.daysSinceLastPost = lastDate ? Math.floor((Date.now()-lastDate.getTime())/86400000) : null;
-    render();
-    setTimeout(triggerCanopyRustle, 120);
   }catch(e){ console.error('computeTreeVitality failed', e); }
+}
+async function computeTreeVitality(){
+  await fetchTreeVitalityQuiet();
+  render();
+  setTimeout(triggerCanopyRustle, 120);
 }
 function wiltClass(){
   const d = state.daysSinceLastPost;
@@ -628,7 +659,7 @@ function wiltCaption(){
   if(d<3) return "It's been a couple of days - a quick line would help.";
   return "It's been a few days. Come water it whenever you're ready.";
 }
-async function loadPodData(){
+async function fetchPodDataQuiet(){
   if(!state.realPod) return;
   try{
     const [feed, seats, msgs] = await Promise.all([
@@ -639,9 +670,9 @@ async function loadPodData(){
     state.podFeed = feed.map(f=>({who: f.public_profiles?.callsign || '???', tag:'', status: f.status, text: f.text, created_at: f.created_at}));
     state.realSeats = seats;
     state.channel = msgs.slice().reverse().map(m=>({who: m.public_profiles?.callsign || '???', when: new Date(m.created_at).toLocaleString(), text: m.text}));
-    render();
   }catch(e){ console.error('loadPodData failed', e); }
 }
+async function loadPodData(){ await fetchPodDataQuiet(); render(); }
 async function boot(fromAuthAction){
   try{
     const user = await Merros.auth.getUser();
@@ -982,19 +1013,33 @@ function rootprintRenderMedallionSVG(hashHex, opts={}){
   const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
   const woodHue = 26 + (nums[0]%12);
   const uid = 'rp'+hashHex.slice(0,6);
+  // Real tree rings are never true circles — each year's ring is thicker on
+  // whichever side got more light/water, so the whole cross-section leans
+  // off-center. Every ring here gets its own hash-seeded lean direction,
+  // strength, and a little organic wobble instead of a plain <circle>.
   let ringParts=[];
   const numRings=14;
   for(let i=0;i<numRings;i++){
-    const rr = (size/2-6) * (1 - i/numRings*0.94);
+    const baseR = (size/2-6) * (1 - i/numRings*0.94);
     const light = 34 + (i%3)*4 + (nums[i%nums.length]%6);
-    ringParts.push(`<circle cx="${cx}" cy="${cy}" r="${rr.toFixed(1)}" fill="none" stroke="hsl(${woodHue},38%,${light}%)" stroke-width="${(1.4+(nums[(i+3)%nums.length]%3)*0.6).toFixed(1)}" opacity="${(0.55+(i%4)*0.1).toFixed(2)}"/>`);
+    const strokeW = (1.4+(nums[(i+3)%nums.length]%3)*0.6);
+    const opacity = (0.55+(i%4)*0.1).toFixed(2);
+    const leanAngle = (nums[(i*2)%nums.length]/255) * Math.PI*2;
+    const leanStrength = baseR * (0.05 + (nums[(i*2+1)%nums.length]/255)*0.09);
+    const wobFreq = 3 + (nums[(i*3+2)%nums.length]%4);
+    const wobAmp = baseR * 0.02 * (0.6 + (nums[(i*3+5)%nums.length]/255));
+    const phase = (nums[(i*5+7)%nums.length]/255) * Math.PI*2;
+    const pts = [];
+    const nPts = 72;
+    for(let p=0;p<nPts;p++){
+      const a = (p/nPts)*Math.PI*2;
+      const lean = Math.cos(a-leanAngle)*leanStrength;
+      const wobble = Math.sin(a*wobFreq+phase)*wobAmp;
+      const r = baseR + lean + wobble;
+      pts.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1));
+    }
+    ringParts.push(`<polygon points="${pts.join(' ')}" fill="none" stroke="hsl(${woodHue},38%,${light}%)" stroke-width="${strokeW.toFixed(1)}" opacity="${opacity}"/>`);
   }
-  const textRings = [
-    { r: size/2-32, mono:false, text: `MOMENT · ${weeksCompleted} WEEK${weeksCompleted===1?'':'S'} OF JOURNALING · GOAL MET · ${sentimentArc.toUpperCase()} REFLECTION · &#160;&#160;&#160;&#160;` },
-    { r: size/2-54, mono:false, text: `USER · @${(callsign||'YOU').toUpperCase()} · CONSISTENCY · ${consistencyPct}% · ${dateLabel} · &#160;&#160;&#160;&#160;` },
-    { r: size/2-76, mono:true,  text: `HASH · ${hashHex.slice(0,10).toUpperCase()}···${hashHex.slice(-6).toUpperCase()} · VERIFIED · &#160;&#160;&#160;&#160;` },
-  ];
-  const textSvg = textRings.map((tr,i)=> rootprintCurvedTextRing(`${uid}path${i}`, cx, cy, tr.r, tr.text, {mono:tr.mono}) ).join('');
   return `
   <div class="rootprint-medallion" id="${uid}" style="width:${size}px;height:${size}px;max-width:100%;position:relative;touch-action:none;cursor:grab;user-select:none;margin:0 auto">
     <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;width:100%;height:auto;filter:drop-shadow(0 10px 22px rgba(40,26,10,.35)) drop-shadow(0 2px 4px rgba(40,26,10,.25))">
@@ -1014,7 +1059,6 @@ function rootprintRenderMedallionSVG(hashHex, opts={}){
       <g id="${uid}rotor">
         <circle cx="${cx}" cy="${cy}" r="${size/2-4}" fill="url(#${uid}wood)"/>
         ${ringParts.join('')}
-        ${textSvg}
         <circle cx="${cx}" cy="${cy}" r="${size/2-96}" fill="none" stroke="url(#${uid}brass)" stroke-width="4"/>
         <circle cx="${cx}" cy="${cy}" r="${size/2-102}" fill="url(#${uid}metal)" stroke="#4a4a4a" stroke-width="1"/>
         <g transform="translate(${cx},${cy-14}) scale(0.72)">
@@ -1105,10 +1149,11 @@ function svgIcon(name, size=28, color='currentColor'){
 }
 const TREE_IMAGE_SPECIES = new Set(['oak','sakura','baobab','pine','maple','willow','redwood','olive','palm','ash']);
 // Visible growth: the dashboard tree gets a little bigger with every micro-line
-// logged this sprint, capping out so it doesn't run away visually.
-function dashboardTreeSize(base=96){
+// logged this sprint, capping out so it doesn't run away visually. Base 3x'd
+// per feedback that the tree was too small to actually appreciate.
+function dashboardTreeSize(base=288){
   const n = state.user._microlineCountThisSprint || 0;
-  return Math.min(base + n*3, base + 70);
+  return Math.min(base + n*9, base + 210);
 }
 function treeImg(key, size=40){
   if(!TREE_IMAGE_SPECIES.has(key)) return svgIcon(key, size);
@@ -1485,13 +1530,13 @@ function screenIdentity(){
           ${selected ? `
           <div class="card section" style="background:var(--bg-alt);border:none">
             <div class="eyebrow">${selected.name} (Selected)</div>
-            <div style="margin:8px 0" class="tree-anim">${treeImg(selected.icon,74)}</div>
+            <div style="margin:8px 0" class="tree-anim">${treeImg(selected.icon,222)}</div>
             <p class="small" style="font-style:italic">"${selected.lore}"</p>
           </div>` : `
           <p class="faint section">Pick a tree above, or leave it as the Sprout for now.</p>`}
         </div>
         <div class="card section plaque-card">
-          <div class="tree-anim">${treeImg(displayIcon,54)}</div>
+          <div class="tree-anim">${treeImg(displayIcon,162)}</div>
           <div>
             <div class="small" style="font-weight:700">${state.user.callsign || '···'}</div>
             <div class="faint">${displayEpithet} · Step 1 of 4</div>
@@ -1551,96 +1596,62 @@ function checkPasswordMatch(){
 }
 function renderKeepScroll(){ render(); }
 function pickTreeSpecies(key){ state.user.treeSpecies = state.user.treeSpecies===key ? null : key; renderKeepScroll(); }
-/* HD pixel-dissolve: rasterizes the current tree SVG onto an offscreen
-   canvas, reads its actual pixel colors, and animates each sampled pixel
-   as its own small glowing fragment drifting outward/upward with a slight
-   rotation and easing — so it's the tree's real shape and color breaking
-   apart, not generic dots. Slower and clearer than a simple particle burst. */
+/* HD shatter: tiles the tree's own rendered image into a grid of small
+   fragments (each one a real slice of the tree, via background-position on
+   its own data-URI copy) and flies them apart in 3D with rotation, gravity
+   drift, and staggered timing — roots holding a beat longer than the crown.
+   Pure DOM/CSS, deliberately not canvas-pixel-based: reading pixel data back
+   off a canvas that was drawn from an SVG can silently fail from a security
+   restriction depending on the browser, which is why the previous version
+   sometimes produced no visible animation at all. This can't fail that way. */
 function disintegrateTreeHD(container, svgEl, durationMs, onDone){
-  const rect = svgEl.getBoundingClientRect();
-  const w = Math.max(1, rect.width), h = Math.max(1, rect.height);
-  const scale = 3; // sample at 3x for crisp, HD-density fragments
-  const svgData = new XMLSerializer().serializeToString(svgEl);
-  const svgBlob = new Blob([svgData], {type:'image/svg+xml;charset=utf-8'});
-  const url = URL.createObjectURL(svgBlob);
-  const img = new Image();
-  img.onload = function(){
-    const off = document.createElement('canvas');
-    off.width = w*scale; off.height = h*scale;
-    const octx = off.getContext('2d');
-    octx.drawImage(img, 0, 0, w*scale, h*scale);
-    URL.revokeObjectURL(url);
-    let data;
-    try{ data = octx.getImageData(0,0,w*scale,h*scale).data; }
-    catch(e){ console.error('pixel read failed, falling back', e); onDone && onDone(); return; }
-    const particles = [];
-    const step = 3;
-    for(let y=0;y<h*scale;y+=step){
-      for(let x=0;x<w*scale;x+=step){
-        const idx=(y*w*scale+x)*4;
-        const a=data[idx+3];
-        if(a<40) continue;
-        const r=data[idx],g=data[idx+1],b=data[idx+2];
-        particles.push({
-          ox:x/scale, oy:y/scale,
-          vx:(Math.random()-0.5)*1.6,
-          vy:-Math.random()*1.3-0.4,
-          size:(step/scale)*(0.9+Math.random()*0.7),
-          color:`${r},${g},${b}`,
-          delay: (y/(h*scale))*0.25 + Math.random()*0.3, // roots hold a beat longer than the crown
-          rot: Math.random()*Math.PI*2,
-          rotSpeed:(Math.random()-0.5)*0.09,
-        });
-      }
+  const w = svgEl.clientWidth || parseFloat(svgEl.getAttribute('width')) || 64;
+  const h = svgEl.clientHeight || parseFloat(svgEl.getAttribute('height')) || 64;
+  let svgMarkup = svgEl.outerHTML;
+  if(!/xmlns=/.test(svgMarkup)) svgMarkup = svgMarkup.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+  const dataUri = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgMarkup);
+  const grid = 9;
+  const cellW = w/grid, cellH = h/grid;
+  const wrap = document.createElement('div');
+  wrap.className = 'tree-shatter-wrap';
+  wrap.style.cssText = `position:absolute;left:50%;top:50%;width:${w}px;height:${h}px;margin-left:${-w/2}px;margin-top:${-h/2}px;perspective:420px;pointer-events:none;`;
+  container.style.position = 'relative';
+  const flightMs = Math.round(durationMs*0.7);
+  for(let row=0; row<grid; row++){
+    for(let col=0; col<grid; col++){
+      const frag = document.createElement('div');
+      frag.className = 'tree-shatter-frag';
+      frag.style.left = (col*cellW)+'px';
+      frag.style.top = (row*cellH)+'px';
+      frag.style.width = (cellW+0.5)+'px';
+      frag.style.height = (cellH+0.5)+'px';
+      frag.style.backgroundImage = `url("${dataUri}")`;
+      frag.style.backgroundSize = w+'px '+h+'px';
+      frag.style.backgroundPosition = `-${col*cellW}px -${row*cellH}px`;
+      const angle = Math.random()*Math.PI*2;
+      const dist = 34+Math.random()*90;
+      const dx = (Math.cos(angle)*dist).toFixed(1)+'px';
+      const dy = (Math.sin(angle)*dist - 26 - Math.random()*36).toFixed(1)+'px';
+      const dz = ((Math.random()-0.5)*180).toFixed(0)+'px';
+      frag.style.setProperty('--dx', dx);
+      frag.style.setProperty('--dy', dy);
+      frag.style.setProperty('--dz', dz);
+      frag.style.setProperty('--rx', ((Math.random()-0.5)*520).toFixed(0)+'deg');
+      frag.style.setProperty('--ry', ((Math.random()-0.5)*520).toFixed(0)+'deg');
+      frag.style.setProperty('--rz', ((Math.random()-0.5)*300).toFixed(0)+'deg');
+      // bottom rows (roots, in image-space) hold a fraction longer before letting go
+      const rowDelay = (row/grid)*durationMs*0.28;
+      const delay = Math.round(rowDelay + Math.random()*durationMs*0.18);
+      frag.style.animation = `treeShatterFly ${flightMs}ms cubic-bezier(.22,.61,.36,1) ${delay}ms forwards`;
+      wrap.appendChild(frag);
     }
-    const live = document.createElement('canvas');
-    live.width = w*scale; live.height = h*scale;
-    live.style.cssText = `position:absolute;left:0;top:0;width:${w}px;height:${h}px;pointer-events:none;`;
-    container.style.position = 'relative';
-    container.appendChild(live);
-    svgEl.style.opacity = '0';
-    const lctx = live.getContext('2d');
-    lctx.scale(scale,scale);
-    const start = performance.now();
-    function frame(now){
-      const t = (now-start)/durationMs;
-      lctx.clearRect(0,0,w,h);
-      let anyLeft = false;
-      for(const p of particles){
-        const pt = (t - p.delay) / Math.max(0.001, 1-p.delay);
-        if(pt <= 0){
-          anyLeft = true;
-          lctx.fillStyle = `rgb(${p.color})`;
-          lctx.fillRect(p.ox-p.size/2, p.oy-p.size/2, p.size, p.size);
-          continue;
-        }
-        if(pt >= 1) continue;
-        anyLeft = true;
-        const ease = pt*pt;
-        const px = p.ox + p.vx*ease*70;
-        const py = p.oy + p.vy*ease*70 - ease*ease*24;
-        lctx.save();
-        lctx.globalAlpha = Math.max(0, 1-pt);
-        lctx.translate(px, py);
-        lctx.rotate(p.rot + p.rotSpeed*ease*50);
-        lctx.shadowColor = `rgba(${p.color},.7)`;
-        lctx.shadowBlur = 3;
-        lctx.fillStyle = `rgb(${p.color})`;
-        const sz = p.size*(1-ease*0.45);
-        lctx.fillRect(-sz/2,-sz/2,sz,sz);
-        lctx.restore();
-      }
-      if(t < 1.1 && anyLeft){
-        requestAnimationFrame(frame);
-      } else {
-        live.remove();
-        onDone && onDone();
-      }
-    }
-    requestAnimationFrame(frame);
-  };
-  img.onerror = function(){ URL.revokeObjectURL(url); onDone && onDone(); };
-  img.src = url;
+  }
+  container.appendChild(wrap);
+  svgEl.style.opacity = '0';
+  setTimeout(()=>{
+    wrap.remove();
+    onDone && onDone();
+  }, durationMs);
 }
 /* Change tree mid-sprint — allowed once per sprint, with a disintegrate/
    materialize transition instead of an instant swap. */
@@ -1659,7 +1670,7 @@ function beginTreeChange(newKey){
     toast('Your tree is now a ' + (sel?sel.name:newKey));
   };
   if(!holder || !svgEl){ finish(); return; }
-  disintegrateTreeHD(holder, svgEl, 2200, finish);
+  disintegrateTreeHD(holder, svgEl, 2600, finish);
 }
 function toggleAuthMode(){ state._authMode = state._authMode==='login' ? 'signup' : 'login'; render(); }
 function checkCallsign(){
@@ -1896,19 +1907,15 @@ function screenSprintSetup(){
         </div>
         <p class="faint" style="margin-top:12px">Selected: ${totalWeeks} weeks → ${SPRINT_DURATIONS.find(d=>d.key===duration).stage}</p>
       </div>
+      <p class="muted small section">${totalWeeks} weeks · ${podMode==='solo'?'Solo':'Pod'} · ${goals.length} goal${goals.length===1?'':'s'} · ${name}</p>
+      ${renderRoadmapCardHTML(totalWeeks)}
       <div class="card section">
-        <h2 style="font-size:18px">Your roadmap</h2>
-        <p class="muted small" style="margin-top:4px">${totalWeeks} weeks · ${podMode==='solo'?'Solo':'Pod'} · ${goals.length} goal${goals.length===1?'':'s'} · ${name}</p>
-        ${renderTodayCardHTML()}
-        ${renderThisWeekCardHTML(totalWeeks)}
-        ${renderSprintCalendarHTML(totalWeeks, state.user._calendarMonthOffset||0)}
-        ${renderPinListHTML()}
-        <button class="btn btn-outline btn-block section" id="aiRoadmapBtn" onclick="generateAIRoadmap()" ${state.user._aiRoadmapLoading?'disabled':''}>
+        <button class="btn btn-outline btn-block" id="aiRoadmapBtn" onclick="generateAIRoadmap()" ${state.user._aiRoadmapLoading?'disabled':''}>
           ${state.user._aiRoadmapLoading ? 'Thinking through your weeks…' : (goalPlans ? '✨ Regenerate with AI' : '✨ Generate my roadmap with AI')}
         </button>
         ${goalPlans ? `
         <div class="goal-timeline section">
-          <div class="faint" style="margin-bottom:8px">AI overview - pin any of these to a real date above</div>
+          <div class="faint" style="margin-bottom:8px">AI overview - drag a 📌 onto your roadmap above to schedule one</div>
           ${goalPlans.map((g,gi)=>`
             <div class="goal-timeline-block">
               <div class="small" style="font-weight:700">Goal ${gi+1}: ${g.goal}</div>
@@ -1919,7 +1926,7 @@ function screenSprintSetup(){
                     <span class="faint" style="font-weight:700;margin-right:6px">Week ${m.weeks}:</span>
                     <span class="small">${m.text}</span>
                   </span>
-                  <span draggable="true" ondragstart="handlePinDragStart(event,'${m.text.replace(/'/g,"\\'")}')" style="cursor:grab;margin-left:8px;flex:none" title="Drag onto Today or a day this week to schedule it">📌</span>
+                  <span draggable="true" ondragstart="handlePinDragStart(event,'${m.text.replace(/'/g,"\\'")}')" style="cursor:grab;margin-left:8px;flex:none" title="Drag onto your roadmap above to schedule it">📌</span>
                 </div>`).join('')}
               </div>
             </div>`).join('')}
@@ -1929,7 +1936,7 @@ function screenSprintSetup(){
       </div>
       <div class="card section center">
         <div class="eyebrow">Your ${name} awaits</div>
-        <div style="margin:16px 0" class="tree-anim">${treeImg(treeIcon,170)}</div>
+        <div style="margin:16px 0" class="tree-anim">${treeImg(treeIcon,510)}</div>
         <p class="small">You chose the ${name}.</p>
         <p class="small" style="margin-top:8px;font-style:italic;max-width:480px;margin-left:auto;margin-right:auto">"${lore}"</p>
         <p class="small" style="margin-top:10px;max-width:520px;margin-left:auto;margin-right:auto">Your sprint works the same way. Each day you show up, you grow a root. Every completed week is a ring. Complete the sprint, and your ${name} joins your collection.</p>
@@ -1963,7 +1970,7 @@ function renderSprintCalendarHTML(totalWeeks, monthOffset=0){
     const dayPins = pins.filter(p=>p.pin_date===dateStr);
     const visiblePins = dayPins.slice(0,3);
     const extra = dayPins.length - visiblePins.length;
-    cells.push(`<div class="cal-day ${isToday?'today':''} ${inSprint?'in-sprint':''}" onclick="openPinAdder('${dateStr}')" ondragover="allowDrop(event)" ondrop="handleDropOnDay(event,'${dateStr}')">
+    cells.push(`<div class="cal-day ${isToday?'today':''} ${inSprint?'in-sprint':''}" onclick="selectRoadmapDateAndAdd('${dateStr}')" ondragover="allowDrop(event)" ondrop="handleDropOnDay(event,'${dateStr}')">
       <div class="cal-day-num">${d}</div>
       <div class="cal-day-pins">
         ${visiblePins.map(p=>`<div class="cal-pin" title="${p.label}">${p.notify?'🔔 ':''}${p.label.length>10?p.label.slice(0,10)+'…':p.label}</div>`).join('')}
@@ -1981,7 +1988,7 @@ function renderSprintCalendarHTML(totalWeeks, monthOffset=0){
       ${['S','M','T','W','T','F','S'].map(d=>`<div class="cal-dow">${d}</div>`).join('')}
     </div>
     <div class="cal-grid">${cells.join('')}</div>
-    <p class="faint" style="margin-top:8px">Your sprint starts today and runs through ${sprintEnd.toLocaleDateString('default',{month:'short',day:'numeric'})}. Tap any date to pin something to it.</p>
+    <p class="faint" style="margin-top:8px">Your sprint runs through ${sprintEnd.toLocaleDateString('default',{month:'short',day:'numeric'})}. Tap or drag onto any date to schedule something.</p>
   </div>`;
 }
 function shiftCalendarMonth(delta){
@@ -1989,7 +1996,10 @@ function shiftCalendarMonth(delta){
   renderKeepScroll();
 }
 
-/* ---- Today / This Week breakdown, built from real roadmap_pins ---- */
+/* ---- Roadmap card: one consolidated view instead of four stacked ones —
+   a tap-through week strip with the selected day's tasks right below it,
+   inline add (no browser prompt()), and the full month grid tucked behind
+   a toggle instead of always taking up space. ---- */
 function getCurrentWeekDates(){
   const today = new Date(); today.setHours(0,0,0,0);
   const dow = today.getDay(); // 0=Sun..6=Sat
@@ -2000,85 +2010,98 @@ function getCurrentWeekDates(){
 function pinsForDate(dateStr){
   return (state.user._roadmapPins||[]).filter(p=>p.pin_date===dateStr);
 }
-function renderTodayCardHTML(){
-  const today = new Date(); today.setHours(0,0,0,0);
-  const dateStr = today.toISOString().slice(0,10);
-  const todayPins = pinsForDate(dateStr);
-  return `<div class="card section" style="border:1.5px dashed var(--border)" ondragover="allowDrop(event)" ondrop="handleDropOnDay(event,'${dateStr}')">
-    <div class="row between" style="align-items:center">
-      <div class="small" style="font-weight:700">Today · ${today.toLocaleDateString('default',{weekday:'long',day:'numeric'})}</div>
-      <span class="faint" style="cursor:pointer" onclick="openPinAdder('${dateStr}')">+ add</span>
-    </div>
-    <hr class="rule"/>
-    ${todayPins.length ? `<div class="stack gap8">
-      ${todayPins.map((p,i)=>`<div class="row between" style="align-items:center">
-        <div class="small">Goal ${i+1}: ${p.label}</div>
-        <span class="faint" style="cursor:pointer" onclick="removePin(${p.id})" title="Remove">✕</span>
-      </div>`).join('')}
-    </div>` : `<p class="faint">Nothing pinned for today yet. Drag a 📌 from your AI plan below onto this card, or tap + add.</p>`}
-  </div>`;
+function todayStr(){ const d=new Date(); d.setHours(0,0,0,0); return d.toISOString().slice(0,10); }
+function selectRoadmapDate(dateStr){
+  state.user._roadmapSelectedDate = dateStr;
+  state.user._addingPin = false;
+  renderKeepScroll();
 }
-function renderThisWeekCardHTML(totalWeeks){
+function selectRoadmapDateAndAdd(dateStr){
+  state.user._roadmapSelectedDate = dateStr;
+  state.user._addingPin = dateStr;
+  renderKeepScroll();
+  setTimeout(()=>document.getElementById('inlinePinInput')?.focus(), 30);
+}
+function renderRoadmapCardHTML(totalWeeks){
   const weekDates = getCurrentWeekDates();
+  const tStr = todayStr();
+  const selected = state.user._roadmapSelectedDate || tStr;
+  const selectedDate = new Date(selected+'T00:00:00');
+  const isSelToday = selected===tStr;
   const sprintStartDate = state.user.sprintStartDate ? new Date(state.user.sprintStartDate) : new Date();
   sprintStartDate.setHours(0,0,0,0);
   const todayZero = new Date(); todayZero.setHours(0,0,0,0);
   const weekIndex = Math.max(1, Math.floor((todayZero - sprintStartDate)/(7*86400000)) + 1);
-  const todayStr = todayZero.toISOString().slice(0,10);
+  const dayPins = pinsForDate(selected);
+  const adding = state.user._addingPin === selected;
+  const calendarOpen = !!state.user._roadmapCalendarOpen;
   return `<div class="card section">
-    <div class="small" style="font-weight:700">This Week · Week ${weekIndex} of ${totalWeeks}</div>
-    <hr class="rule"/>
-    <div class="stack gap8">
+    <div class="row between" style="align-items:center">
+      <h2 style="font-size:18px">Your roadmap</h2>
+      <span class="faint" style="cursor:pointer" onclick="state.user._roadmapCalendarOpen=${calendarOpen?'false':'true'};renderKeepScroll()">${calendarOpen?'Hide full calendar':'📅 Full calendar'}</span>
+    </div>
+    <p class="muted small" style="margin-top:2px">Week ${weekIndex} of ${totalWeeks}</p>
+    <div class="roadmap-week-strip section">
       ${weekDates.map(d=>{
         const dStr = d.toISOString().slice(0,10);
-        const isToday = dStr===todayStr;
-        const dayPins = pinsForDate(dStr);
-        const label = d.toLocaleDateString('default',{weekday:'short',day:'numeric'});
-        return `<div class="row between" style="align-items:center;padding:6px 8px;border-radius:8px;${isToday?'background:var(--green-light)':''}" ondragover="allowDrop(event)" ondrop="handleDropOnDay(event,'${dStr}')">
-          <div class="small" style="flex:1">
-            <b>${label}</b> · ${dayPins.length ? dayPins.map(p=>p.label).join(' · ') : '<span class="faint">Rest day</span>'}
-          </div>
-          <span class="faint" style="cursor:pointer;margin-left:8px" onclick="openPinAdder('${dStr}')" title="Add">+</span>
+        const count = pinsForDate(dStr).length;
+        const isSel = dStr===selected;
+        const isTdy = dStr===tStr;
+        return `<div class="roadmap-day-pill ${isSel?'selected':''} ${isTdy?'today':''}" onclick="selectRoadmapDate('${dStr}')" ondragover="allowDrop(event)" ondrop="handleDropOnDay(event,'${dStr}')">
+          <div class="rdp-dow">${d.toLocaleDateString('default',{weekday:'short'})}</div>
+          <div class="rdp-num">${d.getDate()}</div>
+          <div class="rdp-dot" style="visibility:${count?'visible':'hidden'}"></div>
         </div>`;
       }).join('')}
     </div>
-    <p class="faint" style="margin-top:8px">Drag a 📌 from your AI plan below onto Today or any day this week to schedule it there.</p>
+    <div class="small" style="font-weight:700;margin-top:14px">${isSelToday?'Today':selectedDate.toLocaleDateString('default',{weekday:'long',month:'short',day:'numeric'})}</div>
+    <div class="stack gap8 section" style="min-height:20px" ondragover="allowDrop(event)" ondrop="handleDropOnDay(event,'${selected}')">
+      ${dayPins.length ? dayPins.map(p=>`<div class="row between" style="align-items:center">
+        <div class="small">${p.label}</div>
+        <span class="faint" style="cursor:pointer;flex:none;margin-left:8px" onclick="removePin(${p.id})" title="Remove">✕</span>
+      </div>`).join('') : `<p class="faint">Nothing scheduled. Drag a 📌 from your AI plan below, or add one directly.</p>`}
+    </div>
+    ${adding
+      ? `<div class="row gap section" style="margin-top:8px">
+          <input id="inlinePinInput" placeholder="What are you doing${isSelToday?' today':' that day'}?" style="flex:1" onkeydown="if(event.key==='Enter')submitInlinePin('${selected}')"/>
+          <button class="btn btn-primary btn-sm" onclick="submitInlinePin('${selected}')">Add</button>
+          <button class="btn btn-ghost btn-sm" onclick="state.user._addingPin=false;renderKeepScroll()">✕</button>
+        </div>`
+      : `<button class="btn btn-outline btn-sm section" onclick="state.user._addingPin='${selected}';renderKeepScroll();setTimeout(()=>document.getElementById('inlinePinInput')?.focus(),30)">+ Add to ${isSelToday?'today':'this day'}</button>`
+    }
+    ${calendarOpen ? renderSprintCalendarHTML(totalWeeks, state.user._calendarMonthOffset||0) : ''}
   </div>`;
+}
+function submitInlinePin(dateStr){
+  const input = document.getElementById('inlinePinInput');
+  const v = input ? input.value.trim() : '';
+  if(!v){ toast('Write something first'); return; }
+  addRoadmapPinQuiet(dateStr, v);
+}
+async function addRoadmapPinQuiet(dateStr, label){
+  state.user._addingPin = false;
+  try{
+    await Merros.roadmapPins.addRoadmapPin(dateStr, label, false);
+    toast('Added to ' + new Date(dateStr+'T00:00:00').toLocaleDateString('default',{month:'short',day:'numeric'}));
+    await loadMyRoadmapPins();
+  }catch(e){ console.error(e); toast('Could not save that. Try again.'); }
 }
 function handlePinDragStart(ev, label){
   ev.dataTransfer.setData('text/plain', label);
   ev.dataTransfer.effectAllowed = 'copy';
 }
 function allowDrop(ev){ ev.preventDefault(); ev.dataTransfer.dropEffect = 'copy'; }
-async function handleDropOnDay(ev, dateStr){
+function handleDropOnDay(ev, dateStr){
   ev.preventDefault();
   const label = ev.dataTransfer.getData('text/plain');
   if(!label) return;
-  try{
-    await Merros.roadmapPins.addRoadmapPin(dateStr, label, false);
-    toast('Pinned to ' + new Date(dateStr+'T00:00:00').toLocaleDateString('default',{month:'short',day:'numeric'}));
-    await loadMyRoadmapPins();
-  }catch(e){ console.error(e); toast('Could not pin that. Try again.'); }
+  addRoadmapPinQuiet(dateStr, label);
 }
-async function loadMyRoadmapPins(){
-  try{
-    state.user._roadmapPins = await Merros.roadmapPins.getMyRoadmapPins();
-    render();
-  }catch(e){ console.error('loadMyRoadmapPins failed', e); }
+async function fetchRoadmapPinsQuiet(){
+  try{ state.user._roadmapPins = await Merros.roadmapPins.getMyRoadmapPins(); }
+  catch(e){ console.error('loadMyRoadmapPins failed', e); }
 }
-async function openPinAdder(dateStr){
-  const label = prompt('Pin something to '+new Date(dateStr+'T00:00:00').toLocaleDateString('default',{month:'short',day:'numeric'})+':');
-  if(!label || !label.trim()) return;
-  const notify = confirm('Get notified on this date? (OK = yes, Cancel = no)');
-  if(notify && 'Notification' in window && Notification.permission==='default'){
-    try{ await Notification.requestPermission(); }catch(e){}
-  }
-  try{
-    await Merros.roadmapPins.addRoadmapPin(dateStr, label.trim(), notify);
-    toast('Pinned to your roadmap');
-    await loadMyRoadmapPins();
-  }catch(e){ console.error(e); toast('Could not save that pin. Try again.'); }
-}
+async function loadMyRoadmapPins(){ await fetchRoadmapPinsQuiet(); render(); }
 async function removePin(pinId){
   try{
     await Merros.roadmapPins.deleteRoadmapPin(pinId);
@@ -2094,29 +2117,6 @@ async function togglePinNotify(pinId, current){
     await Merros.roadmapPins.toggleRoadmapPinNotify(pinId, next);
     await loadMyRoadmapPins();
   }catch(e){ console.error(e); toast('Could not update that pin.'); }
-}
-function renderPinListHTML(){
-  const pins = (state.user._roadmapPins || []).slice().sort((a,b)=>a.pin_date.localeCompare(b.pin_date));
-  if(!pins.length){
-    return `<div class="card section" style="background:var(--bg-alt);border:none">
-      <p class="faint">No pins yet. Tap any date above to add your first one.</p>
-    </div>`;
-  }
-  return `<div class="card section" style="background:var(--bg-alt);border:none">
-    <div class="small" style="font-weight:700">Your pinned roadmap</div>
-    <div class="stack gap8 section">
-      ${pins.map(p=>{
-        const d = new Date(p.pin_date+'T00:00:00');
-        return `<div class="row between" style="align-items:center">
-          <div class="small">📌 <b>${d.toLocaleDateString('default',{month:'short',day:'numeric'})}</b> · ${p.label}</div>
-          <div class="row gap" style="align-items:center">
-            <span class="faint" style="cursor:pointer" onclick="togglePinNotify(${p.id},${p.notify})" title="Toggle notification">${p.notify?'🔔':'🔕'}</span>
-            <span class="faint" style="cursor:pointer" onclick="removePin(${p.id})" title="Remove pin">✕</span>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>`;
 }
 function submitSprintSetup(){
   state.user.sprintStartDate = new Date().toISOString();
@@ -2141,7 +2141,7 @@ function screenTreeAwaits(){
         const sy = Math.round(Math.sin(a*Math.PI/180)*62);
         return `<span class="reveal-sparkle" style="--sx:${sx}px;--sy:${sy}px;animation-delay:${(0.28+i*0.04).toFixed(2)}s"></span>`;
       }).join('')}
-      <div class="reveal-tree">${treeImg(treeIcon,130)}</div>
+      <div class="reveal-tree">${treeImg(treeIcon,390)}</div>
     </div>
     <p class="small">You chose the ${name}.</p>
     <p class="small section" style="font-style:italic;max-width:420px;margin-left:auto;margin-right:auto">"${lore}"</p>
@@ -2536,7 +2536,7 @@ function screenDone(){
     </div>` : ''}
     <div class="card section">
       <div class="small" style="font-weight:700">Your ${treeAwaitsName} tree</div>
-      <div class="center tree-anim" style="margin-top:8px">${treeImg(treeAwaitsIcon,64)}</div>
+      <div class="center tree-anim" style="margin-top:8px">${treeImg(treeAwaitsIcon,192)}</div>
       <div class="badge badge-green center" style="display:block;text-align:center;margin-top:10px">Week 1 · Just started</div>
       <div class="section">
         <div class="eyebrow">Roots</div>
@@ -2590,7 +2590,7 @@ function screenDashboard(){
     <h2 style="font-size:24px;margin-top:6px">Welcome back, @${state.user.callsign}</h2>
 
     <div class="card section center" id="dashboardTreeVisual">
-      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(state.user.treeSpecies||'sprout',dashboardTreeSize(96))}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
+      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(state.user.treeSpecies||'sprout',dashboardTreeSize(288))}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
       <p class="small" style="margin-top:8px;font-weight:700">Your tree is growing</p>
       ${state.user.isFounder ? '<div class="faint" style="margin-top:4px">🌱 You started this pod</div>' : ''}
       ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
@@ -2604,19 +2604,13 @@ function screenDashboard(){
 
     ${podMembersCard()}
 
-    ${renderTodayCardHTML()}
-    ${renderThisWeekCardHTML(SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'])}
-    ${renderSprintCalendarHTML(SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'], state.user._calendarMonthOffset||0)}
-    ${renderPinListHTML()}
+    ${renderRoadmapCardHTML(SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'])}
 
     <div class="card section">
       <div class="small" style="font-weight:700">What are you working on today?</div>
       <textarea id="microlineInput" placeholder="Write your daily micro-line..." style="margin-top:10px">${state.microline}</textarea>
       <div class="row gap wrap" style="margin-top:10px">
         <button class="btn btn-outline btn-sm" onclick="postMicroline()">📝 Quick update</button>
-        <button class="btn btn-sm" style="background:${state.status==='green'?'#3E8E5A':'#fff'};color:${state.status==='green'?'#fff':'#3E8E5A'};border:1px solid #3E8E5A" onclick="setStatus('green')">🟢 Committed</button>
-        <button class="btn btn-sm" style="background:${state.status==='yellow'?'#D8A73B':'#fff'};color:${state.status==='yellow'?'#fff':'#D8A73B'};border:1px solid #D8A73B" onclick="setStatus('yellow')">🟡 Unsure</button>
-        <button class="btn btn-sm" style="background:${state.status==='red'?'#C9584A':'#fff'};color:${state.status==='red'?'#fff':'#C9584A'};border:1px solid #C9584A" onclick="setStatus('red')">🔴 Stalled</button>
       </div>
     </div>
 
@@ -2658,7 +2652,7 @@ function screenSoloDashboard(){
     <h2 style="font-size:24px;margin-top:6px">Welcome back, @${state.user.callsign}</h2>
 
     <div class="card section center" id="dashboardTreeVisual">
-      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(treeIcon,dashboardTreeSize(96))}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
+      <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(treeIcon,dashboardTreeSize(288))}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
       <p class="small" style="margin-top:8px;font-weight:700">Your ${name} is growing</p>
       <p class="faint" style="margin-top:2px">${goals.length} goal${goals.length===1?'':'s'} · Week 1</p>
       ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
@@ -2671,19 +2665,13 @@ function screenSoloDashboard(){
       </div>
     </div>
 
-    ${renderTodayCardHTML()}
-    ${renderThisWeekCardHTML(SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'])}
-    ${renderSprintCalendarHTML(SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'], state.user._calendarMonthOffset||0)}
-    ${renderPinListHTML()}
+    ${renderRoadmapCardHTML(SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'])}
 
     <div class="card section">
       <div class="small" style="font-weight:700">What are you working on today?</div>
       <textarea id="microlineInput" placeholder="Write your daily line..." style="margin-top:10px">${state.microline}</textarea>
       <div class="row gap wrap" style="margin-top:10px">
         <button class="btn btn-outline btn-sm" onclick="postMicroline()">📝 Save today's line</button>
-        <button class="btn btn-sm" style="background:${state.status==='green'?'#3E8E5A':'#fff'};color:${state.status==='green'?'#fff':'#3E8E5A'};border:1px solid #3E8E5A" onclick="setStatus('green')">🟢 On track</button>
-        <button class="btn btn-sm" style="background:${state.status==='yellow'?'#D8A73B':'#fff'};color:${state.status==='yellow'?'#fff':'#D8A73B'};border:1px solid #D8A73B" onclick="setStatus('yellow')">🟡 Unsure</button>
-        <button class="btn btn-sm" style="background:${state.status==='red'?'#C9584A':'#fff'};color:${state.status==='red'?'#fff':'#C9584A'};border:1px solid #C9584A" onclick="setStatus('red')">🔴 Stalled</button>
       </div>
     </div>
 
@@ -2854,9 +2842,6 @@ function screenTheWeek(){
       <textarea id="microlineInput2" style="margin-top:10px">${state.microline||'Rewrote the CV draft. Three pages. Feels cleaner.'}</textarea>
       <div class="row gap wrap" style="margin-top:10px">
         <button class="btn btn-outline btn-sm" onclick="postMicroline2()">📝 Quick update</button>
-        <button class="btn btn-sm" style="background:${state.status==='green'?'#3E8E5A':'#fff'};color:${state.status==='green'?'#fff':'#3E8E5A'};border:1px solid #3E8E5A" onclick="setStatus('green')">🟢 Committed</button>
-        <button class="btn btn-sm" style="background:${state.status==='yellow'?'#D8A73B':'#fff'};color:${state.status==='yellow'?'#fff':'#D8A73B'};border:1px solid #D8A73B" onclick="setStatus('yellow')">🟡 Unsure</button>
-        <button class="btn btn-sm" style="background:${state.status==='red'?'#C9584A':'#fff'};color:${state.status==='red'?'#fff':'#C9584A'};border:1px solid #C9584A" onclick="setStatus('red')">🔴 Stalled</button>
       </div>
     </div>
     <div class="card section">
@@ -3196,8 +3181,6 @@ async function showRootPrintPreview(){
     <div class="center">
       ${medallion}
       <p class="small" style="font-weight:700;margin-top:10px">RootPrint (preview)</p>
-      <p class="faint">${result.stats.entryCount} entr${result.stats.entryCount===1?'y':'ies'} · sentiment: ${result.stats.sentimentArc}</p>
-      <p class="faint" style="margin-top:4px;font-family:monospace;font-size:11px">${result.hash.slice(0,16)}…</p>
       <p class="faint" style="margin-top:8px">🖱️ Drag to spin it</p>
     </div>`;
   setTimeout(()=>initRootPrintSpin(uid), 30);
@@ -3217,7 +3200,7 @@ function screenMyCollection(){
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
     <div class="eyebrow" style="margin-top:10px">My Collection</div>
     <h2 style="font-size:22px">Every ring is a sprint you finished.</h2>
-    <div class="card section" id="myCollectionTrunkArea">
+    <div class="card section" style="background:var(--bg-alt);border:none;padding:32px 20px" id="myCollectionTrunkArea">
       <p class="faint">Loading your collection…</p>
     </div>
   </div>
@@ -3231,10 +3214,10 @@ async function loadMyCollectionTrunk(){
     const selected = TREE_SPECIES.find(s=>s.key===state.user.treeSpecies);
     const hue = ROOTPRINT_SPECIES_HUES[selected?selected.key:'sprout'] || 0.3;
     if(!rings.length){
-      area.innerHTML = `<div class="center">${rootprintRenderTrunkSVG([], hue, 240)}<p class="faint section">Finish your first sprint to grow your first ring.</p></div>`;
+      area.innerHTML = `<div class="center">${rootprintRenderTrunkSVG([], hue, 220)}<p class="small section" style="font-weight:700">No rings yet</p><p class="faint" style="margin-top:4px;max-width:260px;margin-left:auto;margin-right:auto">Finish your first sprint and your trunk grows its first ring.</p></div>`;
       return;
     }
-    area.innerHTML = `<div class="center">${rootprintRenderTrunkSVG(rings, hue, 280)}
+    area.innerHTML = `<div class="center">${rootprintRenderTrunkSVG(rings, hue, 340)}
       <p class="small section" style="font-weight:700">${rings.length} ring${rings.length===1?'':'s'} · ${rings.length} completed sprint${rings.length===1?'':'s'}</p>
       <p class="faint">The center is your first. The outer edge is today.</p></div>`;
   }catch(e){
