@@ -499,6 +499,7 @@ nav.top{padding:20px 0;}
 .roadmap-day-pill .rdp-dot{width:5px;height:5px;border-radius:50%;background:var(--green-dark);}
 .roadmap-day-pill.selected .rdp-dot{background:#fff;}
 .collection-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px;}
+.tts-btn.speaking{background:var(--green-light);color:var(--green-dark);}
 .choice-card:active{transform:scale(.97);}
 .choice-card.selected{border-width:2px;font-weight:700;}
 .bg-blob{position:fixed;border-radius:50%;filter:blur(50px);opacity:.32;z-index:-1;pointer-events:none;animation:floatBlob 10s ease-in-out infinite;}
@@ -1496,18 +1497,18 @@ function screenLanding(){
         <div class="footer-col">
           <h4>MERROS</h4>
           <a onclick="state._authMode='login';go('identity')">Web Login</a>
-          <a onclick="toast('Help Center coming soon')">Help Center</a>
-          <a onclick="toast('Contact coming soon')">Contact</a>
+          <a onclick="go('helpCenter')">Help Center</a>
+          <a onclick="go('feedback')">Contact</a>
         </div>
         <div class="footer-col">
           <h4>COMMUNITY</h4>
           <a onclick="toast('Blog coming soon')">Blog</a>
-          <a onclick="toast('Feedback coming soon')">Feedback</a>
+          <a onclick="go('feedback')">Feedback</a>
         </div>
         <div class="footer-col">
           <h4>LEGAL</h4>
-          <a onclick="toast('Terms coming soon')">Terms of Use</a>
-          <a onclick="toast('Privacy coming soon')">Privacy Policy</a>
+          <a onclick="go('termsOfUse')">Terms of Use</a>
+          <a onclick="go('privacyPolicy')">Privacy Policy</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -1649,6 +1650,85 @@ function checkPasswordMatch(){
 }
 function renderKeepScroll(){ render(); }
 function pickTreeSpecies(key){ state.user.treeSpecies = state.user.treeSpecies===key ? null : key; renderKeepScroll(); }
+
+/* Text-to-speech, the real Web Speech API, no backend or key needed. A
+   genuine accessibility win for people with visual or reading disabilities,
+   or who'd just rather listen. Reads the target element's own text, never
+   text embedded in the onclick attribute itself, so nothing breaks on
+   quotes, apostrophes, or newlines in real journal/message content. */
+function speakText(text, btn){
+  if(!('speechSynthesis' in window)){ toast('Text-to-speech is not supported on this device'); return; }
+  if(window.speechSynthesis.speaking){
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.tts-btn.speaking').forEach(b=>{ b.classList.remove('speaking'); b.textContent='Listen'; });
+    if(btn && btn.dataset.wasSpeaking==='1'){ btn.dataset.wasSpeaking=''; return; }
+  }
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 1;
+  const reset = ()=>{ if(btn){ btn.classList.remove('speaking'); btn.textContent='Listen'; btn.dataset.wasSpeaking=''; } };
+  u.onend = reset; u.onerror = reset;
+  if(btn){ btn.classList.add('speaking'); btn.textContent='Stop'; btn.dataset.wasSpeaking='1'; }
+  window.speechSynthesis.speak(u);
+}
+function speakElementText(elId, btn){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  speakText(el.textContent, btn);
+}
+
+/* Real pod matching. findOpenPod/joinPod already existed in merros-client.js
+   and were fully functional, they just weren't wired to any button, hence
+   the "coming soon" stub. */
+async function openPodMatch(){
+  toast('Looking for an open pod…');
+  try{
+    const pods = await Merros.pods.findOpenPod();
+    if(!pods || !pods.length){
+      toast('No open pods right now. Check back soon, or start your own from Dashboard.');
+      return;
+    }
+    state._matchedPods = pods;
+    go('podMatch');
+  }catch(e){
+    console.error('findOpenPod failed', e);
+    toast('Could not check for open pods right now. Try again.');
+  }
+}
+function screenPodMatch(){
+  const pods = state._matchedPods || [];
+  return `<div class="app-shell">
+    <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
+    <div class="eyebrow" style="margin-top:10px">Get Matched</div>
+    <h2 style="font-size:22px">Open pods right now</h2>
+    <p class="muted small section">Pick one to join. You'll move from Solo into that pod's sprint, sharing the same weeks with up to three other people.</p>
+    <div class="stack gap12 section">
+      ${pods.length ? pods.map(p=>`<div class="card row between" style="align-items:center">
+        <div>
+          <div class="small" style="font-weight:700">${p.name||'Pod'}</div>
+          <div class="faint">${p.track||''}${p.tone?' · '+p.tone:''}</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="joinMatchedPod('${p.id}')">Join</button>
+      </div>`).join('') : '<p class="faint">No open pods right now. Check back soon.</p>'}
+    </div>
+  </div>
+  ${bottomNav('dashboard')}`;
+}
+async function joinMatchedPod(podId){
+  try{
+    await Merros.pods.joinPod(podId);
+    toast('Joined the pod');
+    const membership = await Merros.pods.getMyPod();
+    if(membership){
+      state.realPod = membership.pods;
+      state.user.plan = 'Pod';
+      await fetchPodDataQuiet();
+    }
+    go('dashboard');
+  }catch(e){
+    console.error('joinMatchedPod failed', e);
+    toast('Could not join that pod. Try again.');
+  }
+}
 
 /* Weekly mission, Wayk-inspired: a short, goal-relevant prompt that rotates
    roughly twice a week (not a countdown timer, just a stable window computed
@@ -2538,7 +2618,39 @@ function pickTrack(key){
 function submitTracks(){
   if(!state.user.trackKey){ toast('Pick a track to continue'); return; }
   state.roadmap = Array.from({length:12}).map((_,i)=>({w:i+1,label:'Yours to write', done:false}));
-  go('tone');
+  go('trackRoadmap');
+}
+function screenTrackRoadmap(){
+  const goalPlans = state.user.aiRoadmap;
+  const loading = state.user._aiRoadmapLoading;
+  return `<div class="app-shell center">
+    <div class="back-link" onclick="go('tracks')" style="text-align:left">← Back</div>
+    <div class="faint" style="margin-top:14px">Step 4 of 6</div>
+    <div class="section" style="position:relative;display:inline-block">
+      <div class="reveal-ambient-glow"></div>
+      <div class="tree-anim">${treeImg(state.user.treeSpecies||'sprout', 190)}</div>
+    </div>
+    <h2 style="font-size:22px;margin-top:10px">${loading ? 'Thinking through your weeks…' : (goalPlans ? 'Your roadmap is ready' : 'Build your roadmap')}</h2>
+    <p class="muted small section" style="max-width:340px;margin-left:auto;margin-right:auto">Working on: <b>${state.user.track||'your goal'}</b>. We'll turn that into a real, week-by-week plan you can adjust anytime.</p>
+    <button class="btn btn-primary btn-block section" onclick="generateTrackRoadmap()" ${loading?'disabled':''}>
+      ${loading ? 'Thinking through your weeks…' : (goalPlans ? 'Regenerate with AI' : 'Generate my roadmap with AI')}
+    </button>
+    ${goalPlans ? `
+      <div class="goal-timeline section" style="text-align:left">
+        ${goalPlans.map(g=>`<div class="goal-timeline-block">
+          <div class="small" style="font-weight:700">${g.goal}</div>
+          <div class="timeline-list">
+            ${g.milestones.map(m=>`<div class="timeline-item"><span class="timeline-dot"></span><span class="faint" style="font-weight:700;margin-right:6px">Week ${m.weeks}:</span><span class="small">${m.text}</span></div>`).join('')}
+          </div>
+        </div>`).join('')}
+      </div>` : ''}
+    <button class="btn ${goalPlans?'btn-primary':'btn-ghost'} btn-block section" onclick="go('tone')">${goalPlans ? 'Continue →' : "Skip for now →"}</button>
+  </div>`;
+}
+async function generateTrackRoadmap(){
+  state.user.sprintGoals = [state.user.track || 'my goal'];
+  if(!state.user.sprintDuration) state.user.sprintDuration = '9-12';
+  await generateAIRoadmap();
 }
 
 /* ===================== SCREEN 6: TONE ===================== */
@@ -2919,7 +3031,7 @@ function screenSoloDashboard(){
     <div class="card section" style="background:var(--green-light);border:none">
       <div class="small" style="font-weight:700">Want company?</div>
       <p class="small" style="margin-top:6px">You can switch to a Pod anytime, sharing this same sprint with three other people.</p>
-      <button class="btn btn-outline btn-sm section" onclick="toast('Pod matching coming soon')">Get matched to a pod</button>
+      <button class="btn btn-outline btn-sm section" onclick="openPodMatch()">Get matched to a pod</button>
     </div>
   </div>
   ${bottomNav('dashboard')}`;
@@ -3172,7 +3284,13 @@ function podChannelBody(){
   <p class="muted small">Everyone sees everything. No private messages.</p>
   <div class="card section">
     <div class="stack">
-      ${state.channel.map(m=>`<div class="msg"><span class="who">@${m.who}</span> <span class="when">· ${m.when}</span><div class="small" style="margin-top:3px">${m.text}</div></div>`).join('')}
+      ${state.channel.map((m,idx)=>`<div class="msg">
+        <div class="row between" style="align-items:center">
+          <div><span class="who">@${m.who}</span> <span class="when">· ${m.when}</span></div>
+          <button class="btn btn-ghost btn-sm tts-btn" onclick="speakElementText('channelMsg${idx}', this)">Listen</button>
+        </div>
+        <div class="small" id="channelMsg${idx}" style="margin-top:3px">${m.text}</div>
+      </div>`).join('')}
     </div>
   </div>
   <div class="row gap section">
@@ -3409,7 +3527,14 @@ function screenJournal(){
     <h2 style="font-size:22px">Journal</h2>
     <p class="muted small">Private. Yours. Nobody checks it.</p>
     <div class="stack gap12 section">
-      ${state.journal.map(j=>`<div class="card"><div class="small" style="font-weight:700">${j.when}</div><hr class="rule"/><div class="small" style="white-space:pre-line">${j.text}</div></div>`).join('')}
+      ${state.journal.map((j,idx)=>`<div class="card">
+        <div class="row between" style="align-items:center">
+          <div class="small" style="font-weight:700">${j.when}</div>
+          <button class="btn btn-ghost btn-sm tts-btn" onclick="speakElementText('journalText${idx}', this)">Listen</button>
+        </div>
+        <hr class="rule"/>
+        <div class="small" id="journalText${idx}" style="white-space:pre-line">${j.text}</div>
+      </div>`).join('')}
     </div>
     <div class="card section">
       <div class="small" style="font-weight:700">Write a note</div>
@@ -3883,7 +4008,7 @@ function helpBlock(title, bodyHtml){
 }
 function screenHelpCenter(){
   return `<div class="app-shell">
-    <div class="back-link" onclick="go('settings')">← Back to Settings</div>
+    <div class="back-link" onclick="go(state.authUser ? 'settings' : 'landing')">← Back</div>
     <div class="eyebrow" style="margin-top:10px">Support</div>
     <h2 style="font-size:22px">Help Center</h2>
     <p class="muted small section">Answers to the questions people ask most, organized by area. If something is not covered here, use Send Feedback to reach us directly.</p>
@@ -3944,14 +4069,14 @@ function screenHelpCenter(){
 
     <p class="faint section">Could not find what you needed? <span style="text-decoration:underline;cursor:pointer" onclick="go('feedback')">Send us feedback</span> and we will get back to you.</p>
   </div>
-  ${bottomNav('settings')}`;
+  ${state.authUser ? bottomNav('settings') : ''}`;
 }
 
 function screenFeedback(){
   const cat = state._feedbackCategory || 'General';
   const cats = ['General','Bug Report','Feature Request','Safety Concern','Account Issue'];
   return `<div class="app-shell">
-    <div class="back-link" onclick="go('settings')">← Back to Settings</div>
+    <div class="back-link" onclick="go(state.authUser ? 'settings' : 'landing')">← Back</div>
     <div class="eyebrow" style="margin-top:10px">Support</div>
     <h2 style="font-size:22px">Send Feedback</h2>
     <p class="muted small section">Tell us what is working, what is not, or what you wish existed. Every message is read. If you are reporting a safety concern, choose that category so it gets priority handling.</p>
@@ -3969,7 +4094,7 @@ function screenFeedback(){
     </div>
     <p class="faint section">For account access issues, include your callsign so we can locate your account faster.</p>
   </div>
-  ${bottomNav('settings')}`;
+  ${state.authUser ? bottomNav('settings') : ''}`;
 }
 function submitFeedback(){
   const msg = document.getElementById('feedbackMessage').value.trim();
@@ -3982,7 +4107,7 @@ function submitFeedback(){
 
 function screenTermsOfUse(){
   return `<div class="app-shell">
-    <div class="back-link" onclick="go('settings')">← Back to Settings</div>
+    <div class="back-link" onclick="go(state.authUser ? 'settings' : 'landing')">← Back</div>
     <div class="eyebrow" style="margin-top:10px">Legal</div>
     <h2 style="font-size:22px">Terms of Use</h2>
     <p class="faint section">Last updated: August 2026</p>
@@ -3992,7 +4117,7 @@ function screenTermsOfUse(){
     `)}
 
     ${helpBlock('2. Who can use Merros', `
-      <p>You must be at least 16 years old to create an account. If your local law sets a higher minimum age for using services like this one, that higher age applies to you instead. By creating an account you confirm that the information you provide, including your age, is accurate.</p>
+      <p>You must be at least 18 years old to create an account. If your local law sets a higher minimum age for using services like this one, that higher age applies to you instead. By creating an account you confirm that the information you provide, including your age, is accurate.</p>
     `)}
 
     ${helpBlock('3. Your account', `
@@ -4031,12 +4156,12 @@ function screenTermsOfUse(){
       <p>We may revise these terms as the product evolves. Continued use of Merros after a change takes effect means you accept the revised terms. If you have questions about these terms, use Send Feedback with the category set to General.</p>
     `)}
   </div>
-  ${bottomNav('settings')}`;
+  ${state.authUser ? bottomNav('settings') : ''}`;
 }
 
 function screenPrivacyPolicy(){
   return `<div class="app-shell">
-    <div class="back-link" onclick="go('settings')">← Back to Settings</div>
+    <div class="back-link" onclick="go(state.authUser ? 'settings' : 'landing')">← Back</div>
     <div class="eyebrow" style="margin-top:10px">Legal</div>
     <h2 style="font-size:22px">Privacy Policy</h2>
     <p class="faint section">Last updated: August 2026</p>
@@ -4078,7 +4203,7 @@ function screenPrivacyPolicy(){
     `)}
 
     ${helpBlock('9. Children', `
-      <p>Merros is not directed at children under 16, and we do not knowingly collect personal information from anyone under that age. If we learn that an account belongs to a child under the applicable minimum age, we will take steps to delete it.</p>
+      <p>Merros is not directed at children under 18, and we do not knowingly collect personal information from anyone under that age. If we learn that an account belongs to a child under the applicable minimum age, we will take steps to delete it.</p>
     `)}
 
     ${helpBlock('10. International data transfers', `
@@ -4093,7 +4218,7 @@ function screenPrivacyPolicy(){
       <p>If you have questions about this policy or how your data is handled, use Send Feedback with the category set to Account Issue, or General if it does not fit that category.</p>
     `)}
   </div>
-  ${bottomNav('settings')}`;
+  ${state.authUser ? bottomNav('settings') : ''}`;
 }
 
 /* ===================== RENDER ROUTER ===================== */
@@ -4105,9 +4230,10 @@ const Screens = {
   browseChapters: screenBrowseChapters, chapter: chapterHub, createChapter: screenCreateChapter,
   chapterGoal: screenChapterGoal, myCollection: screenMyCollection,
   hostDash: screenHostDash,
-  helpCenter: screenHelpCenter, feedback: screenFeedback, termsOfUse: screenTermsOfUse, privacyPolicy: screenPrivacyPolicy
+  helpCenter: screenHelpCenter, feedback: screenFeedback, termsOfUse: screenTermsOfUse, privacyPolicy: screenPrivacyPolicy,
+  podMatch: screenPodMatch, trackRoadmap: screenTrackRoadmap
 };
-const ONBOARDING_SCREENS = new Set(['identity','checkEmail','goalPicker','sprintSetup','treeAwaits','soloSetup','lifeStage','tracks','tone','join','founderWaiting','done']);
+const ONBOARDING_SCREENS = new Set(['identity','checkEmail','goalPicker','sprintSetup','treeAwaits','soloSetup','lifeStage','tracks','trackRoadmap','tone','join','founderWaiting','done']);
 function render(){
   const y = window.scrollY;
   const fn = Screens[state.screen] || screenLanding;
