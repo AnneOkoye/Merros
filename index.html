@@ -13,6 +13,8 @@
 <title>Merros. Your goals. Your pace. Your people.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://nvgzejircugthcacidol.supabase.co">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
 <style>
@@ -29,8 +31,9 @@
   --shell-w:620px;
 }
 @media(min-width:768px){ :root{ --shell-w:760px; } }
-@media(min-width:1080px){ :root{ --shell-w:920px; } }
-@media(min-width:1440px){ :root{ --shell-w:1040px; } }
+@media(min-width:1080px){ :root{ --shell-w:960px; } }
+@media(min-width:1440px){ :root{ --shell-w:1180px; } }
+@media(min-width:1800px){ :root{ --shell-w:1320px; } }
 
 *{box-sizing:border-box;}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
@@ -38,6 +41,9 @@ h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:0em;margin:0
 p{margin:0;line-height:1.55;}
 a{color:inherit;}
 .container{max-width:1120px;margin:0 auto;padding:0 28px;}
+@media(min-width:1440px){ .container{max-width:1320px;} }
+@media(min-width:1800px){ .container{max-width:1540px;} }
+@media(min-width:2200px){ .container{max-width:1760px;} }
 .app-shell{max-width:var(--shell-w);margin:0 auto;padding:28px 20px 110px;min-height:100vh;}
 .marketing-shell{padding-bottom:60px;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
@@ -248,11 +254,11 @@ nav.top{padding:20px 0;}
 /* ---- Marketing landing page (desktop-first website, not app-shell) ---- */
 .site-nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0;}
 .site-nav .navbtns{display:flex;gap:10px;}
-.marketing-section{padding:64px 0;border-bottom:1px solid var(--border);}
+.marketing-section{padding:44px 0;border-bottom:1px solid var(--border);}
 .marketing-section:last-of-type{border-bottom:none;}
 .marketing-section.tint{background:var(--bg-alt);}
 .section-title{font-size:30px;text-align:center;margin-bottom:8px;}
-.section-sub{text-align:center;color:var(--ink-soft);font-size:15px;max-width:560px;margin:0 auto 36px;}
+.section-sub{text-align:center;color:var(--ink-soft);font-size:15px;max-width:560px;margin:0 auto 22px;}
 .hero-section{padding:70px 0 60px;text-align:center;position:relative;}
 @keyframes rootReach{0%,100%{stroke-dashoffset:60;opacity:.15;}50%{stroke-dashoffset:0;opacity:.5;}}
 @keyframes barCharge{0%,100%{opacity:.4;transform:scaleY(.45);}50%{opacity:1;transform:scaleY(1);}}
@@ -311,6 +317,8 @@ nav.top{padding:20px 0;}
 .cta-block .btn{padding:16px 28px;font-size:15px;}
 .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1000px;margin:0 auto;}
 .feature-grid.cols-4{grid-template-columns:repeat(4,1fr);}
+@media(min-width:1440px){ .feature-grid{max-width:1180px;} }
+@media(min-width:1800px){ .feature-grid{max-width:1380px;} }
 @media(max-width:900px){.feature-grid,.feature-grid.cols-4{grid-template-columns:1fr 1fr;}}
 @media(max-width:560px){.feature-grid,.feature-grid.cols-4{grid-template-columns:1fr;}}
 .feature-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:26px 22px;box-shadow:var(--shadow);text-align:center;transition:transform .15s,box-shadow .15s;}
@@ -511,18 +519,18 @@ nav.top{padding:20px 0;}
 @keyframes fogDrift{0%,100%{opacity:.5;}50%{opacity:.9;}}
 .flash-fog-full{position:fixed;inset:0;background:radial-gradient(ellipse at 30% 10%,rgba(180,200,220,.28),transparent 55%),radial-gradient(ellipse at 80% 90%,rgba(150,170,200,.2),transparent 55%),rgba(244,241,234,.4);pointer-events:none;z-index:0;}
 .flash-timer{font-size:44px;font-weight:800;font-family:'Courier New',monospace;letter-spacing:2px;}
-.rootprint-glint{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;}
-.rootprint-glint::after{
+.tree-marker-glint{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;}
+.tree-marker-glint::after{
   content:'';position:absolute;top:-55%;left:-65%;width:38%;height:230%;
   background:linear-gradient(75deg,transparent 0%,rgba(255,255,255,0) 38%,rgba(255,255,255,var(--glint-op,.4)) 50%,rgba(255,255,255,0) 62%,transparent 100%);
-  animation:rootprintGlintSweep var(--glint-dur,6s) ease-in-out infinite;
+  animation:treeMarkerGlintSweep var(--glint-dur,6s) ease-in-out infinite;
 }
-@keyframes rootprintGlintSweep{0%{left:-65%;}18%{left:145%;}100%{left:145%;}}
-.rootprint-star{position:absolute;border-radius:50%;background:#fff;opacity:0;box-shadow:0 0 3px 1px rgba(255,255,255,.8);animation-name:rootprintStarTwinkle;animation-timing-function:ease-in-out;animation-iteration-count:infinite;}
-@keyframes rootprintStarTwinkle{0%,100%{opacity:0;transform:scale(.4);}50%{opacity:1;transform:scale(1);}}
-.rootprint-palette{margin-top:10px;}
-.rootprint-swatch{display:flex;align-items:center;gap:6px;background:var(--bg-alt);border-radius:8px;padding:4px 8px;}
-.rootprint-swatch-chip{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.15);flex:none;}
+@keyframes treeMarkerGlintSweep{0%{left:-65%;}18%{left:145%;}100%{left:145%;}}
+.tree-marker-star{position:absolute;border-radius:50%;background:#fff;opacity:0;box-shadow:0 0 3px 1px rgba(255,255,255,.8);animation-name:treeMarkerStarTwinkle;animation-timing-function:ease-in-out;animation-iteration-count:infinite;}
+@keyframes treeMarkerStarTwinkle{0%,100%{opacity:0;transform:scale(.4);}50%{opacity:1;transform:scale(1);}}
+.tree-marker-palette{margin-top:10px;}
+.tree-marker-swatch{display:flex;align-items:center;gap:6px;background:var(--bg-alt);border-radius:8px;padding:4px 8px;}
+.tree-marker-swatch-chip{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.15);flex:none;}
 .rp-hue-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .12s;}
 .rp-hue-swatch:hover{transform:scale(1.1);}
 .rp-hue-swatch.selected{border-color:var(--ink);box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--ink);}
@@ -861,33 +869,33 @@ async function submitWaitlist(){
     toast('Something went wrong. Try again.');
   }
 }
-/* ===================== ROOTPRINT ENGINE =====================
+/* ===================== TREE MARKER ENGINE =====================
    Generates a unique, deterministic tree-ring medallion from a person's
    real sprint data. Same inputs always produce the same image - nothing
    is stored except the hash and a few summary stats, so the medallion
    itself never needs to be saved as an image file. */
-const ROOTPRINT_SENTIMENT_POS = ['good','great','proud','happy','excited','win','done','finished','strong','better','progress','grateful','calm','confident','love','joy','accomplished','clear','focused','glad','relieved'];
-const ROOTPRINT_SENTIMENT_NEG = ['tired','hard','stuck','bad','anxious','worried','behind','failed','frustrated','sad','stressed','overwhelmed','difficult','struggle','doubt','exhausted','discouraged','rough'];
-const ROOTPRINT_SPECIES_HUES = { oak:0.30, sakura:0.92, baobab:0.10, pine:0.42, maple:0.06, willow:0.38, redwood:0.02, olive:0.22, palm:0.34, ash:0.16, sprout:0.30 };
+const TREE_MARKER_SENTIMENT_POS = ['good','great','proud','happy','excited','win','done','finished','strong','better','progress','grateful','calm','confident','love','joy','accomplished','clear','focused','glad','relieved'];
+const TREE_MARKER_SENTIMENT_NEG = ['tired','hard','stuck','bad','anxious','worried','behind','failed','frustrated','sad','stressed','overwhelmed','difficult','struggle','doubt','exhausted','discouraged','rough'];
+const TREE_MARKER_SPECIES_HUES = { oak:0.30, sakura:0.92, baobab:0.10, pine:0.42, maple:0.06, willow:0.38, redwood:0.02, olive:0.22, palm:0.34, ash:0.16, sprout:0.30 };
 
 // Cheap keyword-based sentiment, not a paid AI call - this runs on every
 // journal entry, so it needs to be free and instant, unlike the roadmap
 // feature where a per-use AI cost made sense.
-function rootprintHeuristicSentiment(text){
+function treeMarkerHeuristicSentiment(text){
   const words = (text||'').toLowerCase().match(/[a-z']+/g) || [];
   let score = 0;
-  words.forEach(w=>{ if(ROOTPRINT_SENTIMENT_POS.includes(w)) score++; if(ROOTPRINT_SENTIMENT_NEG.includes(w)) score--; });
+  words.forEach(w=>{ if(TREE_MARKER_SENTIMENT_POS.includes(w)) score++; if(TREE_MARKER_SENTIMENT_NEG.includes(w)) score--; });
   return score;
 }
 
-function rootprintComputeStats(entries){
+function treeMarkerComputeStats(entries){
   if(!entries || !entries.length) return { entryCount:0, vocabRichness:0, hourVariance:0, sentimentArc:'steady', avgWordCount:0 };
   let totalWords=0; const uniqueWords=new Set(); const hours=[]; const scores=[];
   entries.forEach(e=>{
     const words = (e.text||'').toLowerCase().match(/[a-z']+/g) || [];
     totalWords += words.length;
     words.forEach(w=>uniqueWords.add(w));
-    scores.push(rootprintHeuristicSentiment(e.text));
+    scores.push(treeMarkerHeuristicSentiment(e.text));
     if(e.created_at){ const d=new Date(e.created_at); if(!isNaN(d)) hours.push(d.getHours()); }
   });
   const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
@@ -909,25 +917,25 @@ function rootprintComputeStats(entries){
   };
 }
 
-async function rootprintSha256Hex(str){
+async function treeMarkerSha256Hex(str){
   const enc = new TextEncoder().encode(str);
   const buf = await crypto.subtle.digest('SHA-256', enc);
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-async function generateRootPrint({ callsign, species, weeksCompleted, consistencyPct, entries, witnessedMoments=0 }){
-  const stats = rootprintComputeStats(entries);
+async function generateTreeMarker({ callsign, species, weeksCompleted, consistencyPct, entries, witnessedMoments=0 }){
+  const stats = treeMarkerComputeStats(entries);
   const seedStr = [
     'callsign:'+callsign, 'species:'+species, 'weeks:'+weeksCompleted, 'consistency:'+consistencyPct,
     'arc:'+stats.sentimentArc, 'vocab:'+stats.vocabRichness, 'rhythm:'+stats.hourVariance,
     'avgwords:'+stats.avgWordCount, 'witnessed:'+witnessedMoments,
   ].join('|');
-  const hash = await rootprintSha256Hex(seedStr);
-  const svg = rootprintRenderSVG(hash, ROOTPRINT_SPECIES_HUES[species] || 0.3, 220);
+  const hash = await treeMarkerSha256Hex(seedStr);
+  const svg = treeMarkerRenderSVG(hash, TREE_MARKER_SPECIES_HUES[species] || 0.3, 220);
   return { hash, svg, stats, weeksCompleted, consistencyPct, witnessedMoments };
 }
 
-function rootprintRenderTrunkSVG(rings, speciesHue, size=280){
+function treeMarkerRenderTrunkSVG(rings, speciesHue, size=280){
   if(!rings || !rings.length){
     return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="14" fill="none" stroke="#8B5E34" stroke-width="2" opacity=".5"/></svg>`;
   }
@@ -948,7 +956,7 @@ function rootprintRenderTrunkSVG(rings, speciesHue, size=280){
     const hue = ((speciesHue||0.3) + (nums[0]/255-0.5)*0.08 + 1) % 1;
     const sat = 0.28 + sentNorm*0.4;
     const light = 0.32 + sentNorm*0.32;
-    const rgb = rootprintHslToRgb(hue, sat, light);
+    const rgb = treeMarkerHslToRgb(hue, sat, light);
     // genuine directional lean - thick on the side that was strong, not a perfect circle
     const leanAngle = (nums[1]/255) * Math.PI*2;
     const leanStrength = (1-consistency) * gap * 0.9 + 2;
@@ -977,14 +985,14 @@ async function recordCompletedSprintRing(){
     const consistencyPct = Math.round((doneCount/totalWeeks)*100);
     const arc = state.daysSinceLastPost!=null && state.daysSinceLastPost<1 ? 'rising' : 'steady';
     const seedStr = `sprint|${state.user.callsign}|${species}|${totalWeeks}|${consistencyPct}|${Date.now()}`;
-    const seedHash = await rootprintSha256Hex(seedStr);
+    const seedHash = await treeMarkerSha256Hex(seedStr);
     await Merros.collectionRings.saveCollectionRing({
       species, weeksCompleted: totalWeeks, consistencyPct, sentimentArc: arc, seedHash
     });
     toast('A new ring joined your Collection');
   }catch(e){ console.error('recordCompletedSprintRing failed', e); }
 }
-function rootprintHslToRgb(h,s,l){
+function treeMarkerHslToRgb(h,s,l){
   const hue2rgb=(p,q,t)=>{ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; };
   let r,g,b;
   if(s===0){ r=g=b=l; } else {
@@ -994,7 +1002,7 @@ function rootprintHslToRgb(h,s,l){
   }
   return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
 }
-function rootprintMulberry32(seed){
+function treeMarkerMulberry32(seed){
   return function(){
     seed |= 0; seed = seed + 0x6D2B79F5 | 0;
     let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
@@ -1002,10 +1010,10 @@ function rootprintMulberry32(seed){
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
 }
-function rootprintRenderSVG(hashHex, speciesHue, size=220){
+function treeMarkerRenderSVG(hashHex, speciesHue, size=220){
   const nums = [];
   for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
-  const rnd = rootprintMulberry32(parseInt(hashHex.slice(0,8),16));
+  const rnd = treeMarkerMulberry32(parseInt(hashHex.slice(0,8),16));
   const cx=size/2, cy=size/2, maxR=size/2-16;
   const numRings = 8 + (nums[0]%6);
   const ringGap = maxR/numRings;
@@ -1017,7 +1025,7 @@ function rootprintRenderSVG(hashHex, speciesHue, size=220){
     const sat = 0.30 + (nums[(i*3+3)%nums.length]/255)*0.35;
     const light = 0.30 + (i/numRings)*0.42;
     const hue = ((speciesHue+hueShift)%1+1)%1;
-    const [r,g,b] = rootprintHslToRgb(hue, sat, light);
+    const [r,g,b] = treeMarkerHslToRgb(hue, sat, light);
     const wobbleSeed = nums[(i*7+11)%nums.length];
     const wobbleAmp = 1.6 + (wobbleSeed%5);
     const phase = rnd()*Math.PI*2;
@@ -1044,34 +1052,34 @@ function rootprintRenderSVG(hashHex, speciesHue, size=220){
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${parts.join('')}</svg>`;
 }
 
-/* ---- RootPrint MEDALLION, redesigned as a real generative-trait system
+/* ---- Tree Marker MEDALLION, redesigned as a real generative-trait system
    (the way NFT art actually works): every piece rolls independent traits
    off its hash, base color comes from the person's actual tree species
    instead of a fixed wood-brown, and rarity is biased by real consistency,
    so a genuinely well-run sprint has better odds of a striking result.
    Nothing here is decoration bolted onto one fixed template; the traits
    change the actual palette, aura, and frame material rendered. ---- */
-const ROOTPRINT_RARITY_TIERS = [
+const TREE_MARKER_RARITY_TIERS = [
   {key:'common', label:'Common'},
   {key:'uncommon', label:'Uncommon'},
   {key:'rare', label:'Rare'},
   {key:'legendary', label:'Legendary'},
 ];
-function rootprintRollRarity(rollVal, consistencyPct){
+function treeMarkerRollRarity(rollVal, consistencyPct){
   const boost = ((consistencyPct||70)/100) * 0.08;
   const adjusted = Math.min(0.999, rollVal + boost);
-  if(adjusted >= 0.95) return ROOTPRINT_RARITY_TIERS[3];
-  if(adjusted >= 0.82) return ROOTPRINT_RARITY_TIERS[2];
-  if(adjusted >= 0.56) return ROOTPRINT_RARITY_TIERS[1];
-  return ROOTPRINT_RARITY_TIERS[0];
+  if(adjusted >= 0.95) return TREE_MARKER_RARITY_TIERS[3];
+  if(adjusted >= 0.82) return TREE_MARKER_RARITY_TIERS[2];
+  if(adjusted >= 0.56) return TREE_MARKER_RARITY_TIERS[1];
+  return TREE_MARKER_RARITY_TIERS[0];
 }
-const ROOTPRINT_FRAME_STOPS = {
+const TREE_MARKER_FRAME_STOPS = {
   common:    ['#C99760','#A6753E','#6E4E28'],
   uncommon:  ['#F0F0F0','#C7C7C7','#8B8B8B'],
   rare:      ['#F8E39A','#D9AA3F','#8F6A1C'],
   legendary: ['#FBD9E8','#D9C1F5','#B8E4D6','#FCE7A8'],
 };
-function rootprintCurvedTextRing(id, cx, cy, r, text, opts={}){
+function treeMarkerCurvedTextRing(id, cx, cy, r, text, opts={}){
   const {fontSize=8.5, color='#3A2A18', mono=false} = opts;
   const sweepPath = `M ${cx} ${cy-r} A ${r} ${r} 0 1 1 ${(cx-0.02).toFixed(2)} ${cy-r}`;
   return `<path id="${id}" d="${sweepPath}" fill="none"/>
@@ -1079,38 +1087,38 @@ function rootprintCurvedTextRing(id, cx, cy, r, text, opts={}){
       <textPath href="#${id}" startOffset="1%">${text}</textPath>
     </text>`;
 }
-function rootprintGetRarity(hashHex, consistencyPct){
+function treeMarkerGetRarity(hashHex, consistencyPct){
   const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
-  return rootprintRollRarity(nums[7]/255, consistencyPct);
+  return treeMarkerRollRarity(nums[7]/255, consistencyPct);
 }
-function rootprintHslDegToHex(hueDeg, satPct, lightPct){
-  const [r,g,b] = rootprintHslToRgb((hueDeg%360)/360, satPct/100, lightPct/100);
+function treeMarkerHslDegToHex(hueDeg, satPct, lightPct){
+  const [r,g,b] = treeMarkerHslToRgb((hueDeg%360)/360, satPct/100, lightPct/100);
   return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();
 }
 /* The exact palette a given piece rolled, exposed for display, e.g. next to
    the piece in Collection, the same way a jeweler's certificate lists the
    stone's actual measurements rather than just calling it "pretty." */
-function rootprintGetPalette(hashHex, speciesHue, consistencyPct){
+function treeMarkerGetPalette(hashHex, speciesHue, consistencyPct){
   const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
-  const rarity = rootprintRollRarity(nums[7]/255, consistencyPct);
+  const rarity = treeMarkerRollRarity(nums[7]/255, consistencyPct);
   const isLegendary = rarity.key==='legendary', isRare = rarity.key==='rare'||isLegendary;
   const hueDeg = Math.round((speciesHue%1)*360);
   const secondHueDeg = (hueDeg + 34 + (nums[9]%20)) % 360;
   const thirdHueDeg = (hueDeg + 320 - (nums[10]%20) + 360) % 360;
-  const frameStops = ROOTPRINT_FRAME_STOPS[rarity.key];
-  const swatches = [{ label:'Core hue', hex: rootprintHslDegToHex(hueDeg, 40, 45) }];
-  if(isRare) swatches.push({ label:'Secondary hue', hex: rootprintHslDegToHex(secondHueDeg, 40, 40) });
-  if(isLegendary) swatches.push({ label:'Tertiary hue', hex: rootprintHslDegToHex(thirdHueDeg, 40, 30) });
+  const frameStops = TREE_MARKER_FRAME_STOPS[rarity.key];
+  const swatches = [{ label:'Core hue', hex: treeMarkerHslDegToHex(hueDeg, 40, 45) }];
+  if(isRare) swatches.push({ label:'Secondary hue', hex: treeMarkerHslDegToHex(secondHueDeg, 40, 40) });
+  if(isLegendary) swatches.push({ label:'Tertiary hue', hex: treeMarkerHslDegToHex(thirdHueDeg, 40, 30) });
   swatches.push({ label:'Frame', hex: frameStops[0].length===7?frameStops[0].toUpperCase():frameStops[0] });
   return { rarity, swatches };
 }
-function rootprintPaletteHTML(hashHex, speciesHue, consistencyPct){
-  const { rarity, swatches } = rootprintGetPalette(hashHex, speciesHue, consistencyPct);
-  return `<div class="rootprint-palette">
+function treeMarkerPaletteHTML(hashHex, speciesHue, consistencyPct){
+  const { rarity, swatches } = treeMarkerGetPalette(hashHex, speciesHue, consistencyPct);
+  return `<div class="tree-marker-palette">
     <div class="faint" style="font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:10px">${rarity.label} palette</div>
     <div class="row gap wrap" style="margin-top:6px">
-      ${swatches.map(s=>`<div class="rootprint-swatch">
-        <span class="rootprint-swatch-chip" style="background:${s.hex}"></span>
+      ${swatches.map(s=>`<div class="tree-marker-swatch">
+        <span class="tree-marker-swatch-chip" style="background:${s.hex}"></span>
         <span class="faint" style="font-family:'Courier New',monospace;font-size:10.5px">${s.hex}</span>
       </div>`).join('')}
     </div>
@@ -1123,7 +1131,7 @@ function rootprintPaletteHTML(hashHex, speciesHue, consistencyPct){
    polished metal, plus scattered twinkling points, like a Rolls-Royce
    starlight headliner, rather than a flat single sweep. Intensity and
    star count scale with rarity so rarer pieces genuinely feel more alive. */
-function rootprintGlintOverlay(rarityKey){
+function treeMarkerGlintOverlay(rarityKey){
   const cfg = { common:{op:.35,dur:'7s',stars:6}, uncommon:{op:.45,dur:'6s',stars:11}, rare:{op:.6,dur:'5s',stars:17}, legendary:{op:.85,dur:'3.6s',stars:28} }[rarityKey] || {op:.35,dur:'7s',stars:6};
   let stars = '';
   for(let i=0;i<cfg.stars;i++){
@@ -1132,11 +1140,11 @@ function rootprintGlintOverlay(rarityKey){
     const sz = (1+Math.random()*1.8).toFixed(1);
     const delay = (Math.random()*4).toFixed(2);
     const dur = (2+Math.random()*2.5).toFixed(2);
-    stars += `<span class="rootprint-star" style="top:${top}%;left:${left}%;width:${sz}px;height:${sz}px;animation-delay:${delay}s;animation-duration:${dur}s"></span>`;
+    stars += `<span class="tree-marker-star" style="top:${top}%;left:${left}%;width:${sz}px;height:${sz}px;animation-delay:${delay}s;animation-duration:${dur}s"></span>`;
   }
-  return `<div class="rootprint-glint" style="--glint-op:${cfg.op};--glint-dur:${cfg.dur}">${stars}</div>`;
+  return `<div class="tree-marker-glint" style="--glint-op:${cfg.op};--glint-dur:${cfg.dur}">${stars}</div>`;
 }
-function rootprintRenderMedallionSVG(hashHex, opts={}){
+function treeMarkerRenderMedallionSVG(hashHex, opts={}){
   const {
     speciesHue=0.3, consistencyPct=70,
     ringStyle='circular', sizeScale=1, customHueDeg=null,
@@ -1144,7 +1152,7 @@ function rootprintRenderMedallionSVG(hashHex, opts={}){
   const size = Math.round(320*sizeScale), cx=size/2, cy=size/2;
   const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
   const uid = 'rp'+hashHex.slice(0,6)+Math.round(sizeScale*10)+ringStyle[0];
-  const rarity = rootprintRollRarity(nums[7]/255, consistencyPct);
+  const rarity = treeMarkerRollRarity(nums[7]/255, consistencyPct);
   const isLegendary = rarity.key==='legendary', isRare = rarity.key==='rare' || isLegendary;
   const hueDeg = customHueDeg!=null ? Math.round(customHueDeg) : Math.round((speciesHue%1)*360);
   const secondHueDeg = (hueDeg + 34 + (nums[9]%20)) % 360;
@@ -1242,7 +1250,7 @@ function rootprintRenderMedallionSVG(hashHex, opts={}){
     }
   }
 
-  const frameStops = ROOTPRINT_FRAME_STOPS[rarity.key];
+  const frameStops = TREE_MARKER_FRAME_STOPS[rarity.key];
   const auraStops = isLegendary
     ? `<stop offset="0%" stop-color="hsl(${hueDeg},46%,58%)"/><stop offset="45%" stop-color="hsl(${secondHueDeg},42%,44%)"/><stop offset="80%" stop-color="hsl(${thirdHueDeg},40%,30%)"/><stop offset="100%" stop-color="hsl(${hueDeg},44%,18%)"/>`
     : isRare
@@ -1250,7 +1258,7 @@ function rootprintRenderMedallionSVG(hashHex, opts={}){
       : `<stop offset="0%" stop-color="hsl(${hueDeg},38%,50%)"/><stop offset="70%" stop-color="hsl(${hueDeg},36%,36%)"/><stop offset="100%" stop-color="hsl(${hueDeg},40%,22%)"/>`;
 
   return `
-  <div class="rootprint-medallion" id="${uid}" style="width:${size}px;height:${size}px;max-width:100%;position:relative;touch-action:none;cursor:grab;user-select:none;margin:0 auto">
+  <div class="tree-marker-medallion" id="${uid}" style="width:${size}px;height:${size}px;max-width:100%;position:relative;touch-action:none;cursor:grab;user-select:none;margin:0 auto">
     <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;width:100%;height:auto;filter:drop-shadow(0 10px 22px rgba(20,14,8,.35)) drop-shadow(0 2px 4px rgba(20,14,8,.25))${isLegendary?' drop-shadow(0 0 14px hsla('+hueDeg+',70%,65%,.45))':''}">
       <defs>
         <radialGradient id="${uid}wood" cx="50%" cy="42%" r="70%">${auraStops}</radialGradient>
@@ -1272,14 +1280,14 @@ function rootprintRenderMedallionSVG(hashHex, opts={}){
         </g>
       </g>
     </svg>
-    ${rootprintGlintOverlay(rarity.key)}
+    ${treeMarkerGlintOverlay(rarity.key)}
   </div>`;
 }
 // Drag-to-spin, roulette-style: rotor follows the pointer while dragging,
 // then decelerates with friction after release. uid must match the id used
-// by rootprintRenderMedallionSVG above; call this once, right after the
+// by treeMarkerRenderMedallionSVG above; call this once, right after the
 // medallion's HTML is actually in the DOM.
-function initRootPrintSpin(uid){
+function initTreeMarkerSpin(uid){
   const el = document.getElementById(uid);
   const rotor = document.getElementById(uid+'rotor');
   if(!el || !rotor) return;
@@ -1386,7 +1394,9 @@ const SPRINTS=[
   {name:'Extended Sprint', weeks:'12+ weeks', level:4, stage:'Mature Tree'},
 ];
 const TREE_GROWTH_STAGES=[['Getting started','Seed'],['Early momentum','Sprout'],['Building rhythm','Sapling'],['Halfway there','Young Tree'],['Final stretch','Mature Tree']];
-const TREE_VARIANTS=['oak','pine','willow','sakura'];
+const TREE_VARIANTS=['oak','redwood','baobab','sakura'];
+const WHY_TREE_VARIANTS=['pine','willow','maple','palm'];
+const COLLECTION_VARIANTS=['ash','olive','redwood','willow'];
 function screenLanding(){
   return `
   <div class="container">
@@ -1463,7 +1473,7 @@ function screenLanding(){
         <div class="row gap wrap center" style="justify-content:center;gap:28px">
           ${['1st sprint','2nd sprint','3rd sprint','4th sprint'].map((label,i)=>`<div class="center">
             <div class="faint" style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">${label}</div>
-            ${treeImg(TREE_VARIANTS[i%TREE_VARIANTS.length],64)}
+            ${treeImg(WHY_TREE_VARIANTS[i%WHY_TREE_VARIANTS.length],64)}
           </div>`).join('')}
         </div>
         <p class="section-sub center" style="margin-top:18px">Over time, your trees become a timeline of your consistency.</p>
@@ -1625,7 +1635,7 @@ function screenLanding(){
       <p class="section-sub">This is what a collection looks like. Yours starts empty.</p>
       <div class="forest-strip">
         <div class="collection-clearing">
-          ${['oak','sakura','baobab','pine'].map((sp,i)=>`<div class="clearing-tree tree-anim" style="animation-delay:${(i*0.5).toFixed(1)}s">${treeImg(sp,84)}</div>`).join('')}
+          ${COLLECTION_VARIANTS.map((sp,i)=>`<div class="clearing-tree tree-anim" style="animation-delay:${(i*0.5).toFixed(1)}s">${treeImg(sp,84)}</div>`).join('')}
         </div>
         <hr class="rule"/>
         <p class="small muted center">Every tree is a sprint you finished.</p>
@@ -1948,7 +1958,7 @@ async function joinMatchedPod(podId){
    quieter, serious tone, so this is deliberately rare: roughly once or
    twice a month, date-seeded so it's stable rather than re-rolled on every
    visit, opt-in with zero penalty for skipping it, and the payoff is a
-   permanent, visually distinct "Burl Wood" RootPrint fused into the
+   permanent, visually distinct "Burl Wood" Tree Marker fused into the
    collection instead of a generic badge.
 
    Verification is honest about what a web page can actually observe: the
@@ -2010,16 +2020,16 @@ function screenFlashEvent(){
     </div>`;
   }
   if(stage==='done'){
-    const hue = ROOTPRINT_SPECIES_HUES[state.user.treeSpecies||'sprout']||0.3;
+    const hue = TREE_MARKER_SPECIES_HUES[state.user.treeSpecies||'sprout']||0.3;
     const hashHex = state.user._flashHash || '00';
     return `<div class="app-shell center">
       <div class="back-link" style="text-align:left" onclick="state.user._flashStage=null;go('dashboard')">← Back to Dashboard</div>
       <div class="eyebrow section">Anomaly Logged</div>
       <h2 style="font-size:22px">A Burl Wood ring has fused into your Tree Marker.</h2>
       <p class="muted small section" style="max-width:320px;margin-left:auto;margin-right:auto">${ev.logText}</p>
-      <div style="width:260px;margin:20px auto 0">${rootprintRenderBurlSVG(hashHex, hue)}</div>
-      <div style="max-width:280px;margin:0 auto">${rootprintBurlPaletteHTML(hashHex, hue)}</div>
-      <button class="btn btn-outline btn-sm section" onclick="exportRootPrint('${hashHex}', ${hue}, 100, {variant:'burl'})">Export</button>
+      <div style="width:260px;margin:20px auto 0">${treeMarkerRenderBurlSVG(hashHex, hue)}</div>
+      <div style="max-width:280px;margin:0 auto">${treeMarkerBurlPaletteHTML(hashHex, hue)}</div>
+      <button class="btn btn-outline btn-sm section" onclick="exportTreeMarker('${hashHex}', ${hue}, 100, {variant:'burl'})">Export</button>
       <button class="btn btn-primary btn-block section" onclick="state.user._flashStage=null;go('dashboard')">Done</button>
     </div>`;
   }
@@ -2072,17 +2082,17 @@ function cancelFlashEvent(){
 async function completeFlashEvent(){
   const f = isFlashEventActiveNow() || flashEventToday();
   const dateStr = (f && f.dateStr) || new Date().toISOString().slice(0,10);
-  const hashHex = await rootprintSha256Hex((state.user.callsign||'you')+'|flash|'+dateStr+'|'+Date.now());
+  const hashHex = await treeMarkerSha256Hex((state.user.callsign||'you')+'|flash|'+dateStr+'|'+Date.now());
   state.user._flashHash = hashHex;
   state.user._flashEventWon = dateStr;
   state.user._flashStage = 'done';
   renderKeepScroll();
 }
-/* Burl Wood: deliberately NOT circular, unlike every other RootPrint. Real
+/* Burl Wood: deliberately NOT circular, unlike every other Tree Marker. Real
    burl wood grain is chaotic and swirled, which is the point here, this
    piece is meant to look different from the calm concentric ones because
    it represents adapting under sudden pressure, not routine consistency. */
-function rootprintRenderBurlSVG(hashHex, speciesHue){
+function treeMarkerRenderBurlSVG(hashHex, speciesHue){
   const size = 320, cx=size/2, cy=size/2;
   const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
   const hueDeg = Math.round((speciesHue%1)*360);
@@ -2104,7 +2114,7 @@ function rootprintRenderBurlSVG(hashHex, speciesHue){
     }
     swirls += `<polyline points="${pts.join(' ')}" fill="none" stroke="hsl(${hue},58%,${38+i*3}%)" stroke-width="${(2.2+i*0.3).toFixed(1)}" opacity="${(0.5+i*0.06).toFixed(2)}" stroke-linecap="round"/>`;
   }
-  const frameStops = ROOTPRINT_FRAME_STOPS.legendary;
+  const frameStops = TREE_MARKER_FRAME_STOPS.legendary;
   return `<div style="width:${size}px;height:${size}px;max-width:100%;margin:0 auto;position:relative">
     <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;width:100%;height:auto;filter:drop-shadow(0 10px 22px rgba(20,14,8,.4)) drop-shadow(0 0 16px hsla(${hueDeg},70%,60%,.5))">
       <defs>
@@ -2115,42 +2125,42 @@ function rootprintRenderBurlSVG(hashHex, speciesHue){
       ${swirls}
       <circle cx="${cx}" cy="${cy}" r="${size/2-4}" fill="none" stroke="url(#burlframe)" stroke-width="5"/>
     </svg>
-    ${rootprintGlintOverlay('legendary')}
+    ${treeMarkerGlintOverlay('legendary')}
   </div>`;
 }
-function rootprintGetBurlPalette(hashHex, speciesHue){
+function treeMarkerGetBurlPalette(hashHex, speciesHue){
   const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
   const hueDeg = Math.round((speciesHue%1)*360);
   const swatches = [0,2,4,6].map(i=>{
     const hue = (hueDeg + i*27 + (nums[(i*2)%nums.length]%40)) % 360;
-    return { label:'Swirl layer '+(i+1), hex: rootprintHslDegToHex(hue, 58, 38+i*3) };
+    return { label:'Swirl layer '+(i+1), hex: treeMarkerHslDegToHex(hue, 58, 38+i*3) };
   });
-  swatches.push({ label:'Frame', hex: ROOTPRINT_FRAME_STOPS.legendary[0].toUpperCase() });
+  swatches.push({ label:'Frame', hex: TREE_MARKER_FRAME_STOPS.legendary[0].toUpperCase() });
   return { swatches };
 }
-function rootprintBurlPaletteHTML(hashHex, speciesHue){
-  const { swatches } = rootprintGetBurlPalette(hashHex, speciesHue);
-  return `<div class="rootprint-palette">
+function treeMarkerBurlPaletteHTML(hashHex, speciesHue){
+  const { swatches } = treeMarkerGetBurlPalette(hashHex, speciesHue);
+  return `<div class="tree-marker-palette">
     <div class="faint" style="font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:10px">Burl Wood palette</div>
     <div class="row gap wrap" style="margin-top:6px;justify-content:center">
-      ${swatches.map(s=>`<div class="rootprint-swatch">
-        <span class="rootprint-swatch-chip" style="background:${s.hex}"></span>
+      ${swatches.map(s=>`<div class="tree-marker-swatch">
+        <span class="tree-marker-swatch-chip" style="background:${s.hex}"></span>
         <span class="faint" style="font-family:'Courier New',monospace;font-size:10.5px">${s.hex}</span>
       </div>`).join('')}
     </div>
   </div>`;
 }
 
-/* Export a RootPrint as an image. Tries the native share sheet first
+/* Export a Tree Marker as an image. Tries the native share sheet first
    (that's the actual "share screen" on mobile), falls back to a direct PNG
    download, and falls back once more to raw SVG if canvas conversion fails
    for any reason, so the person always gets something out of it. */
-function exportRootPrint(hashHex, speciesHue, consistencyPct, opts={}){
+function exportTreeMarker(hashHex, speciesHue, consistencyPct, opts={}){
   const { variant, ringStyle, sizeScale, customHueDeg } = opts;
   const wrap = document.createElement('div');
   wrap.innerHTML = variant==='burl'
-    ? rootprintRenderBurlSVG(hashHex, speciesHue)
-    : rootprintRenderMedallionSVG(hashHex, {speciesHue, consistencyPct, ringStyle, sizeScale, customHueDeg});
+    ? treeMarkerRenderBurlSVG(hashHex, speciesHue)
+    : treeMarkerRenderMedallionSVG(hashHex, {speciesHue, consistencyPct, ringStyle, sizeScale, customHueDeg});
   const svgEl = wrap.querySelector('svg');
   if(!svgEl){ toast('Could not prepare that for export'); return; }
   let markup = svgEl.outerHTML;
@@ -2167,18 +2177,18 @@ function exportRootPrint(hashHex, speciesHue, consistencyPct, opts={}){
       ctx.drawImage(img, 0, 0, exportSize, exportSize);
       canvas.toBlob(async (blob)=>{
         if(!blob){ downloadSvgFallback(markup); return; }
-        const file = new File([blob], 'rootprint.png', {type:'image/png'});
+        const file = new File([blob], 'tree-marker.png', {type:'image/png'});
         if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
           try{ await navigator.share({files:[file], title:'My Tree Marker', text:'My Tree Marker from Merros'}); return; }
           catch(e){ /* cancelled or unsupported mid-flow, fall through to download */ }
         }
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = 'rootprint.png';
+        a.href = url; a.download = 'tree-marker.png';
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(()=>URL.revokeObjectURL(url), 2000);
       }, 'image/png');
-    }catch(e){ console.error('RootPrint export failed', e); downloadSvgFallback(markup); }
+    }catch(e){ console.error('Tree Marker export failed', e); downloadSvgFallback(markup); }
   };
   img.onerror = function(){ downloadSvgFallback(markup); };
   img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(markup);
@@ -2187,7 +2197,7 @@ function downloadSvgFallback(markup){
   const blob = new Blob([markup], {type:'image/svg+xml'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'rootprint.svg';
+  a.href = url; a.download = 'tree-marker.svg';
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 2000);
   toast('Exported as SVG (PNG export was not available on this device)');
@@ -3877,6 +3887,13 @@ function screenPulse(){
     const top = Math.random()*90, left = Math.random()*100, delay = (Math.random()*2.4).toFixed(1);
     return `<span class="celestial-star" style="top:${top}%;left:${left}%;animation-delay:${delay}s"></span>`;
   }).join('');
+  const tab = state._pulseTab || 'foryou';
+  // Two real, functional tabs. Not adding "Following" or "Chapter" tabs since
+  // there's no actual follow-graph or chapter-tagged pulse data behind them,
+  // and a tab that doesn't do anything real isn't worth having.
+  const visiblePulse = state.pulse
+    .map((p,i)=>({p,i}))
+    .filter(({p})=> tab==='witnessed' ? !!(p.myReactions && p.myReactions.witness) : true);
   return `<div class="app-shell">
     <div class="root-network-sky ${isDay?'day':'night'}">
       <div class="${isDay?'celestial-sun':'celestial-moon'}"></div>
@@ -3885,23 +3902,53 @@ function screenPulse(){
       <div class="eyebrow" style="margin-top:10px">The Root Network</div>
       <h2 style="font-size:22px">${state.user.plan==='Solo' ? "What everyone across Merros is doing right now." : "What people are doing. Show up for your pod."}</h2>
     </div>
+    <div class="subtabs section">
+      <span class="subtab ${tab==='foryou'?'active':''}" onclick="state._pulseTab='foryou';renderKeepScroll()">For You</span>
+      <span class="subtab ${tab==='witnessed'?'active':''}" onclick="state._pulseTab='witnessed';renderKeepScroll()">Witnessed</span>
+    </div>
     <div class="stack gap12 section">
-      ${state.pulse.map((p,i)=>`
-        <div class="card">
+      ${visiblePulse.length ? visiblePulse.map(({p,i})=>`
+        <div class="card" style="padding:16px">
           ${p.week ? `
             <div class="small" style="font-weight:700">@${p.who} · Week ${p.week} · ${p.track}</div>
             <div class="small" style="margin-top:6px;font-style:italic">"${p.text}"</div>
           ` : `<div class="small">${p.text}</div>`}
+          ${p.image ? `<img src="${p.image}" alt="" style="width:100%;border-radius:10px;margin-top:10px;display:block"/>` : ''}
           <div class="row gap wrap" style="margin-top:10px">
-            ${REACTIONS.map(([key,label])=>`<button class="btn btn-outline btn-sm" onclick="react(${i},'${key}')">${label}</button>`).join('')}
+            ${REACTIONS.map(([key,label])=>`<button class="btn ${p.myReactions&&p.myReactions[key]?'btn-primary':'btn-outline'} btn-sm" onclick="react(${i},'${key}')">${label}</button>`).join('')}
           </div>
           <div class="faint" style="margin-top:8px">▶ ${p.r.witness||0} witnessed · ${p.r.celebrate||0} celebrated · ${p.r.support||0} supported · ${p.r.acknowledge||0} acknowledged</div>
-        </div>`).join('')}
+        </div>`).join('') : `<p class="faint center">Nothing here yet. React to something with Witness and it'll show up in this tab.</p>`}
+    </div>
+    <div class="card section">
+      <div class="small" style="font-weight:700">What did this moment teach you?</div>
+      <textarea id="pulseComposerInput" placeholder="Write your reflection..." style="margin-top:10px"></textarea>
+      <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="postToPulse()">Post to Root Network</button>
     </div>
   </div>
-  ${bottomNav('commons')}`;
+  ${bottomNav('pulse')}`;
 }
-function react(i,key){ state.pulse[i].r[key]=(state.pulse[i].r[key]||0)+1; render(); }
+function react(i,key){
+  const post = state.pulse[i];
+  post.myReactions = post.myReactions || {};
+  const already = !!post.myReactions[key];
+  if(already){
+    post.myReactions[key] = false;
+    post.r[key] = Math.max(0,(post.r[key]||0)-1);
+  } else {
+    post.myReactions[key] = true;
+    post.r[key] = (post.r[key]||0)+1;
+  }
+  render();
+}
+function postToPulse(){
+  const input = document.getElementById('pulseComposerInput');
+  const v = input ? input.value.trim() : '';
+  if(!v){ toast('Write something first'); return; }
+  state.pulse.unshift({who:state.user.callsign, text:v, r:{}});
+  toast('Posted to the Root Network');
+  render();
+}
 
 /* ===================== SCREEN 19: JOURNAL ===================== */
 function screenJournal(){
@@ -3925,62 +3972,62 @@ function screenJournal(){
       <textarea id="journalInput" placeholder="A thought, a win, a frustration..." style="margin-top:10px"></textarea>
       <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveJournal()">Save to journal</button>
     </div>
-    <div class="card section center" id="rootPrintPreviewCard">
+    <div class="card section center" id="treeMarkerPreviewCard">
       <div class="eyebrow">Tree Marker Preview</div>
       <p class="faint" style="margin-top:4px">A live preview generated from your journal entries so far. This is not final until a sprint completes.</p>
-      <div id="rootPrintPreviewArea" style="display:flex;justify-content:center;margin-top:14px">
-        <button class="btn btn-outline" onclick="showRootPrintPreview()">Generate preview</button>
+      <div id="treeMarkerPreviewArea" style="display:flex;justify-content:center;margin-top:14px">
+        <button class="btn btn-outline" onclick="showTreeMarkerPreview()">Generate preview</button>
       </div>
     </div>
   </div>
   ${bottomNav('journal')}`;
 }
-async function showRootPrintPreview(){
-  const area = document.getElementById('rootPrintPreviewArea');
+async function showTreeMarkerPreview(){
+  const area = document.getElementById('treeMarkerPreviewArea');
   if(!area) return;
   area.innerHTML = `<p class="faint">Generating…</p>`;
   const entries = state.journal.map(j=>({ text: j.text }));
   const selected = TREE_SPECIES.find(s=>s.key===state.user.treeSpecies);
   const species = selected ? selected.key : 'sprout';
-  const result = await generateRootPrint({
+  const result = await generateTreeMarker({
     callsign: state.user.callsign || 'you', species,
     weeksCompleted: entries.length, consistencyPct: entries.length ? 100 : 0,
     entries, witnessedMoments: 0,
   });
-  state.user._rpPreviewHash = result.hash;
-  state.user._rpPreviewSpecies = species;
-  state.user._rpPreviewConsistency = entries.length ? 100 : 0;
-  renderRootPrintPreview();
+  state.user._tmPreviewHash = result.hash;
+  state.user._tmPreviewSpecies = species;
+  state.user._tmPreviewConsistency = entries.length ? 100 : 0;
+  renderTreeMarkerPreview();
 }
-const ROOTPRINT_DESIGN_HUES = [
+const TREE_MARKER_DESIGN_HUES = [
   {name:'Forest', deg:130}, {name:'Moss', deg:95}, {name:'Amber', deg:38},
   {name:'Rosewood', deg:350}, {name:'Plum', deg:290}, {name:'Ocean', deg:200},
   {name:'Slate', deg:220}, {name:'Sand', deg:45},
 ];
-function renderRootPrintPreview(){
-  const area = document.getElementById('rootPrintPreviewArea');
-  if(!area || !state.user._rpPreviewHash) return;
-  const hashHex = state.user._rpPreviewHash;
-  const species = state.user._rpPreviewSpecies;
-  const consistencyPct = state.user._rpPreviewConsistency;
-  const speciesHueDeg = Math.round((ROOTPRINT_SPECIES_HUES[species]||0.3) * 360);
-  const ringStyle = state.user._rpRingStyle || 'circular';
-  const sizeKey = state.user._rpSize || 'medium';
+function renderTreeMarkerPreview(){
+  const area = document.getElementById('treeMarkerPreviewArea');
+  if(!area || !state.user._tmPreviewHash) return;
+  const hashHex = state.user._tmPreviewHash;
+  const species = state.user._tmPreviewSpecies;
+  const consistencyPct = state.user._tmPreviewConsistency;
+  const speciesHueDeg = Math.round((TREE_MARKER_SPECIES_HUES[species]||0.3) * 360);
+  const ringStyle = state.user._tmRingStyle || 'circular';
+  const sizeKey = state.user._tmSize || 'medium';
   const sizeScale = {small:0.78, medium:1, large:1.25}[sizeKey];
-  const customHue = state.user._rpCustomHue;
-  const uid = 'rp'+hashHex.slice(0,6);
-  const medallion = rootprintRenderMedallionSVG(hashHex, {
-    speciesHue: ROOTPRINT_SPECIES_HUES[species]||0.3, consistencyPct,
+  const customHue = state.user._tmCustomHue;
+  const uid = 'rp'+hashHex.slice(0,6)+Math.round(sizeScale*10)+ringStyle[0];
+  const medallion = treeMarkerRenderMedallionSVG(hashHex, {
+    speciesHue: TREE_MARKER_SPECIES_HUES[species]||0.3, consistencyPct,
     ringStyle, sizeScale, customHueDeg: customHue,
   });
-  const paletteHue = customHue!=null ? customHue/360 : (ROOTPRINT_SPECIES_HUES[species]||0.3);
+  const paletteHue = customHue!=null ? customHue/360 : (TREE_MARKER_SPECIES_HUES[species]||0.3);
   area.innerHTML = `
     <div class="center">
       ${medallion}
       <p class="small" style="font-weight:700;margin-top:10px">Tree Marker (preview)</p>
       <p class="faint" style="margin-top:8px">Drag to spin it</p>
-      <div style="max-width:220px;margin:0 auto">${rootprintPaletteHTML(hashHex, paletteHue, consistencyPct)}</div>
-      <button class="btn btn-outline btn-sm section" onclick="exportRootPrint('${hashHex}', ${paletteHue}, ${consistencyPct}, {ringStyle:'${ringStyle}',sizeScale:${sizeScale},customHueDeg:${customHue==null?'null':customHue}})">Export</button>
+      <div style="max-width:220px;margin:0 auto">${treeMarkerPaletteHTML(hashHex, paletteHue, consistencyPct)}</div>
+      <button class="btn btn-outline btn-sm section" onclick="exportTreeMarker('${hashHex}', ${paletteHue}, ${consistencyPct}, {ringStyle:'${ringStyle}',sizeScale:${sizeScale},customHueDeg:${customHue==null?'null':customHue}})">Export</button>
     </div>
     <div class="card section" style="background:var(--bg-alt);border:none;text-align:left">
       <div class="small" style="font-weight:700">Design your Tree Marker</div>
@@ -3988,30 +4035,30 @@ function renderRootPrintPreview(){
       <div class="faint section" style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em">Ring style</div>
       <div class="row gap wrap" style="margin-top:6px">
         ${[['circular','Circular'],['organic','Organic'],['staggered','Staggered']].map(([k,label])=>
-          `<div class="choice-card chip ${ringStyle===k?'selected':''}" style="padding:7px 13px;width:auto" onclick="setRpDesign('_rpRingStyle','${k}')">${label}</div>`
+          `<div class="choice-card chip ${ringStyle===k?'selected':''}" style="padding:7px 13px;width:auto" onclick="setRpDesign('_tmRingStyle','${k}')">${label}</div>`
         ).join('')}
       </div>
       <div class="faint section" style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em">Size</div>
       <div class="row gap wrap" style="margin-top:6px">
         ${[['small','Small'],['medium','Medium'],['large','Large']].map(([k,label])=>
-          `<div class="choice-card chip ${sizeKey===k?'selected':''}" style="padding:7px 13px;width:auto" onclick="setRpDesign('_rpSize','${k}')">${label}</div>`
+          `<div class="choice-card chip ${sizeKey===k?'selected':''}" style="padding:7px 13px;width:auto" onclick="setRpDesign('_tmSize','${k}')">${label}</div>`
         ).join('')}
       </div>
       <div class="faint section" style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em">Color</div>
       <div class="row gap wrap" style="margin-top:8px">
-        <div class="rp-hue-swatch ${customHue==null?'selected':''}" style="background:hsl(${speciesHueDeg},45%,45%)" title="Your tree's color" onclick="setRpDesign('_rpCustomHue',null)"></div>
-        ${ROOTPRINT_DESIGN_HUES.map(h=>`<div class="rp-hue-swatch ${customHue===h.deg?'selected':''}" style="background:hsl(${h.deg},45%,45%)" title="${h.name}" onclick="setRpDesign('_rpCustomHue',${h.deg})"></div>`).join('')}
+        <div class="rp-hue-swatch ${customHue==null?'selected':''}" style="background:hsl(${speciesHueDeg},45%,45%)" title="Your tree's color" onclick="setRpDesign('_tmCustomHue',null)"></div>
+        ${TREE_MARKER_DESIGN_HUES.map(h=>`<div class="rp-hue-swatch ${customHue===h.deg?'selected':''}" style="background:hsl(${h.deg},45%,45%)" title="${h.name}" onclick="setRpDesign('_tmCustomHue',${h.deg})"></div>`).join('')}
       </div>
       <div class="row gap section" style="align-items:center">
         <input id="rpCustomHex" placeholder="#RRGGBB for an exact color" style="flex:1;font-family:'Courier New',monospace" onkeydown="if(event.key==='Enter')setRpCustomHex()"/>
         <button class="btn btn-outline btn-sm" onclick="setRpCustomHex()">Use</button>
       </div>
     </div>`;
-  setTimeout(()=>initRootPrintSpin(uid), 30);
+  setTimeout(()=>initTreeMarkerSpin(uid), 30);
 }
 function setRpDesign(key, val){
   state.user[key] = val;
-  renderRootPrintPreview();
+  renderTreeMarkerPreview();
 }
 function setRpCustomHex(){
   const input = document.getElementById('rpCustomHex');
@@ -4028,8 +4075,8 @@ function setRpCustomHex(){
     else h = (r-g)/d + 4;
     h *= 60;
   }
-  state.user._rpCustomHue = Math.round(h);
-  renderRootPrintPreview();
+  state.user._tmCustomHue = Math.round(h);
+  renderTreeMarkerPreview();
 }
 function saveJournal(){
   const v=document.getElementById('journalInput').value.trim();
@@ -4058,29 +4105,29 @@ async function loadMyCollectionTrunk(){
   try{
     const rings = await Merros.collectionRings.getMyCollectionRings();
     const selected = TREE_SPECIES.find(s=>s.key===state.user.treeSpecies);
-    const hue = ROOTPRINT_SPECIES_HUES[selected?selected.key:'sprout'] || 0.3;
+    const hue = TREE_MARKER_SPECIES_HUES[selected?selected.key:'sprout'] || 0.3;
     if(!rings.length){
-      area.innerHTML = `<div class="card center section" style="background:var(--bg-alt);border:none;padding:32px 20px">${rootprintRenderTrunkSVG([], hue, 200)}<p class="small section" style="font-weight:700">No rings yet</p><p class="faint" style="margin-top:4px;max-width:260px;margin-left:auto;margin-right:auto">Finish your first sprint and your collection gets its first piece.</p></div>`;
+      area.innerHTML = `<div class="card center section" style="background:var(--bg-alt);border:none;padding:32px 20px">${treeMarkerRenderTrunkSVG([], hue, 200)}<p class="small section" style="font-weight:700">No rings yet</p><p class="faint" style="margin-top:4px;max-width:260px;margin-left:auto;margin-right:auto">Finish your first sprint and your collection gets its first piece.</p></div>`;
       return;
     }
     const gallery = rings.slice().reverse().map((r,i)=>{
-      const rHue = ROOTPRINT_SPECIES_HUES[r.species] || 0.3;
+      const rHue = TREE_MARKER_SPECIES_HUES[r.species] || 0.3;
       const speciesName = (TREE_SPECIES.find(s=>s.key===r.species)||{name:r.species}).name;
-      const medallion = rootprintRenderMedallionSVG(r.seed_hash, {speciesHue:rHue, consistencyPct:r.consistency_pct});
-      const rarity = rootprintGetRarity(r.seed_hash, r.consistency_pct);
+      const medallion = treeMarkerRenderMedallionSVG(r.seed_hash, {speciesHue:rHue, consistencyPct:r.consistency_pct});
+      const rarity = treeMarkerGetRarity(r.seed_hash, r.consistency_pct);
       const dateLabel = r.created_at ? new Date(r.created_at).toLocaleDateString('default',{month:'short',year:'numeric'}) : '';
       return `<div class="card center" style="padding:16px 10px">
         <div style="width:150px;margin:0 auto">${medallion}</div>
         <p class="small section" style="font-weight:700;margin-top:10px">${speciesName}</p>
         <p class="faint" style="font-weight:700;color:var(--green-dark)">${rarity.label}</p>
         <p class="faint">${r.weeks_completed} week${r.weeks_completed===1?'':'s'} · ${dateLabel}</p>
-        ${rootprintPaletteHTML(r.seed_hash, rHue, r.consistency_pct)}
-        <button class="btn btn-outline btn-sm section" onclick="exportRootPrint('${r.seed_hash}', ${rHue}, ${r.consistency_pct})">Export</button>
+        ${treeMarkerPaletteHTML(r.seed_hash, rHue, r.consistency_pct)}
+        <button class="btn btn-outline btn-sm section" onclick="exportTreeMarker('${r.seed_hash}', ${rHue}, ${r.consistency_pct})">Export</button>
       </div>`;
     }).join('');
     area.innerHTML = `
       <div class="card center section" style="background:var(--bg-alt);border:none;padding:24px 20px">
-        ${rootprintRenderTrunkSVG(rings, hue, 200)}
+        ${treeMarkerRenderTrunkSVG(rings, hue, 200)}
         <p class="small section" style="font-weight:700">${rings.length} ring${rings.length===1?'':'s'} · ${rings.length} completed sprint${rings.length===1?'':'s'}</p>
         <p class="faint">The center is your first. The outer edge is today.</p>
       </div>
@@ -4397,7 +4444,7 @@ async function recordChapterGoalRings(g){
   g._ringsRecorded = true;
   try{
     const seedStr = `chaptergoal|${state.chapter.name}|${g.title}|${g.contributors.length}|${Date.now()}`;
-    const seedHash = await rootprintSha256Hex(seedStr);
+    const seedHash = await treeMarkerSha256Hex(seedStr);
     // A ring for the Chapter's own shared trunk - its collective history
     await Merros.collectionRings.saveChapterRing({
       chapterId: state.chapter.id || 1, goalTitle: g.title,
@@ -4408,7 +4455,7 @@ async function recordChapterGoalRings(g){
     const myContribution = g.contributors.find(c=>c[0]===state.user.callsign);
     const consistencyPct = myContribution ? Math.min(100, Math.round((myContribution[1]/g.target)*100)) : 50;
     const mySeedStr = `chaptergoal-personal|${state.user.callsign}|${g.title}|${Date.now()}`;
-    const mySeedHash = await rootprintSha256Hex(mySeedStr);
+    const mySeedHash = await treeMarkerSha256Hex(mySeedStr);
     await Merros.collectionRings.saveCollectionRing({
       species, weeksCompleted: 1, consistencyPct, sentimentArc: 'rising', seedHash: mySeedHash
     });
