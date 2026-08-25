@@ -86,11 +86,21 @@ textarea{resize:vertical;min-height:70px;}
 .badge-grey{background:#EFEBDD;color:var(--ink-soft);}
 
 .progress-track{height:6px;background:var(--border);border-radius:4px;overflow:hidden;}
-.progress-fill{height:100%;background:var(--green);}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green-dark),var(--green));transition:width .4s ease;}
 
-.dots{display:flex;gap:6px;}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--border);}
+body.onb-atmosphere{
+  background:
+    radial-gradient(ellipse 820px 620px at 12% -8%, rgba(232,178,61,.15), transparent 60%),
+    radial-gradient(ellipse 720px 720px at 112% 18%, rgba(79,138,74,.15), transparent 55%),
+    radial-gradient(ellipse 640px 520px at 45% 118%, rgba(232,147,160,.12), transparent 55%),
+    var(--bg-alt);
+}
+
+.dots{display:flex;align-items:center;gap:0;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex:none;position:relative;transition:background .3s;}
 .dot.on{background:var(--green);}
+.dot:not(:last-child)::after{content:'';display:block;position:absolute;left:100%;top:50%;transform:translateY(-50%);width:14px;height:2px;background:var(--border);transition:background .3s;}
+.dot.on:not(:last-child)::after{background:var(--green);}
 
 .icon-badge{width:46px;height:46px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;font-size:21px;flex:none;}
 
@@ -100,7 +110,7 @@ textarea{resize:vertical;min-height:70px;}
 .avatar{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
   font-size:12px;font-weight:800;color:#fff;flex:none;}
 
-.top-onboard{position:sticky;top:0;background:var(--bg);padding-top:6px;padding-bottom:14px;z-index:5;}
+.top-onboard{position:sticky;top:0;background:rgba(244,246,242,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding-top:6px;padding-bottom:14px;z-index:5;}
 .back-link{cursor:pointer;color:var(--ink-soft);font-size:13.5px;font-weight:600;}
 .back-link:hover{color:var(--ink);}
 .eyebrow{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-bottom:6px;}
@@ -275,6 +285,10 @@ nav.top{padding:20px 0;}
 .tree-anim{display:inline-block;transform-origin:bottom center;animation:treeSway 2.8s ease-in-out infinite;}
 @keyframes treeMaterialize{0%{opacity:0;transform:scale(.82);filter:blur(3px);}100%{opacity:1;transform:scale(1);filter:blur(0);}}
 .tree-materializing{animation:treeMaterialize .7s cubic-bezier(.34,1.4,.64,1) .05s both, treeSway 2.8s ease-in-out .75s infinite;}
+@keyframes cheerFloat{0%{opacity:0;transform:translateY(6px) scale(.7);}25%{opacity:1;transform:translateY(-4px) scale(1);}80%{opacity:1;}100%{opacity:0;transform:translateY(-30px) scale(.9);}}
+.cheer-bubble{position:absolute;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:#fff;pointer-events:none;animation:cheerFloat 2.1s ease-out forwards;box-shadow:0 2px 6px rgba(0,0,0,.18);z-index:6;}
+@keyframes cheerCaptionIn{0%{opacity:0;transform:translate(-50%,4px);}20%{opacity:1;transform:translate(-50%,0);}80%{opacity:1;}100%{opacity:0;transform:translate(-50%,-6px);}}
+.cheer-caption{position:absolute;left:50%;white-space:nowrap;font-size:11px;font-weight:700;color:var(--green-dark);background:rgba(255,255,255,.94);padding:4px 10px;border-radius:20px;pointer-events:none;animation:cheerCaptionIn 2.4s ease-out forwards;box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:6;}
 .tree-shatter-frag{position:absolute;background-repeat:no-repeat;will-change:transform,opacity;transform-style:preserve-3d;}
 @keyframes treeShatterFly{
   0%{transform:translate3d(0,0,0) rotateX(0) rotateY(0) rotateZ(0);opacity:1;}
@@ -287,7 +301,8 @@ nav.top{padding:20px 0;}
 .tree-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
 @media(max-width:520px){.tree-grid{grid-template-columns:repeat(4,1fr);}}
 .tree-grid .choice-card{padding:10px 4px;text-align:center;}
-.plaque-card{display:flex;align-items:center;gap:14px;}
+.plaque-card{display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,var(--gold-light),var(--green-light));border:1px solid var(--gold);position:relative;overflow:hidden;}
+.plaque-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 18% 15%, rgba(255,255,255,.55), transparent 55%);pointer-events:none;}
 .hero-lines{max-width:600px;margin:0 auto 10px;font-size:16px;color:var(--ink-soft);}
 .hero-lines b{color:var(--ink);font-weight:600;}
 .cta-block{max-width:460px;margin:36px auto 0;text-align:center;}
@@ -306,19 +321,19 @@ nav.top{padding:20px 0;}
 @media(max-width:720px){.compare-2col{grid-template-columns:1fr;}}
 .solo-first-layout{display:grid;grid-template-columns:1fr 1.3fr;gap:20px;max-width:900px;margin:0 auto;}
 @media(max-width:720px){.solo-first-layout{grid-template-columns:1fr;}}
-#dashboardTreeVisual{position:relative;overflow:hidden;}
-.rain-drop{position:absolute;top:-10px;width:3px;height:14px;border-radius:2px;
-  background:linear-gradient(180deg,rgba(125,175,220,0) 0%,rgba(110,165,215,.85) 60%,rgba(90,150,205,.85) 100%);
-  animation:rainFall 0.9s ease-in forwards;pointer-events:none;z-index:5;}
+#dashboardTreeVisual{position:relative;overflow:visible;}
+.rain-drop{position:absolute;top:-16px;width:5px;height:26px;border-radius:3px;
+  background:linear-gradient(180deg,rgba(125,175,220,0) 0%,rgba(110,165,215,.95) 55%,rgba(80,140,200,.95) 100%);
+  animation:rainFall 1.3s ease-in forwards;pointer-events:none;z-index:5;box-shadow:0 0 4px rgba(90,150,210,.5);}
 @keyframes rainFall{
   0%{transform:translateY(0);opacity:0;}
-  15%{opacity:1;}
-  100%{transform:translateY(70px);opacity:0;}
+  12%{opacity:1;}
+  100%{transform:translateY(180px);opacity:0;}
 }
-.tree-watered{animation:treeGlowAbsorb 1.4s ease-out;}
+.tree-watered{animation:treeGlowAbsorb 2.2s ease-out;}
 @keyframes treeGlowAbsorb{
   0%{filter:drop-shadow(0 0 0px rgba(140,200,120,0)) brightness(1);}
-  45%{filter:drop-shadow(0 0 14px rgba(150,210,130,.75)) brightness(1.12);}
+  40%{filter:drop-shadow(0 0 30px rgba(150,210,130,.9)) brightness(1.28);}
   100%{filter:drop-shadow(0 0 0px rgba(140,200,120,0)) brightness(1);}
 }
 .tree-wilt-mild{filter:saturate(.85) brightness(.97);transform:rotate(-1.5deg);transition:filter 1s,transform 1s;}
@@ -483,6 +498,7 @@ nav.top{padding:20px 0;}
 .roadmap-day-pill .rdp-num{font-size:14px;font-weight:700;color:var(--ink);}
 .roadmap-day-pill .rdp-dot{width:5px;height:5px;border-radius:50%;background:var(--green-dark);}
 .roadmap-day-pill.selected .rdp-dot{background:#fff;}
+.collection-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px;}
 .choice-card:active{transform:scale(.97);}
 .choice-card.selected{border-width:2px;font-weight:700;}
 .bg-blob{position:fixed;border-radius:50%;filter:blur(50px);opacity:.32;z-index:-1;pointer-events:none;animation:floatBlob 10s ease-in-out infinite;}
@@ -564,6 +580,7 @@ const state = {
     {who:'ZENMSTR', when:'2h ago', kind:'Looking for', text:'Two people to read my draft before I send it.'},
     {who:'AM_99', when:'1d ago', kind:'Offering', text:'Happy to review CVs this week.'},
   ],
+  podChallenge: null,
   pulse: [
     {who:'ZENMSTR', week:2, track:'Land a job', text:'Sent 10 applications. One company already replied.', r:{witness:3,celebrate:1,support:0,acknowledge:0}},
     {who:'AM_99', week:2, track:'Build a business', text:'Zero progress. Spent the week dealing with family.', r:{witness:2,celebrate:0,support:3,acknowledge:0}},
@@ -622,7 +639,7 @@ function go(screen){
   if(state.realPod && (screen==='dashboard'||screen==='pod'||screen==='theWeek')) tasks.push(fetchPodDataQuiet());
   if(screen==='dashboard') tasks.push(fetchTreeVitalityQuiet());
   if(screen==='sprintSetup'||screen==='dashboard') tasks.push(fetchRoadmapPinsQuiet());
-  if(screen==='myCollection') setTimeout(loadMyCollectionTrunk, 50); // scoped to its own sub-area, not a full repaint — safe as-is
+  if(screen==='myCollection') setTimeout(loadMyCollectionTrunk, 50); // scoped to its own sub-area, not a full repaint, safe as-is
   if(tasks.length){
     Promise.all(tasks).then(()=>{
       render();
@@ -930,7 +947,7 @@ async function recordCompletedSprintRing(){
     await Merros.collectionRings.saveCollectionRing({
       species, weeksCompleted: totalWeeks, consistencyPct, sentimentArc: arc, seedHash
     });
-    toast('A new ring joined your Collection 🌳');
+    toast('A new ring joined your Collection');
   }catch(e){ console.error('recordCompletedSprintRing failed', e); }
 }
 function rootprintHslToRgb(h,s,l){
@@ -993,9 +1010,33 @@ function rootprintRenderSVG(hashHex, speciesHue, size=220){
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${parts.join('')}</svg>`;
 }
 
-/* ---- RootPrint MEDALLION: crisp, 3D-styled wood-and-brass disc with real
-   curved text rings (your callsign, hash, consistency, sentiment arc),
-   draggable and spinnable with momentum, like a roulette wheel. ---- */
+/* ---- RootPrint MEDALLION, redesigned as a real generative-trait system
+   (the way NFT art actually works): every piece rolls independent traits
+   off its hash, base color comes from the person's actual tree species
+   instead of a fixed wood-brown, and rarity is biased by real consistency,
+   so a genuinely well-run sprint has better odds of a striking result.
+   Nothing here is decoration bolted onto one fixed template; the traits
+   change the actual palette, aura, and frame material rendered. ---- */
+const ROOTPRINT_RARITY_TIERS = [
+  {key:'common', label:'Common'},
+  {key:'uncommon', label:'Uncommon'},
+  {key:'rare', label:'Rare'},
+  {key:'legendary', label:'Legendary'},
+];
+function rootprintRollRarity(rollVal, consistencyPct){
+  const boost = ((consistencyPct||70)/100) * 0.08;
+  const adjusted = Math.min(0.999, rollVal + boost);
+  if(adjusted >= 0.95) return ROOTPRINT_RARITY_TIERS[3];
+  if(adjusted >= 0.82) return ROOTPRINT_RARITY_TIERS[2];
+  if(adjusted >= 0.56) return ROOTPRINT_RARITY_TIERS[1];
+  return ROOTPRINT_RARITY_TIERS[0];
+}
+const ROOTPRINT_FRAME_STOPS = {
+  common:    ['#C99760','#A6753E','#6E4E28'],
+  uncommon:  ['#F0F0F0','#C7C7C7','#8B8B8B'],
+  rare:      ['#F8E39A','#D9AA3F','#8F6A1C'],
+  legendary: ['#FBD9E8','#D9C1F5','#B8E4D6','#FCE7A8'],
+};
 function rootprintCurvedTextRing(id, cx, cy, r, text, opts={}){
   const {fontSize=8.5, color='#3A2A18', mono=false} = opts;
   const sweepPath = `M ${cx} ${cy-r} A ${r} ${r} 0 1 1 ${(cx-0.02).toFixed(2)} ${cy-r}`;
@@ -1004,67 +1045,83 @@ function rootprintCurvedTextRing(id, cx, cy, r, text, opts={}){
       <textPath href="#${id}" startOffset="1%">${text}</textPath>
     </text>`;
 }
+function rootprintGetRarity(hashHex, consistencyPct){
+  const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
+  return rootprintRollRarity(nums[7]/255, consistencyPct);
+}
 function rootprintRenderMedallionSVG(hashHex, opts={}){
   const {
-    number=1, callsign='you', speciesHue=0.3,
-    weeksCompleted=0, consistencyPct=0, sentimentArc='steady', dateLabel='',
+    speciesHue=0.3, consistencyPct=70,
   } = opts;
   const size = 320, cx=size/2, cy=size/2;
   const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
-  const woodHue = 26 + (nums[0]%12);
   const uid = 'rp'+hashHex.slice(0,6);
-  // Real tree rings are never true circles — each year's ring is thicker on
-  // whichever side got more light/water, so the whole cross-section leans
-  // off-center. Every ring here gets its own hash-seeded lean direction,
-  // strength, and a little organic wobble instead of a plain <circle>.
+  const rarity = rootprintRollRarity(nums[7]/255, consistencyPct);
+  const isLegendary = rarity.key==='legendary', isRare = rarity.key==='rare' || isLegendary;
+  const hueDeg = Math.round((speciesHue%1)*360);
+  const secondHueDeg = (hueDeg + 34 + (nums[9]%20)) % 360;
+  const thirdHueDeg = (hueDeg + 320 - (nums[10]%20) + 360) % 360;
+
+  // Perfectly concentric, true circles, every one. The variety comes from
+  // color, thickness, and spacing rhythm instead of the ring's shape.
   let ringParts=[];
   const numRings=14;
+  let r = size/2-8;
   for(let i=0;i<numRings;i++){
-    const baseR = (size/2-6) * (1 - i/numRings*0.94);
-    const light = 34 + (i%3)*4 + (nums[i%nums.length]%6);
-    const strokeW = (1.4+(nums[(i+3)%nums.length]%3)*0.6);
+    const light = 30 + (i%3)*4 + (nums[i%nums.length]%6);
+    const sat = 42 + (nums[(i+9)%nums.length]%18);
+    const strokeW = (1.3+(nums[(i+3)%nums.length]%3)*0.7);
     const opacity = (0.55+(i%4)*0.1).toFixed(2);
-    const leanAngle = (nums[(i*2)%nums.length]/255) * Math.PI*2;
-    const leanStrength = baseR * (0.05 + (nums[(i*2+1)%nums.length]/255)*0.09);
-    const wobFreq = 3 + (nums[(i*3+2)%nums.length]%4);
-    const wobAmp = baseR * 0.02 * (0.6 + (nums[(i*3+5)%nums.length]/255));
-    const phase = (nums[(i*5+7)%nums.length]/255) * Math.PI*2;
-    const pts = [];
-    const nPts = 72;
-    for(let p=0;p<nPts;p++){
-      const a = (p/nPts)*Math.PI*2;
-      const lean = Math.cos(a-leanAngle)*leanStrength;
-      const wobble = Math.sin(a*wobFreq+phase)*wobAmp;
-      const r = baseR + lean + wobble;
-      pts.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1));
-    }
-    ringParts.push(`<polygon points="${pts.join(' ')}" fill="none" stroke="hsl(${woodHue},38%,${light}%)" stroke-width="${strokeW.toFixed(1)}" opacity="${opacity}"/>`);
+    const ringHue = (hueDeg + (nums[(i*4)%nums.length]/255-0.5)*22 + 360) % 360;
+    ringParts.push(`<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="none" stroke="hsl(${ringHue.toFixed(0)},${sat}%,${light}%)" stroke-width="${strokeW.toFixed(1)}" opacity="${opacity}"/>`);
+    const gapFrac = 0.052 + (nums[(i*6+13)%nums.length]/255)*0.028;
+    r -= (size/2) * gapFrac;
+    if(r < 100) break;
   }
+
+  // Sparkle flecks, density scales with rarity, positions from the hash so they're
+  // stable per piece rather than re-rolling every render.
+  let flecks = '';
+  if(isRare){
+    const count = isLegendary ? 16 : 7;
+    for(let i=0;i<count;i++){
+      const a = (nums[(i*3+20)%nums.length]/255)*Math.PI*2;
+      const rr = 8 + (nums[(i*3+21)%nums.length]/255)*(size/2-20);
+      const fx = cx+rr*Math.cos(a), fy = cy+rr*Math.sin(a);
+      const fs = 1+(nums[(i*3+22)%nums.length]%3);
+      const fh = (hueDeg + i*23) % 360;
+      flecks += `<circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="${fs}" fill="hsl(${fh},70%,80%)" opacity=".7"/>`;
+    }
+  }
+
+  const frameStops = ROOTPRINT_FRAME_STOPS[rarity.key];
+  const auraStops = isLegendary
+    ? `<stop offset="0%" stop-color="hsl(${hueDeg},46%,58%)"/><stop offset="45%" stop-color="hsl(${secondHueDeg},42%,44%)"/><stop offset="80%" stop-color="hsl(${thirdHueDeg},40%,30%)"/><stop offset="100%" stop-color="hsl(${hueDeg},44%,18%)"/>`
+    : isRare
+      ? `<stop offset="0%" stop-color="hsl(${hueDeg},44%,54%)"/><stop offset="65%" stop-color="hsl(${secondHueDeg},38%,36%)"/><stop offset="100%" stop-color="hsl(${hueDeg},42%,20%)"/>`
+      : `<stop offset="0%" stop-color="hsl(${hueDeg},38%,50%)"/><stop offset="70%" stop-color="hsl(${hueDeg},36%,36%)"/><stop offset="100%" stop-color="hsl(${hueDeg},40%,22%)"/>`;
+
   return `
   <div class="rootprint-medallion" id="${uid}" style="width:${size}px;height:${size}px;max-width:100%;position:relative;touch-action:none;cursor:grab;user-select:none;margin:0 auto">
-    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;width:100%;height:auto;filter:drop-shadow(0 10px 22px rgba(40,26,10,.35)) drop-shadow(0 2px 4px rgba(40,26,10,.25))">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;width:100%;height:auto;filter:drop-shadow(0 10px 22px rgba(20,14,8,.35)) drop-shadow(0 2px 4px rgba(20,14,8,.25))${isLegendary?' drop-shadow(0 0 14px hsla('+hueDeg+',70%,65%,.45))':''}">
       <defs>
-        <radialGradient id="${uid}wood" cx="50%" cy="42%" r="70%">
-          <stop offset="0%" stop-color="hsl(${woodHue},42%,52%)"/>
-          <stop offset="70%" stop-color="hsl(${woodHue},40%,38%)"/>
-          <stop offset="100%" stop-color="hsl(${woodHue},44%,24%)"/>
-        </radialGradient>
-        <radialGradient id="${uid}brass" cx="45%" cy="35%" r="65%">
-          <stop offset="0%" stop-color="#F5DFA0"/><stop offset="55%" stop-color="#C9A24B"/><stop offset="100%" stop-color="#8A6A24"/>
-        </radialGradient>
+        <radialGradient id="${uid}wood" cx="50%" cy="42%" r="70%">${auraStops}</radialGradient>
+        <linearGradient id="${uid}brass" x1="0%" y1="0%" x2="100%" y2="100%">
+          ${frameStops.map((c,i)=>`<stop offset="${Math.round(i/(frameStops.length-1)*100)}%" stop-color="${c}"/>`).join('')}
+        </linearGradient>
         <radialGradient id="${uid}metal" cx="42%" cy="32%" r="70%">
-          <stop offset="0%" stop-color="#EDEDED"/><stop offset="45%" stop-color="#B9B9B9"/><stop offset="100%" stop-color="#6E6E6E"/>
+          <stop offset="0%" stop-color="#F2F2F2"/><stop offset="45%" stop-color="hsl(${hueDeg},20%,78%)"/><stop offset="100%" stop-color="hsl(${hueDeg},22%,55%)"/>
         </radialGradient>
       </defs>
       <g id="${uid}rotor">
         <circle cx="${cx}" cy="${cy}" r="${size/2-4}" fill="url(#${uid}wood)"/>
         ${ringParts.join('')}
-        <circle cx="${cx}" cy="${cy}" r="${size/2-96}" fill="none" stroke="url(#${uid}brass)" stroke-width="4"/>
+        ${flecks}
+        <circle cx="${cx}" cy="${cy}" r="${size/2-96}" fill="none" stroke="url(#${uid}brass)" stroke-width="${isLegendary?5:4}"/>
         <circle cx="${cx}" cy="${cy}" r="${size/2-102}" fill="url(#${uid}metal)" stroke="#4a4a4a" stroke-width="1"/>
-        <g transform="translate(${cx},${cy-14}) scale(0.72)">
+        <g transform="translate(${cx},${cy}) scale(0.72)">
           <path d="M0 28V6M0 6C-10 6 -16 -2 -16 -12C-8 -12 0 -4 0 6ZM0 6C10 6 16 -2 16 -12C8 -12 0 -4 0 6Z" fill="none" stroke="#2E2A22" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/>
         </g>
-        <text x="${cx}" y="${cy+34}" text-anchor="middle" font-size="10.5" font-weight="800" letter-spacing="1.5" fill="#2E2A22" style="font-family:'Courier New',monospace">ROOTPRINT #${String(number).padStart(3,'0')}</text>
       </g>
     </svg>
   </div>`;
@@ -1144,6 +1201,8 @@ function svgIcon(name, size=28, color='currentColor'){
     book: `<path d="M4 5.3c2-1 5.2-1 8 .1v13.3c-2.8-1.1-6-1.1-8-.1V5.3Z" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 5.3c-2-1-5.2-1-8 .1v13.3c2.8-1.1 6-1.1 8-.1V5.3Z" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/>`,
     gear: `<circle cx="12" cy="12" r="3.1" fill="none" stroke="${color}" stroke-width="1.6"/><path d="M12 2.6v3M12 18.4v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M2.6 12h3M18.4 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="${color}" stroke-width="1.6" stroke-linecap="round"/>`,
     globe: `<circle cx="12" cy="12" r="9" fill="none" stroke="${color}" stroke-width="1.6"/><ellipse cx="12" cy="12" rx="4" ry="9" fill="none" stroke="${color}" stroke-width="1.6"/><line x1="3" y1="12" x2="21" y2="12" stroke="${color}" stroke-width="1.6"/>`,
+    mail: `<rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="${color}" stroke-width="1.6"/><path d="M4 6.5l8 6 8-6" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+    pin: `<path d="M12 21s7-6.5 7-12A7 7 0 0 0 5 9c0 5.5 7 12 7 12Z" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="9" r="2.2" fill="none" stroke="${color}" stroke-width="1.6"/>`,
   };
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24">${icons[name]||''}</svg>`;
 }
@@ -1527,19 +1586,13 @@ function screenIdentity(){
                 <div class="faint" style="margin-top:4px;font-size:11px">${s.name}</div>
               </div>`).join('')}
           </div>
-          ${selected ? `
-          <div class="card section" style="background:var(--bg-alt);border:none">
-            <div class="eyebrow">${selected.name} (Selected)</div>
-            <div style="margin:8px 0" class="tree-anim">${treeImg(selected.icon,222)}</div>
-            <p class="small" style="font-style:italic">"${selected.lore}"</p>
-          </div>` : `
-          <p class="faint section">Pick a tree above, or leave it as the Sprout for now.</p>`}
         </div>
         <div class="card section plaque-card">
-          <div class="tree-anim">${treeImg(displayIcon,162)}</div>
+          <div class="tree-anim">${treeImg(displayIcon,120)}</div>
           <div>
             <div class="small" style="font-weight:700">${state.user.callsign || '···'}</div>
-            <div class="faint">${displayEpithet} · Step 1 of 4</div>
+            <div class="faint">${displayEpithet}</div>
+            <p class="small" style="font-style:italic;margin-top:6px">"${selected ? selected.lore : "It hasn't chosen a shape yet, but it's already growing."}"</p>
           </div>
         </div>
         <div class="card section">
@@ -1596,10 +1649,98 @@ function checkPasswordMatch(){
 }
 function renderKeepScroll(){ render(); }
 function pickTreeSpecies(key){ state.user.treeSpecies = state.user.treeSpecies===key ? null : key; renderKeepScroll(); }
+
+/* Weekly mission, Wayk-inspired: a short, goal-relevant prompt that rotates
+   roughly twice a week (not a countdown timer, just a stable window computed
+   from the date, so it doesn't need its own backend field yet). Unlike
+   Wayk's "find a random object," every prompt here is actually tied to the
+   thing the app is for, so it earns its place instead of being novelty. */
+const MERROS_MISSIONS = [
+  "Write down one thing about this sprint you're proud of, even if it's small.",
+  "Send your pod a two-line update on how this week is actually going, not the polished version.",
+  "Reread your very first daily line this sprint. What's changed since then?",
+  "Do the smallest possible version of today's task, just to keep the streak honest.",
+  "Tell someone outside Merros one specific thing you're working on right now.",
+  "Reread the goal you picked at onboarding. Still the right one? Note it either way.",
+  "Spend five minutes tidying whatever's cluttering the space you work in.",
+  "Write one sentence you'd want to read on a hard day, later in this sprint.",
+  "Send a podmate something encouraging about their week. No reason needed.",
+  "Name one thing that's making this goal harder than it needs to be.",
+];
+function currentMission(){
+  const windowIndex = Math.floor(Date.now() / (1000*60*60*84)); // rotates roughly twice a week
+  const seed = (state.user.callsign||'you') + '|' + windowIndex;
+  let h = 0;
+  for(let i=0;i<seed.length;i++){ h = (h*31 + seed.charCodeAt(i)) >>> 0; }
+  return { id: windowIndex, text: MERROS_MISSIONS[h % MERROS_MISSIONS.length] };
+}
+function missionCard(){
+  const m = currentMission();
+  const done = state.user._completedMissionId === m.id;
+  return `<div class="card section" style="border:1.5px dashed var(--gold)">
+    <div class="small" style="font-weight:700">This week's mission</div>
+    <p class="small" style="margin-top:6px">${m.text}</p>
+    <button class="btn ${done?'btn-outline':'btn-primary'} btn-sm section" ${done?'disabled':''} onclick="completeMission(${m.id})">${done?'Completed':'Mark done'}</button>
+  </div>`;
+}
+function completeMission(id){
+  state.user._completedMissionId = id;
+  toast('Nice. A new one lands in a few days.');
+  renderKeepScroll();
+}
+
+/* Export a RootPrint as an image. Tries the native share sheet first
+   (that's the actual "share screen" on mobile), falls back to a direct PNG
+   download, and falls back once more to raw SVG if canvas conversion fails
+   for any reason, so the person always gets something out of it. */
+function exportRootPrint(hashHex, speciesHue, consistencyPct){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = rootprintRenderMedallionSVG(hashHex, {speciesHue, consistencyPct});
+  const svgEl = wrap.querySelector('svg');
+  if(!svgEl){ toast('Could not prepare that for export'); return; }
+  let markup = svgEl.outerHTML;
+  if(!/xmlns=/.test(markup)) markup = markup.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+  const exportSize = 640;
+  const img = new Image();
+  img.onload = function(){
+    try{
+      const canvas = document.createElement('canvas');
+      canvas.width = exportSize; canvas.height = exportSize;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#F4F1EA';
+      ctx.fillRect(0,0,exportSize,exportSize);
+      ctx.drawImage(img, 0, 0, exportSize, exportSize);
+      canvas.toBlob(async (blob)=>{
+        if(!blob){ downloadSvgFallback(markup); return; }
+        const file = new File([blob], 'rootprint.png', {type:'image/png'});
+        if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+          try{ await navigator.share({files:[file], title:'My RootPrint', text:'My RootPrint from Merros'}); return; }
+          catch(e){ /* cancelled or unsupported mid-flow, fall through to download */ }
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'rootprint.png';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url), 2000);
+      }, 'image/png');
+    }catch(e){ console.error('RootPrint export failed', e); downloadSvgFallback(markup); }
+  };
+  img.onerror = function(){ downloadSvgFallback(markup); };
+  img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(markup);
+}
+function downloadSvgFallback(markup){
+  const blob = new Blob([markup], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'rootprint.svg';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  toast('Exported as SVG (PNG export was not available on this device)');
+}
 /* HD shatter: tiles the tree's own rendered image into a grid of small
    fragments (each one a real slice of the tree, via background-position on
    its own data-URI copy) and flies them apart in 3D with rotation, gravity
-   drift, and staggered timing — roots holding a beat longer than the crown.
+   drift, and staggered timing, roots holding a beat longer than the crown.
    Pure DOM/CSS, deliberately not canvas-pixel-based: reading pixel data back
    off a canvas that was drawn from an SVG can silently fail from a security
    restriction depending on the browser, which is why the previous version
@@ -1616,7 +1757,12 @@ function disintegrateTreeHD(container, svgEl, durationMs, onDone){
   wrap.className = 'tree-shatter-wrap';
   wrap.style.cssText = `position:absolute;left:50%;top:50%;width:${w}px;height:${h}px;margin-left:${-w/2}px;margin-top:${-h/2}px;perspective:420px;pointer-events:none;`;
   container.style.position = 'relative';
-  const flightMs = Math.round(durationMs*0.7);
+  // Verified budget: max delay (22% of total) + flight time (66% of total)
+  // must land inside total with room to spare, or late fragments get deleted
+  // mid-flight when the container is removed. That truncation is exactly
+  // what made the effect read as "too quick" before.
+  const flightMs = Math.round(durationMs*0.66);
+  const maxDelayMs = Math.round(durationMs*0.22);
   for(let row=0; row<grid; row++){
     for(let col=0; col<grid; col++){
       const frag = document.createElement('div');
@@ -1629,19 +1775,21 @@ function disintegrateTreeHD(container, svgEl, durationMs, onDone){
       frag.style.backgroundSize = w+'px '+h+'px';
       frag.style.backgroundPosition = `-${col*cellW}px -${row*cellH}px`;
       const angle = Math.random()*Math.PI*2;
-      const dist = 34+Math.random()*90;
+      const dist = w*(0.22+Math.random()*0.55);
       const dx = (Math.cos(angle)*dist).toFixed(1)+'px';
-      const dy = (Math.sin(angle)*dist - 26 - Math.random()*36).toFixed(1)+'px';
-      const dz = ((Math.random()-0.5)*180).toFixed(0)+'px';
+      const dy = (Math.sin(angle)*dist - h*0.18 - Math.random()*h*0.25).toFixed(1)+'px';
+      const dz = ((Math.random()-0.5)*w*0.9).toFixed(0)+'px';
       frag.style.setProperty('--dx', dx);
       frag.style.setProperty('--dy', dy);
       frag.style.setProperty('--dz', dz);
       frag.style.setProperty('--rx', ((Math.random()-0.5)*520).toFixed(0)+'deg');
       frag.style.setProperty('--ry', ((Math.random()-0.5)*520).toFixed(0)+'deg');
       frag.style.setProperty('--rz', ((Math.random()-0.5)*300).toFixed(0)+'deg');
-      // bottom rows (roots, in image-space) hold a fraction longer before letting go
-      const rowDelay = (row/grid)*durationMs*0.28;
-      const delay = Math.round(rowDelay + Math.random()*durationMs*0.18);
+      // Bottom rows (roots, in image-space) hold a fraction longer before
+      // letting go. Bounded by maxDelayMs so delay+flightMs never exceeds
+      // durationMs (verified above) instead of getting truncated mid-flight.
+      const rowDelay = (row/grid)*maxDelayMs*0.6;
+      const delay = Math.round(rowDelay + Math.random()*maxDelayMs*0.4);
       frag.style.animation = `treeShatterFly ${flightMs}ms cubic-bezier(.22,.61,.36,1) ${delay}ms forwards`;
       wrap.appendChild(frag);
     }
@@ -1653,7 +1801,7 @@ function disintegrateTreeHD(container, svgEl, durationMs, onDone){
     onDone && onDone();
   }, durationMs);
 }
-/* Change tree mid-sprint — allowed once per sprint, with a disintegrate/
+/* Change tree mid-sprint, allowed once per sprint, with a disintegrate/
    materialize transition instead of an instant swap. */
 function beginTreeChange(newKey){
   if(state.user._treeChangedThisSprint){ toast("You've already changed your tree this sprint."); return; }
@@ -1670,7 +1818,7 @@ function beginTreeChange(newKey){
     toast('Your tree is now a ' + (sel?sel.name:newKey));
   };
   if(!holder || !svgEl){ finish(); return; }
-  disintegrateTreeHD(holder, svgEl, 2600, finish);
+  disintegrateTreeHD(holder, svgEl, 3200, finish);
 }
 function toggleAuthMode(){ state._authMode = state._authMode==='login' ? 'signup' : 'login'; render(); }
 function checkCallsign(){
@@ -1743,7 +1891,7 @@ async function submitIdentity(){
 /* ===================== SCREEN 2b: CHECK EMAIL (real auth) ===================== */
 function screenCheckEmail(){
   return `<div class="app-shell center" style="min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center">
-    <div style="font-size:40px">📬</div>
+    <div style="display:flex;justify-content:center">${svgIcon('mail',40)}</div>
     <h2 style="font-size:24px;margin-top:16px">Confirm your email</h2>
     <p class="muted small" style="margin-top:10px;max-width:420px">We sent a confirmation link to <b>${state.user.email}</b>. Click it on this device, then come back. This page will pick things up automatically once you're confirmed.</p>
     <button class="btn btn-outline" style="margin-top:20px" onclick="recheckSession()">I confirmed it → Continue</button>
@@ -1764,8 +1912,8 @@ const GOAL_CATEGORIES=[
   {name:'Travel & Adventure', goals:['Travel more','Visit a new country','Take a solo trip','Explore my own city']},
   {name:'Digital Wellness', goals:['Spend less time on social media','Do a digital detox','Be more present','Protect my focus']},
 ];
-// All six run within the same green family — varying lightness/saturation/warmth
-// only, never hue — ordered darkest→lightest so the palette itself has a logic
+// All six run within the same green family, varying lightness/saturation/warmth
+// only, never hue, ordered darkest to lightest so the palette itself has a logic
 // to it. Health & Wellness keeps the actual brand green (--green/--green-dark)
 // as the anchor in the middle of the run.
 const GOAL_CATEGORY_COLORS = {
@@ -1789,7 +1937,10 @@ function screenGoalPicker(){
         <div class="card section" style="border-left:4px solid ${c.accent}">
           <div class="eyebrow" style="color:${c.accent}">${cat.name}</div>
           <div class="row wrap gap section" style="margin-top:10px">
-            ${cat.goals.map(g=>`<div class="choice-card chip goal-chip ${selected.includes(g)?'selected':''}" style="padding:9px 15px;width:auto;background:${selected.includes(g)?c.deep:c.bold};border-color:${c.deep};color:#fff" onclick="toggleGoalChip('${g.replace(/'/g,"\\'")}')">${g}</div>`).join('')}
+            ${cat.goals.map(g=>{
+              const isSel = selected.includes(g);
+              return `<div class="choice-card chip goal-chip ${isSel?'selected':''}" style="padding:9px 15px;width:auto;background:${isSel?c.deep:'#fff'};border:1.5px solid ${isSel?c.deep:c.bold};color:${isSel?'#fff':c.deep};font-weight:${isSel?700:500}" onclick="toggleGoalChip('${g.replace(/'/g,"\\'")}')">${g}</div>`;
+            }).join('')}
           </div>
         </div>`;}).join('')}
       <div class="card section">
@@ -1871,7 +2022,7 @@ async function generateAIRoadmap(){
       return;
     }
     state.user.aiRoadmap = data.goalPlans;
-    toast('Your roadmap is ready ✨');
+    toast('Your roadmap is ready');
   }catch(e){
     console.error(e);
     toast('Something went wrong. Try again.');
@@ -1911,11 +2062,11 @@ function screenSprintSetup(){
       ${renderRoadmapCardHTML(totalWeeks)}
       <div class="card section">
         <button class="btn btn-outline btn-block" id="aiRoadmapBtn" onclick="generateAIRoadmap()" ${state.user._aiRoadmapLoading?'disabled':''}>
-          ${state.user._aiRoadmapLoading ? 'Thinking through your weeks…' : (goalPlans ? '✨ Regenerate with AI' : '✨ Generate my roadmap with AI')}
+          ${state.user._aiRoadmapLoading ? 'Thinking through your weeks…' : (goalPlans ? 'Regenerate with AI' : 'Generate my roadmap with AI')}
         </button>
         ${goalPlans ? `
         <div class="goal-timeline section">
-          <div class="faint" style="margin-bottom:8px">AI overview - drag a 📌 onto your roadmap above to schedule one</div>
+          <div class="faint" style="margin-bottom:8px">AI overview - drag the pin onto your roadmap above to schedule one</div>
           ${goalPlans.map((g,gi)=>`
             <div class="goal-timeline-block">
               <div class="small" style="font-weight:700">Goal ${gi+1}: ${g.goal}</div>
@@ -1926,12 +2077,12 @@ function screenSprintSetup(){
                     <span class="faint" style="font-weight:700;margin-right:6px">Week ${m.weeks}:</span>
                     <span class="small">${m.text}</span>
                   </span>
-                  <span draggable="true" ondragstart="handlePinDragStart(event,'${m.text.replace(/'/g,"\\'")}')" style="cursor:grab;margin-left:8px;flex:none" title="Drag onto your roadmap above to schedule it">📌</span>
+                  <span draggable="true" ondragstart="handlePinDragStart(event,'${m.text.replace(/'/g,"\\'")}')" style="cursor:grab;margin-left:8px;flex:none" title="Drag onto your roadmap above to schedule it">${svgIcon('pin',14)}</span>
                 </div>`).join('')}
               </div>
             </div>`).join('')}
         </div>
-        <p class="faint section">✨ Personalized by AI based on your goals.</p>` : ''}
+        <p class="faint section">Personalized by AI based on your goals.</p>` : ''}
         <p class="faint section">Daily: One line · Sunday: Weekly reflection</p>
       </div>
       <div class="card section center">
@@ -1973,7 +2124,7 @@ function renderSprintCalendarHTML(totalWeeks, monthOffset=0){
     cells.push(`<div class="cal-day ${isToday?'today':''} ${inSprint?'in-sprint':''}" onclick="selectRoadmapDateAndAdd('${dateStr}')" ondragover="allowDrop(event)" ondrop="handleDropOnDay(event,'${dateStr}')">
       <div class="cal-day-num">${d}</div>
       <div class="cal-day-pins">
-        ${visiblePins.map(p=>`<div class="cal-pin" title="${p.label}">${p.notify?'🔔 ':''}${p.label.length>10?p.label.slice(0,10)+'…':p.label}</div>`).join('')}
+        ${visiblePins.map(p=>`<div class="cal-pin" title="${p.label}">${p.label.length>10?p.label.slice(0,10)+'…':p.label}</div>`).join('')}
         ${extra>0?`<div class="cal-pin-more">+${extra} more</div>`:''}
       </div>
     </div>`);
@@ -1996,7 +2147,7 @@ function shiftCalendarMonth(delta){
   renderKeepScroll();
 }
 
-/* ---- Roadmap card: one consolidated view instead of four stacked ones —
+/* ---- Roadmap card: one consolidated view instead of four stacked ones,
    a tap-through week strip with the selected day's tasks right below it,
    inline add (no browser prompt()), and the full month grid tucked behind
    a toggle instead of always taking up space. ---- */
@@ -2038,7 +2189,7 @@ function renderRoadmapCardHTML(totalWeeks){
   return `<div class="card section">
     <div class="row between" style="align-items:center">
       <h2 style="font-size:18px">Your roadmap</h2>
-      <span class="faint" style="cursor:pointer" onclick="state.user._roadmapCalendarOpen=${calendarOpen?'false':'true'};renderKeepScroll()">${calendarOpen?'Hide full calendar':'📅 Full calendar'}</span>
+      <span class="faint" style="cursor:pointer" onclick="state.user._roadmapCalendarOpen=${calendarOpen?'false':'true'};renderKeepScroll()">${calendarOpen?'Hide full calendar':'Full calendar'}</span>
     </div>
     <p class="muted small" style="margin-top:2px">Week ${weekIndex} of ${totalWeeks}</p>
     <div class="roadmap-week-strip section">
@@ -2059,7 +2210,7 @@ function renderRoadmapCardHTML(totalWeeks){
       ${dayPins.length ? dayPins.map(p=>`<div class="row between" style="align-items:center">
         <div class="small">${p.label}</div>
         <span class="faint" style="cursor:pointer;flex:none;margin-left:8px" onclick="removePin(${p.id})" title="Remove">✕</span>
-      </div>`).join('') : `<p class="faint">Nothing scheduled. Drag a 📌 from your AI plan below, or add one directly.</p>`}
+      </div>`).join('') : `<p class="faint">Nothing scheduled. Drag the pin from your AI plan below, or add one directly.</p>`}
     </div>
     ${adding
       ? `<div class="row gap section" style="margin-top:8px">
@@ -2131,6 +2282,7 @@ function screenTreeAwaits(){
   const lore = selected ? selected.lore : "It hasn't chosen a shape yet, but it's already growing.";
   const sparkleAngles = [0,45,90,135,180,225,270,315];
   return `<div class="app-shell center">
+    <div class="back-link" onclick="go('sprintSetup')">← Back</div>
     <div class="eyebrow" style="margin-top:14px">Step 4 of 4: Meet Your Companion</div>
     <div class="reveal-stage">
       <div class="reveal-glow-burst"></div>
@@ -2232,7 +2384,7 @@ async function submitSoloSetup(){
 }
 
 /* ===================== SCREEN 3b: LIFE STAGE (pod-formation, follows the 3-step onboarding) ===================== */
-const LIFE_STAGES=[['🚀','Pioneer','18–24'],['🏗️','Builder','25–30'],['⚓','Mainstay','31–40'],['🌿','Steward','41–50'],['🏆','Golden','51+']];
+const LIFE_STAGES=[['Pioneer','18–24'],['Builder','25–30'],['Mainstay','31–40'],['Steward','41–50'],['Golden','51+']];
 function getTimezoneList(){
   try{
     if(typeof Intl.supportedValuesOf === 'function') return Intl.supportedValuesOf('timeZone');
@@ -2252,7 +2404,7 @@ function screenLifeStage(){
       <div class="small" style="font-weight:700">Your age group</div>
       <p class="faint" style="margin-top:2px">${mp==='same' ? 'Choose 1.' : 'Choose up to 2.'}</p>
       <div class="grid grid-4" style="margin-top:12px;grid-template-columns:repeat(5,1fr)">
-        ${LIFE_STAGES.map(([e,name,range])=>`
+        ${LIFE_STAGES.map(([name,range])=>`
           <div class="choice-card center ${state.user.lifeStage.includes(name)?'selected':''}" style="padding:10px" onclick="pickLifeStage('${name}')">
             <div class="small" style="font-weight:700">${range}</div>
             <div class="faint" style="margin-top:2px">${name}</div>
@@ -2427,13 +2579,13 @@ function screenJoin(){
     <p class="muted small" style="margin-top:4px">Each path leads to a real pod with real people. Nothing here is simulated.</p>
 
     <div class="card section">
-      <div class="small" style="font-weight:700">🌱 Start a new pod</div>
+      <div class="small" style="font-weight:700">Start a new pod</div>
       <p class="faint" style="margin-top:4px">You'll be the first one in. Get an invite code to share, and wait for three real people to join you.</p>
       <button class="btn btn-primary btn-block" style="margin-top:12px" id="startPodBtn" onclick="startNewPod()">Start a pod →</button>
     </div>
 
     <div class="card section">
-      <div class="small" style="font-weight:700">🔑 Join with a pod code</div>
+      <div class="small" style="font-weight:700">Join with a pod code</div>
       <p class="faint" style="margin-top:4px">Someone already started a pod and shared their code with you.</p>
       <div class="row gap" style="margin-top:10px">
         <input id="podCodeInput" placeholder="Enter pod code" style="max-width:160px" autocomplete="off"/>
@@ -2442,7 +2594,7 @@ function screenJoin(){
     </div>
 
     <div class="card section">
-      <div class="small" style="font-weight:700">🔀 Get matched</div>
+      <div class="small" style="font-weight:700">Get matched</div>
       <p class="faint" style="margin-top:4px">We'll look for a real pod with an open seat that fits your stage, track, and tone.</p>
       <button class="btn btn-outline btn-block" style="margin-top:12px" id="matchMeBtn" onclick="matchMeToPod()">Find me a pod →</button>
     </div>
@@ -2508,7 +2660,7 @@ async function matchMeToPod(){
 }
 function screenFounderWaiting(){
   return `<div class="app-shell center">
-    <div class="eyebrow" style="margin-top:14px">You started this pod 🌱</div>
+    <div class="eyebrow" style="margin-top:14px">You started this pod</div>
     <h2 style="font-size:24px;margin-top:6px">Share this code with three people</h2>
     <div class="card section" style="max-width:320px;margin-left:auto;margin-right:auto">
       <div class="eyebrow center">Your pod code</div>
@@ -2564,27 +2716,96 @@ function toggleRoadmapWeek(w){
 
 /* ===================== SCREEN 10: DASHBOARD ===================== */
 function podMembersCard(){
-  const members=[['AM_99','⚓'],['You','✅'],['K_T','⏳'],['RitaO','✅']];
+  const members=[['AM_99','anchor'],['You','posted'],['K_T','pending'],['RitaO','posted']];
+  const statusLabel = {anchor:'Anchor', posted:'Posted', pending:'Pending'};
+  const statusColor = {anchor:'var(--ink)', posted:'var(--green)', pending:'var(--ink-faint)'};
   return `<div class="card section">
     <div class="small" style="font-weight:700">Your Pod · 4 members</div>
     <div class="row gap wrap" style="margin-top:10px">
-      ${members.map(([n,ic])=>`<div class="card" style="padding:10px 14px;box-shadow:none;text-align:center;flex:1;min-width:70px">
+      ${members.map(([n,st])=>`<div class="card" style="padding:10px 14px;box-shadow:none;text-align:center;flex:1;min-width:70px">
         <div class="small" style="font-weight:700">${n}</div>
-        <div style="font-size:16px;margin-top:4px">${ic}</div>
+        <div class="faint" style="margin-top:4px;font-size:10.5px;font-weight:700;color:${statusColor[st]}">${statusLabel[st]}</div>
       </div>`).join('')}
     </div>
-    <div class="faint" style="margin-top:8px">✅ Posted today · ⏳ Still to post</div>
+    <div class="faint" style="margin-top:8px">Posted today · Still to post</div>
   </div>`;
+}
+/* Opt-in pod challenge: anyone in the pod can start one, everyone else
+   chooses whether to join, nobody is locked in once they do, and it's
+   removable by anyone at any time. Demo/local state for now, matching the
+   rest of the pod social features (charter, notices, channel) that aren't
+   backend-wired yet either. */
+function podChallengeCard(){
+  const ch = state.podChallenge;
+  const me = state.user.callsign;
+  if(!ch){
+    return `<div class="card section">
+      <div class="small" style="font-weight:700">Weekly Challenge</div>
+      <p class="faint" style="margin-top:4px">Nothing running right now. Anyone in the pod can start one, everyone else chooses whether to join.</p>
+      <div class="row gap section">
+        <input id="challengeInput" placeholder="e.g. Journal every day this week" style="flex:1" onkeydown="if(event.key==='Enter')startPodChallenge()"/>
+        <button class="btn btn-primary btn-sm" onclick="startPodChallenge()">Start</button>
+      </div>
+    </div>`;
+  }
+  const joined = ch.participants.includes(me);
+  const done = ch.completions.includes(me);
+  const avatarColors = ['#4F8A4A','#C9A24B','#B8687A','#3E8073'];
+  return `<div class="card section" style="background:var(--green-light);border:none">
+    <div class="row between" style="align-items:flex-start">
+      <div>
+        <div class="small" style="font-weight:700">Weekly Challenge</div>
+        <p class="small" style="margin-top:4px;font-weight:600">${ch.text}</p>
+        <p class="faint" style="margin-top:2px">Started by ${ch.createdBy==='you'?'you':'@'+ch.createdBy}</p>
+      </div>
+      <span class="faint" style="cursor:pointer;flex:none" onclick="clearPodChallenge()" title="Remove challenge">✕</span>
+    </div>
+    <div class="row gap section" style="align-items:center">
+      <div class="row">${ch.participants.slice(0,4).map((p,i)=>avatar(p.slice(0,2).toUpperCase(), avatarColors[i%avatarColors.length])).join('')}</div>
+      <span class="faint">${ch.participants.length} joined · ${ch.completions.length} finished</span>
+    </div>
+    <div class="row gap section">
+      ${joined
+        ? (done
+            ? `<button class="btn btn-outline btn-sm" disabled>Completed</button>`
+            : `<button class="btn btn-primary btn-sm" onclick="completePodChallenge()">Mark complete</button>`)
+        : `<button class="btn btn-outline btn-sm" onclick="joinPodChallenge()">I'm in</button>`}
+    </div>
+  </div>`;
+}
+function startPodChallenge(){
+  const input = document.getElementById('challengeInput');
+  const v = input ? input.value.trim() : '';
+  if(!v){ toast('Write a challenge first'); return; }
+  state.podChallenge = { text: v, createdBy: 'you', participants: [state.user.callsign], completions: [] };
+  toast('Challenge started. Your pod can join in.');
+  renderKeepScroll();
+}
+function joinPodChallenge(){
+  if(!state.podChallenge) return;
+  if(!state.podChallenge.participants.includes(state.user.callsign)) state.podChallenge.participants.push(state.user.callsign);
+  toast("You're in");
+  renderKeepScroll();
+}
+function completePodChallenge(){
+  if(!state.podChallenge) return;
+  if(!state.podChallenge.completions.includes(state.user.callsign)) state.podChallenge.completions.push(state.user.callsign);
+  toast('Marked complete');
+  renderKeepScroll();
+}
+function clearPodChallenge(){
+  state.podChallenge = null;
+  renderKeepScroll();
 }
 function screenDashboard(){
   if(state.user.plan==='Solo') return screenSoloDashboard();
   if(state.dashView==='anchor') return dashboardAnchor();
-  const focusMsg = state.channel.find(m=>m.text.startsWith('📌 Weekly focus:'));
-  const focusText = focusMsg ? focusMsg.text.replace('📌 Weekly focus: ','') : 'Consistency over intensity.';
+  const focusMsg = state.channel.find(m=>m.text.startsWith('Weekly focus:'));
+  const focusText = focusMsg ? focusMsg.text.replace('Weekly focus: ','') : 'Consistency over intensity.';
   const focusWho = focusMsg ? focusMsg.who : 'AM_99';
   return `<div class="app-shell">
     <div class="row between">
-      <div class="eyebrow">Week ${currentWeekLabel()} · 🌿 Sprout</div>
+      <div class="eyebrow">Week ${currentWeekLabel()}</div>
       <div class="pill-toggle"><span class="pill ${state.dashView==='podmate'?'active':''}" onclick="setDashView('podmate')">Podmate</span><span class="pill ${state.dashView==='anchor'?'active':''}" onclick="setDashView('anchor')">Anchor view</span></div>
     </div>
     <h2 style="font-size:24px;margin-top:6px">Welcome back, @${state.user.callsign}</h2>
@@ -2592,9 +2813,11 @@ function screenDashboard(){
     <div class="card section center" id="dashboardTreeVisual">
       <div class="tree-anim ${wiltClass()}" style="position:relative">${treeImg(state.user.treeSpecies||'sprout',dashboardTreeSize(288))}${state.user.hasRecoveredFromSetback?'<span class="scar-knot"></span>':''}</div>
       <p class="small" style="margin-top:8px;font-weight:700">Your tree is growing</p>
-      ${state.user.isFounder ? '<div class="faint" style="margin-top:4px">🌱 You started this pod</div>' : ''}
+      ${state.user.isFounder ? '<div class="faint" style="margin-top:4px">You started this pod</div>' : ''}
       ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
     </div>
+
+    ${missionCard()}
 
     <div class="card section">
       <div class="small" style="font-weight:700">Weekly Focus</div>
@@ -2604,13 +2827,15 @@ function screenDashboard(){
 
     ${podMembersCard()}
 
+    ${podChallengeCard()}
+
     ${renderRoadmapCardHTML(SPRINT_DURATION_WEEKS[state.user.sprintDuration || '9-12'])}
 
     <div class="card section">
       <div class="small" style="font-weight:700">What are you working on today?</div>
       <textarea id="microlineInput" placeholder="Write your daily micro-line..." style="margin-top:10px">${state.microline}</textarea>
       <div class="row gap wrap" style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="postMicroline()">📝 Quick update</button>
+        <button class="btn btn-outline btn-sm" onclick="postMicroline()">Quick update</button>
       </div>
     </div>
 
@@ -2635,7 +2860,7 @@ function screenDashboard(){
     </div>
 
     <div class="card section" style="background:var(--bg-alt);border:none">
-      <div class="small">📌 No chapters available yet</div>
+      <div class="small">No chapters available yet</div>
       <div class="faint" style="margin-top:4px">Chapters will appear here once the community grows.</div>
       <button class="btn btn-ghost" style="padding-left:0" onclick="go('browseChapters')">Browse chapters →</button>
     </div>
@@ -2658,6 +2883,8 @@ function screenSoloDashboard(){
       ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
     </div>
 
+    ${missionCard()}
+
     <div class="card section">
       <div class="small" style="font-weight:700">Your goals this sprint</div>
       <div class="stack gap8 section">
@@ -2671,7 +2898,7 @@ function screenSoloDashboard(){
       <div class="small" style="font-weight:700">What are you working on today?</div>
       <textarea id="microlineInput" placeholder="Write your daily line..." style="margin-top:10px">${state.microline}</textarea>
       <div class="row gap wrap" style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="postMicroline()">📝 Save today's line</button>
+        <button class="btn btn-outline btn-sm" onclick="postMicroline()">Save today's line</button>
       </div>
     </div>
 
@@ -2684,7 +2911,7 @@ function screenSoloDashboard(){
     </div>
 
     <div class="card section" style="background:var(--bg-alt);border:none">
-      <div class="small">📌 No chapters available yet</div>
+      <div class="small">No chapters available yet</div>
       <div class="faint" style="margin-top:4px">Once you finish your first sprint, you can join or start a Chapter.</div>
       <button class="btn btn-ghost" style="padding-left:0" onclick="go('browseChapters')">Browse chapters →</button>
     </div>
@@ -2700,10 +2927,10 @@ function screenSoloDashboard(){
 function dashboardAnchor(){
   return `<div class="app-shell">
     <div class="row between">
-      <div class="eyebrow">Week ${currentWeekLabel()} · 🌿 Sprout</div>
+      <div class="eyebrow">Week ${currentWeekLabel()}</div>
       <div class="pill-toggle"><span class="pill ${state.dashView==='podmate'?'active':''}" onclick="setDashView('podmate')">Podmate</span><span class="pill ${state.dashView==='anchor'?'active':''}" onclick="setDashView('anchor')">Anchor view</span></div>
     </div>
-    <h2 style="font-size:24px;margin-top:6px">⚓ You're leading this week.</h2>
+    <h2 style="font-size:24px;margin-top:6px">You're leading this week.</h2>
 
     <div class="card section">
       <div class="small" style="font-weight:700">Weekly Focus</div>
@@ -2733,6 +2960,44 @@ function dashboardAnchor(){
   </div>
   ${bottomNav('dashboard')}`;
 }
+function spawnCheerBurst(container){
+  let names = [];
+  if(state.realSeats && state.realSeats.length){
+    names = state.realSeats
+      .filter(s=>s.profile_id!==state.authUser?.id)
+      .map(s=>(s.public_profiles?.callsign||'??').slice(0,2).toUpperCase());
+  } else if(state.user.plan!=='Solo'){
+    names = ['AM','KT','RI']; // matches the demo pod roster (AM_99, K_T, RitaO)
+  }
+  const colors = ['#4F8A4A','#C9A24B','#B8687A'];
+  if(names.length){
+    names.slice(0,3).forEach((initials,i)=>{
+      const b = document.createElement('div');
+      b.className = 'cheer-bubble';
+      b.textContent = initials;
+      b.style.background = colors[i%colors.length];
+      b.style.left = (30 + i*20) + '%';
+      b.style.top = '4%';
+      b.style.animationDelay = (i*0.15)+'s';
+      container.appendChild(b);
+      setTimeout(()=>b.remove(), 2300);
+    });
+    const cap = document.createElement('div');
+    cap.className = 'cheer-caption';
+    cap.textContent = 'Your pod sees this';
+    cap.style.top = '-6px';
+    container.appendChild(cap);
+    setTimeout(()=>cap.remove(), 2500);
+  } else {
+    const n = state.user._microlineCountThisSprint || 1;
+    const cap = document.createElement('div');
+    cap.className = 'cheer-caption';
+    cap.textContent = n<=1 ? 'First line of the sprint' : n+' lines and counting';
+    cap.style.top = '-6px';
+    container.appendChild(cap);
+    setTimeout(()=>cap.remove(), 2500);
+  }
+}
 function triggerWateringAnimation(){
   const wasDeepWilt = state.daysSinceLastPost != null && state.daysSinceLastPost >= 3;
   state.daysSinceLastPost = 0;
@@ -2742,6 +3007,7 @@ function triggerWateringAnimation(){
   if(!treeEl) return;
   treeEl.classList.remove('tree-watered','tree-wilt-mild','tree-wilt-deep','tree-pruned');
   void treeEl.offsetWidth;
+  spawnCheerBurst(container);
 
   if(wasDeepWilt){
     // Recovery sequence: pruning swipe reveals the restored tree, a sun-flash and
@@ -2772,22 +3038,24 @@ function triggerWateringAnimation(){
     state.user.hasRecoveredFromSetback = true;
     setTimeout(()=>treeEl.classList.remove('tree-pruned'), 700);
   } else {
-    const dropCount = 7;
+    const dropCount = 18;
     for(let i=0;i<dropCount;i++){
       const drop = document.createElement('div');
       drop.className = 'rain-drop';
-      drop.style.left = (20 + Math.random()*60) + '%';
-      drop.style.animationDelay = (Math.random()*0.35) + 's';
+      drop.style.left = (10 + Math.random()*80) + '%';
+      drop.style.animationDelay = (Math.random()*0.7) + 's';
+      drop.style.transform = `scale(${(0.8+Math.random()*0.6).toFixed(2)})`;
       container.appendChild(drop);
-      setTimeout(()=>drop.remove(), 1200);
+      setTimeout(()=>drop.remove(), 2100);
     }
     treeEl.classList.add('tree-watered');
-    setTimeout(()=>treeEl.classList.remove('tree-watered'), 1500);
+    setTimeout(()=>treeEl.classList.remove('tree-watered'), 2200);
   }
   // Deferred so the transient rain/glow/recovery elements actually get seen
   // before a fresh render (which rebuilds the whole screen from state and
-  // would otherwise wipe them out instantly).
-  setTimeout(render, wasDeepWilt ? 1800 : 1600);
+  // would otherwise wipe them out instantly). Rain now runs up to ~2.1s and
+  // the cheer burst up to 2.5s, so this needs to clear both fully.
+  setTimeout(render, wasDeepWilt ? 2700 : 2800);
 }
 function triggerCanopyRustle(){
   if(state.daysSinceLastPost !== 0) return; // only celebrate a genuinely recent completion
@@ -2827,7 +3095,7 @@ async function postMicroline(){
   triggerWateringAnimation();
 }
 function setStatus(s){ state.status=s; toast('Status set'); render(); }
-function postFocus(){ const v=document.getElementById('focusInput').value.trim(); if(!v){toast('Write a focus first');return;} state.channel.unshift({who:state.user.callsign,when:'just now',text:'📌 Weekly focus: '+v}); toast('Posted to pod'); render(); }
+function postFocus(){ const v=document.getElementById('focusInput').value.trim(); if(!v){toast('Write a focus first');return;} state.channel.unshift({who:state.user.callsign,when:'just now',text:'Weekly focus: '+v}); toast('Posted to pod'); render(); }
 function sendAnchorNudge(name){ const v=document.getElementById('nudgeInput').value.trim(); if(!v){toast('Write a nudge first');return;} toast('Nudge sent to @'+name); }
 function postShare(){ const v=document.getElementById('shareWhy').value.trim(); if(!v){toast('Add a reason first');return;} toast('Shared with pod'); render(); }
 function postInnovation(){ const v=document.getElementById('innovInput').value.trim(); if(!v){toast('Write something first');return;} toast('Shared with pod'); render(); }
@@ -2841,7 +3109,7 @@ function screenTheWeek(){
       <div class="small" style="font-weight:700">Your daily micro-line</div>
       <textarea id="microlineInput2" style="margin-top:10px">${state.microline||'Rewrote the CV draft. Three pages. Feels cleaner.'}</textarea>
       <div class="row gap wrap" style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="postMicroline2()">📝 Quick update</button>
+        <button class="btn btn-outline btn-sm" onclick="postMicroline2()">Quick update</button>
       </div>
     </div>
     <div class="card section">
@@ -2890,17 +3158,17 @@ function podHub(){
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
     <div class="eyebrow" style="margin-top:10px">GRIT-4</div>
     <div class="subtabs section">
-      <span class="subtab ${s==='channel'?'active':''}" onclick="setPodSub('channel')">💬 Channel</span>
-      <span class="subtab ${s==='members'?'active':''}" onclick="setPodSub('members')">👥 Members</span>
-      <span class="subtab ${s==='charter'?'active':''}" onclick="setPodSub('charter')">📋 Charter</span>
-      <span class="subtab ${s==='schedule'?'active':''}" onclick="setPodSub('schedule')">⚓ Anchor schedule</span>
+      <span class="subtab ${s==='channel'?'active':''}" onclick="setPodSub('channel')">Channel</span>
+      <span class="subtab ${s==='members'?'active':''}" onclick="setPodSub('members')">Members</span>
+      <span class="subtab ${s==='charter'?'active':''}" onclick="setPodSub('charter')">Charter</span>
+      <span class="subtab ${s==='schedule'?'active':''}" onclick="setPodSub('schedule')">Anchor schedule</span>
     </div>
     ${body}
   </div>
   ${bottomNav('pod')}`;
 }
 function podChannelBody(){
-  return `<h2 style="font-size:22px">💬 Pod Channel</h2>
+  return `<h2 style="font-size:22px">Pod Channel</h2>
   <p class="muted small">Everyone sees everything. No private messages.</p>
   <div class="card section">
     <div class="stack">
@@ -2930,13 +3198,13 @@ async function postChannel(){
 function podMembersBody(){
   if(state.realSeats){
     const seats=state.realSeats;
-    return `<h2 style="font-size:22px">👥 Members</h2>
+    return `<h2 style="font-size:22px">Members</h2>
     <p class="muted small">${seats.length} of 4 seats filled${state.podInviteCode?' · pod code: '+state.podInviteCode:''}</p>
     <div class="stack gap12 section">
       ${seats.map(s=>`
         <div class="card row between">
           <div class="row gap">${avatar((s.public_profiles?.callsign||'??').slice(0,2).toUpperCase(),'#1F3D2E')}
-            <div><div class="small" style="font-weight:700">${s.role==='anchor'?'⚓ ':''}@${s.public_profiles?.callsign||'unknown'} <span class="faint">(${s.role}${s.profile_id===state.authUser?.id?', you':''})</span></div>
+            <div><div class="small" style="font-weight:700">@${s.public_profiles?.callsign||'unknown'} <span class="faint">(${s.role}${s.profile_id===state.authUser?.id?', you':''})</span></div>
             <div class="faint">Joined ${new Date(s.joined_at).toLocaleDateString()}</div></div>
           </div>
         </div>`).join('')}
@@ -2944,12 +3212,12 @@ function podMembersBody(){
     </div>`;
   }
   const rows=[
-    ['⚓','AM_99','Anchor','Weeks 1–3','2 weeks'],
+    ['','AM_99','Anchor','Weeks 1–3','2 weeks'],
     ['','ZENMSTR','Member (you)','Weeks 4–6','2 weeks'],
     ['','K_T','Member','Weeks 7–9','1 week'],
     ['','RitaO','Member','Weeks 10–12','0 weeks'],
   ];
-  return `<h2 style="font-size:22px">👥 Members (demo preview)</h2>
+  return `<h2 style="font-size:22px">Members (demo preview)</h2>
   <p class="muted small">4 members · 2 weeks together</p>
   <div class="stack gap12 section">
     ${rows.map(([ic,name,role,wk,streak])=>`
@@ -2964,7 +3232,7 @@ function podMembersBody(){
 }
 function podCharterBody(){
   const inforce=state.charter.filter(r=>r.status==='inforce').length;
-  return `<h2 style="font-size:22px">📋 Charter</h2>
+  return `<h2 style="font-size:22px">Charter</h2>
   <p class="muted small">How this pod runs · ${inforce} of ${state.charter.length} rules in force</p>
   <div class="card section">
     <div class="small" style="font-weight:700">Tone: ${state.user.tone}</div>
@@ -2980,7 +3248,7 @@ function podCharterBody(){
       ${state.charter.map((r,i)=>`
         <div>
           <div class="row between">
-            <span class="small">${r.status==='inforce'?'✅':'🔄'} ${r.text}</span>
+            <span class="small">${r.text}</span>
             <span class="badge ${r.status==='inforce'?'badge-green':'badge-gold'}">${r.status==='inforce'?'In force':'Voting'}</span>
           </div>
           <div class="faint">Proposed by @${r.by} · ${r.status==='inforce' ? `${r.votes} support · ${r.oppose||0} oppose` : `Voted: ${r.votes} of 4${r.status==='voting'?' · Waiting for @'+state.user.callsign:''}`}</div>
@@ -2992,7 +3260,7 @@ function podCharterBody(){
   </div>
   <div class="section"><textarea id="newRuleInput" placeholder="Propose a new rule..."></textarea>
     <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="proposeRule()">Propose a rule</button></div>
-  <p class="faint section">💡 Withdrawing removes your rule or your agreement. No explanation needed.</p>`;
+  <p class="faint section">Withdrawing removes your rule or your agreement. No explanation needed.</p>`;
 }
 function voteRule(i){ state.charter[i].votes=4; state.charter[i].status='inforce'; toast('Rule now in force'); render(); }
 function withdrawRule(i){
@@ -3010,7 +3278,7 @@ function proposeRule(){
   render();
 }
 function podScheduleBody(){
-  return `<h2 style="font-size:22px">⚓ Anchor Schedule</h2>
+  return `<h2 style="font-size:22px">Anchor Schedule</h2>
   <div class="card section stack gap8">
     <div class="small">Current: <b>@AM_99</b> (Weeks 1–3)</div>
     <div class="small">Next: <b>@${state.user.callsign}</b> (Weeks 4–6)</div>
@@ -3035,7 +3303,7 @@ function screenNoticeBoard(){
   return `<div class="app-shell">
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
     <div class="eyebrow" style="margin-top:10px">GRIT-4</div>
-    <h2 style="font-size:22px">📢 Notice Board</h2>
+    <h2 style="font-size:22px">Notice Board</h2>
     <div class="card section">
       <div class="small" style="font-weight:700">Post a notice</div>
       <div class="pill-toggle" style="margin-top:10px">
@@ -3071,7 +3339,7 @@ function screenCommons(){
   return `<div class="app-shell">
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
     <div class="eyebrow" style="margin-top:10px">The Commons</div>
-    <h2 style="font-size:22px">📢 Share something interesting with your community.</h2>
+    <h2 style="font-size:22px">Share something interesting with your community.</h2>
     <div class="card section">
       <label class="field-label">What are you sharing?</label>
       <input id="commonsWhat" placeholder="Link or thought..."/>
@@ -3093,7 +3361,7 @@ function postCommons(){
   const why=document.getElementById('commonsWhy').value.trim();
   if(!what||!why){toast('Fill in both fields');return;}
   if(document.getElementById('cWhoPod').checked) state.channel.unshift({who:state.user.callsign, when:'just now', text:'Shared: '+what+' · '+why});
-  if(document.getElementById('cWhoPulse').checked) state.pulse.unshift({icon:'📢', text:'@'+state.user.callsign+' shared '+what, r:{}});
+  if(document.getElementById('cWhoPulse').checked) state.pulse.unshift({text:'@'+state.user.callsign+' shared '+what, r:{}});
   toast('Posted to The Commons');
   go('pulse');
 }
@@ -3121,7 +3389,7 @@ function screenPulse(){
           ${p.week ? `
             <div class="small" style="font-weight:700">@${p.who} · Week ${p.week} · ${p.track}</div>
             <div class="small" style="margin-top:6px;font-style:italic">"${p.text}"</div>
-          ` : `<div class="small">${p.icon||'📝'} ${p.text}</div>`}
+          ` : `<div class="small">${p.text}</div>`}
           <div class="row gap wrap" style="margin-top:10px">
             ${REACTIONS.map(([key,label])=>`<button class="btn btn-outline btn-sm" onclick="react(${i},'${key}')">${label}</button>`).join('')}
           </div>
@@ -3138,7 +3406,7 @@ function screenJournal(){
   return `<div class="app-shell">
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
     <div class="eyebrow" style="margin-top:10px">Journal</div>
-    <h2 style="font-size:22px">📖 Journal</h2>
+    <h2 style="font-size:22px">Journal</h2>
     <p class="muted small">Private. Yours. Nobody checks it.</p>
     <div class="stack gap12 section">
       ${state.journal.map(j=>`<div class="card"><div class="small" style="font-weight:700">${j.when}</div><hr class="rule"/><div class="small" style="white-space:pre-line">${j.text}</div></div>`).join('')}
@@ -3181,7 +3449,8 @@ async function showRootPrintPreview(){
     <div class="center">
       ${medallion}
       <p class="small" style="font-weight:700;margin-top:10px">RootPrint (preview)</p>
-      <p class="faint" style="margin-top:8px">🖱️ Drag to spin it</p>
+      <p class="faint" style="margin-top:8px">Drag to spin it</p>
+      <button class="btn btn-outline btn-sm section" onclick="exportRootPrint('${result.hash}', ${ROOTPRINT_SPECIES_HUES[species]||0.3}, ${entries.length?100:0})">Export</button>
     </div>`;
   setTimeout(()=>initRootPrintSpin(uid), 30);
 }
@@ -3196,12 +3465,12 @@ function saveJournal(){
 /* ===================== SCREEN 20: SETTINGS ===================== */
 /* ===================== SCREEN: MY COLLECTION (real trunk, real rings) ===================== */
 function screenMyCollection(){
-  return `<div class="app-shell center">
+  return `<div class="app-shell">
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
     <div class="eyebrow" style="margin-top:10px">My Collection</div>
     <h2 style="font-size:22px">Every ring is a sprint you finished.</h2>
-    <div class="card section" style="background:var(--bg-alt);border:none;padding:32px 20px" id="myCollectionTrunkArea">
-      <p class="faint">Loading your collection…</p>
+    <div id="myCollectionTrunkArea">
+      <p class="faint center section">Loading your collection…</p>
     </div>
   </div>
   ${bottomNav('dashboard')}`;
@@ -3214,12 +3483,32 @@ async function loadMyCollectionTrunk(){
     const selected = TREE_SPECIES.find(s=>s.key===state.user.treeSpecies);
     const hue = ROOTPRINT_SPECIES_HUES[selected?selected.key:'sprout'] || 0.3;
     if(!rings.length){
-      area.innerHTML = `<div class="center">${rootprintRenderTrunkSVG([], hue, 220)}<p class="small section" style="font-weight:700">No rings yet</p><p class="faint" style="margin-top:4px;max-width:260px;margin-left:auto;margin-right:auto">Finish your first sprint and your trunk grows its first ring.</p></div>`;
+      area.innerHTML = `<div class="card center section" style="background:var(--bg-alt);border:none;padding:32px 20px">${rootprintRenderTrunkSVG([], hue, 200)}<p class="small section" style="font-weight:700">No rings yet</p><p class="faint" style="margin-top:4px;max-width:260px;margin-left:auto;margin-right:auto">Finish your first sprint and your collection gets its first piece.</p></div>`;
       return;
     }
-    area.innerHTML = `<div class="center">${rootprintRenderTrunkSVG(rings, hue, 340)}
-      <p class="small section" style="font-weight:700">${rings.length} ring${rings.length===1?'':'s'} · ${rings.length} completed sprint${rings.length===1?'':'s'}</p>
-      <p class="faint">The center is your first. The outer edge is today.</p></div>`;
+    const gallery = rings.slice().reverse().map((r,i)=>{
+      const rHue = ROOTPRINT_SPECIES_HUES[r.species] || 0.3;
+      const speciesName = (TREE_SPECIES.find(s=>s.key===r.species)||{name:r.species}).name;
+      const medallion = rootprintRenderMedallionSVG(r.seed_hash, {speciesHue:rHue, consistencyPct:r.consistency_pct});
+      const rarity = rootprintGetRarity(r.seed_hash, r.consistency_pct);
+      const dateLabel = r.created_at ? new Date(r.created_at).toLocaleDateString('default',{month:'short',year:'numeric'}) : '';
+      return `<div class="card center" style="padding:16px 10px">
+        <div style="width:150px;margin:0 auto">${medallion}</div>
+        <p class="small section" style="font-weight:700;margin-top:10px">${speciesName}</p>
+        <p class="faint" style="font-weight:700;color:var(--green-dark)">${rarity.label}</p>
+        <p class="faint">${r.weeks_completed} week${r.weeks_completed===1?'':'s'} · ${dateLabel}</p>
+        <button class="btn btn-outline btn-sm section" onclick="exportRootPrint('${r.seed_hash}', ${rHue}, ${r.consistency_pct})">Export</button>
+      </div>`;
+    }).join('');
+    area.innerHTML = `
+      <div class="card center section" style="background:var(--bg-alt);border:none;padding:24px 20px">
+        ${rootprintRenderTrunkSVG(rings, hue, 200)}
+        <p class="small section" style="font-weight:700">${rings.length} ring${rings.length===1?'':'s'} · ${rings.length} completed sprint${rings.length===1?'':'s'}</p>
+        <p class="faint">The center is your first. The outer edge is today.</p>
+      </div>
+      <div class="eyebrow section">Your pieces</div>
+      <div class="collection-gallery section">${gallery}</div>
+    `;
   }catch(e){
     console.error('loadMyCollectionTrunk failed', e);
     area.innerHTML = `<p class="faint">Could not load your collection right now.</p>`;
@@ -3242,11 +3531,11 @@ function screenSettings(){
   return `<div class="app-shell">
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
     <div class="eyebrow" style="margin-top:10px">Settings</div>
-    <h2 style="font-size:22px">⚙️ Settings</h2>
+    <h2 style="font-size:22px">Settings</h2>
     <div class="card section">
       <div class="small" style="font-weight:700">Your tree</div>
-      <div id="settingsTreeVisual" class="center" style="margin-top:10px;position:relative;min-height:70px">
-        <div class="tree-anim ${justMaterialized?'tree-materializing':''}">${treeImg(currentSpecies?currentSpecies.icon:'sprout',64)}</div>
+      <div id="settingsTreeVisual" class="center" style="margin-top:10px;position:relative;min-height:200px">
+        <div class="tree-anim ${justMaterialized?'tree-materializing':''}">${treeImg(currentSpecies?currentSpecies.icon:'sprout',190)}</div>
       </div>
       <p class="faint center" style="margin-top:6px">${currentSpecies?currentSpecies.name:'Sprout'}</p>
       ${treeChangeUsed
@@ -3287,6 +3576,23 @@ function screenSettings(){
         <button class="btn btn-outline btn-sm" onclick="doLogout()">Logout</button>
       </div>
     </div>
+    <div class="card section">
+      <div class="small" style="font-weight:700">Support & Legal</div>
+      <div class="stack" style="margin-top:8px">
+        <div class="row between" style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="go('helpCenter')">
+          <div class="small" style="font-weight:600">Help Center</div><span class="faint">→</span>
+        </div>
+        <div class="row between" style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="go('feedback')">
+          <div class="small" style="font-weight:600">Send Feedback</div><span class="faint">→</span>
+        </div>
+        <div class="row between" style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="go('termsOfUse')">
+          <div class="small" style="font-weight:600">Terms of Use</div><span class="faint">→</span>
+        </div>
+        <div class="row between" style="padding:10px 0;cursor:pointer" onclick="go('privacyPolicy')">
+          <div class="small" style="font-weight:600">Privacy Policy</div><span class="faint">→</span>
+        </div>
+      </div>
+    </div>
     <button class="btn btn-danger btn-block section" onclick="toast('Account deletion requires email confirmation (demo)')">Delete my account</button>
   </div>
   ${bottomNav('settings')}`;
@@ -3305,8 +3611,8 @@ function screenBrowseChapters(){
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
     <div class="eyebrow" style="margin-top:10px">Chapters</div>
     <div class="row between">
-      <h2 style="font-size:22px">📚 Browse Chapters</h2>
-      <button class="btn btn-outline btn-sm" onclick="go('commons')">📢 Commons</button>
+      <h2 style="font-size:22px">Browse Chapters</h2>
+      <button class="btn btn-outline btn-sm" onclick="go('commons')">Commons</button>
     </div>
     ${!state.chapterCreated ? `
     <div class="card section">
@@ -3321,7 +3627,7 @@ function screenBrowseChapters(){
       <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="state.chapterCreated=true;go('chapter')">View Tech Chapter (demo)</button>
     </div>` : `
     <div class="card section">
-      <div class="row between"><div><div class="small" style="font-weight:700">💻 ${state.chapter.name}</div><div class="faint">${state.chapter.members} members · ${state.chapter.pods} active pods</div></div>
+      <div class="row between"><div><div class="small" style="font-weight:700">${state.chapter.name}</div><div class="faint">${state.chapter.members} members · ${state.chapter.pods} active pods</div></div>
       <button class="btn btn-primary btn-sm" onclick="go('chapter')">Open</button></div>
     </div>
     <button class="btn btn-outline btn-block section" onclick="go('createChapter')">Create another chapter</button>
@@ -3335,7 +3641,7 @@ function screenCreateChapter(){
   return `<div class="app-shell">
     <div class="back-link" onclick="go('browseChapters')">← Back to Chapters</div>
     <div class="eyebrow" style="margin-top:10px">New chapter</div>
-    <h2 style="font-size:22px">✨ Create Chapter</h2>
+    <h2 style="font-size:22px">Create Chapter</h2>
     <p class="muted small">Chapters are free. Anyone can create one.</p>
     <div class="section">
       <label class="field-label">Chapter name</label>
@@ -3376,8 +3682,8 @@ function chapterHub(){
   return `<div class="app-shell">
     <div class="back-link" onclick="go('dashboard')">← Back to Dashboard</div>
     <div class="row between">
-      <div class="eyebrow" style="margin-top:10px">💻 ${state.chapter.name} · ${state.chapter.members} members · ${state.chapter.pods} active pods</div>
-      <button class="btn btn-outline btn-sm" onclick="go('commons')">📢 Commons</button>
+      <div class="eyebrow" style="margin-top:10px">${state.chapter.name} · ${state.chapter.members} members · ${state.chapter.pods} active pods</div>
+      <button class="btn btn-outline btn-sm" onclick="go('commons')">Commons</button>
     </div>
     <div class="subtabs section">
       <span class="subtab ${s==='view'?'active':''}" onclick="setChapSub('view')">Overview</span>
@@ -3386,7 +3692,7 @@ function chapterHub(){
     </div>
     ${body}
     <div class="row gap wrap section">
-      <button class="btn btn-outline btn-sm" onclick="go('chapterGoal')">🎯 Goal</button>
+      <button class="btn btn-outline btn-sm" onclick="go('chapterGoal')">Goal</button>
       <button class="btn btn-outline btn-sm" onclick="go('hostDash')">Host tools (demo)</button>
       <button class="btn btn-danger btn-sm" onclick="toast('Left chapter (demo)')">Leave Chapter</button>
     </div>
@@ -3408,15 +3714,15 @@ function chapterViewBody(){
   <div class="card section">
     <div class="small" style="font-weight:700">Upcoming Events</div>
     <hr class="rule"/>
-    <div class="small">📅 Chapter Meetup · This Saturday 3pm</div>
+    <div class="small">Chapter Meetup · This Saturday 3pm</div>
     <button class="btn btn-ghost" style="padding-left:0" onclick="toast('Event list coming soon')">View all events</button>
   </div>
   <div class="card section">
     <div class="small" style="font-weight:700">Officers</div>
     <hr class="rule"/>
     <div class="stack gap8">
-      <div class="small">🫱 Host: @RitaO (Voluntary · leave any time)</div>
-      <div class="small">🗝️ Chapter Lead: @${state.user.callsign} (6-month term)</div>
+      <div class="small">Host: @RitaO (Voluntary · leave any time)</div>
+      <div class="small">Chapter Lead: @${state.user.callsign} (6-month term)</div>
     </div>
   </div>`;
 }
@@ -3439,7 +3745,7 @@ function chapterCharterBody(){
   <div class="card section">
     <div class="small" style="font-weight:700">Officers</div>
     <div class="stack gap8" style="margin-top:8px">
-      <div class="small">🫱 Host: @RitaO. Welcomes new members, notices quiet ones.</div>
+      <div class="small">Host: @RitaO. Welcomes new members, notices quiet ones.</div>
     </div>
   </div>
   <div class="card section">
@@ -3449,8 +3755,8 @@ function chapterCharterBody(){
 }
 function chapterMembersBody(){
   const rows=[
-    ['🗝️','ZENMSTR','Chapter Lead','6-month term'],
-    ['🫱','RitaO','Host','Voluntary · leave any time'],
+    ['','ZENMSTR','Chapter Lead','6-month term'],
+    ['','RitaO','Host','Voluntary · leave any time'],
     ['','AM_99','Member','Joined 2 weeks ago'],
   ];
   return `<div class="stack gap12 section">
@@ -3468,7 +3774,7 @@ function screenChapterGoal(){
   const pct = Math.round((g.current/g.target)*100);
   return `<div class="app-shell">
     <div class="back-link" onclick="go('chapter')">← Back to Chapter View</div>
-    <div class="eyebrow" style="margin-top:10px">🎯 Chapter Goal · ${state.chapter.name}</div>
+    <div class="eyebrow" style="margin-top:10px">Chapter Goal · ${state.chapter.name}</div>
     <div class="card section">
       <div class="small" style="font-weight:700">Current Goal: ${g.title}</div>
       <hr class="rule"/>
@@ -3485,8 +3791,8 @@ function screenChapterGoal(){
       <div class="small" style="font-weight:700">Contribute</div>
       <textarea id="goalContribInput" placeholder="What did you add toward the goal this week?" style="margin-top:10px"></textarea>
       <div class="row gap wrap" style="margin-top:10px">
-        <button class="btn btn-outline btn-sm" onclick="toast('Photo attach coming soon')">📸 Add a photo</button>
-        <button class="btn btn-outline btn-sm" onclick="toast('Link attach coming soon')">🔗 Add a link</button>
+        <button class="btn btn-outline btn-sm" onclick="toast('Photo attach coming soon')">Add a photo</button>
+        <button class="btn btn-outline btn-sm" onclick="toast('Link attach coming soon')">Add a link</button>
       </div>
       <button class="btn btn-primary btn-block" style="margin-top:10px" onclick="submitGoalContribution()">Post contribution</button>
     </div>
@@ -3528,7 +3834,7 @@ async function recordChapterGoalRings(g){
     await Merros.collectionRings.saveCollectionRing({
       species, weeksCompleted: 1, consistencyPct, sentimentArc: 'rising', seedHash: mySeedHash
     });
-    toast('Your Chapter finished a shared goal - a new ring for everyone 🌳');
+    toast('Your Chapter finished a shared goal - a new ring for everyone');
   }catch(e){ console.error('recordChapterGoalRings failed', e); }
 }
 
@@ -3538,7 +3844,7 @@ function screenHostDash(){
   return `<div class="app-shell">
     <div class="back-link" onclick="go('chapter')">← Back to Chapter View</div>
     <div class="eyebrow" style="margin-top:10px">Host Dashboard · ${state.chapter.name}</div>
-    <h2 style="font-size:22px">🫱 Host Dashboard</h2>
+    <h2 style="font-size:22px">Host Dashboard</h2>
     <p class="muted small">Your role: notice when people are at the edge of the room. Voluntary · leave any time.</p>
     <div class="card section">
       <div class="small" style="font-weight:700">This week</div>
@@ -3568,6 +3874,228 @@ function screenHostDash(){
 function hostWelcome(){ state.chapter.hostQueue.welcomed=true; toast('Welcomed @NOVA7'); render(); }
 function hostCheckin(){ state.chapter.hostQueue.checkedIn=true; toast('Checked in on @TUNDE'); render(); }
 
+/* ===================== HELP CENTER, FEEDBACK, TERMS, PRIVACY ===================== */
+function helpBlock(title, bodyHtml){
+  return `<div class="card section">
+    <div class="small" style="font-weight:700">${title}</div>
+    <div class="small muted section" style="line-height:1.6">${bodyHtml}</div>
+  </div>`;
+}
+function screenHelpCenter(){
+  return `<div class="app-shell">
+    <div class="back-link" onclick="go('settings')">← Back to Settings</div>
+    <div class="eyebrow" style="margin-top:10px">Support</div>
+    <h2 style="font-size:22px">Help Center</h2>
+    <p class="muted small section">Answers to the questions people ask most, organized by area. If something is not covered here, use Send Feedback to reach us directly.</p>
+
+    ${helpBlock('Getting started', `
+      <p>A sprint is the core unit of Merros. It is a stretch of consecutive weeks, chosen by you, during which you commit to one to three goals and show up daily with a short written line about your progress. You can run a sprint on your own, in Solo mode, or with a pod of up to four people who move through the same weeks together.</p>
+      <p style="margin-top:8px">During onboarding you choose your goals, your sprint length, and a tree species that represents your sprint visually. Your tree grows as you log daily lines and gains a permanent ring in your collection each time you complete a sprint.</p>
+      <p style="margin-top:8px">There is no wrong way to start. If you are unsure whether to go Solo or join a pod, Solo is the lower commitment option and you can always join a pod for a future sprint.</p>
+    `)}
+
+    ${helpBlock('Sprints and goals', `
+      <p>You choose your sprint length during setup, typically between four and twelve weeks depending on the goal type you select. Once a sprint begins, your goals are fixed for that sprint. This is intentional. Switching goals mid sprint tends to undercut the habit you are trying to build.</p>
+      <p style="margin-top:8px">Your roadmap lets you plan which days you will work on which goal. Tap any day in the week strip to see or edit what is scheduled, or drag a suggested milestone from your AI generated plan straight onto a date. The full month calendar is available behind the calendar toggle for scheduling further ahead.</p>
+      <p style="margin-top:8px">A daily line is a short note, usually one sentence, describing what you did that day toward your goal. It does not need to be a success. Lines like "did not get to it today, tomorrow I will start with the easiest task" are valid and useful.</p>
+    `)}
+
+    ${helpBlock('Pods', `
+      <p>A pod is a group of up to four people who committed to the same sprint window. Pods have a shared channel for daily lines, a rotating Anchor role that changes weekly, and a charter of ground rules the group agrees on together.</p>
+      <p style="margin-top:8px">You can start a new pod and invite three people with a code, join an existing pod using someone else's code, or ask to be matched with an open pod based on your stage, track, and preferred tone.</p>
+      <p style="margin-top:8px">If a pod member becomes inactive or unresponsive, the remaining members can continue. An inactive seat does not block the rest of the pod from progressing.</p>
+    `)}
+
+    ${helpBlock('Chapters', `
+      <p>A Chapter is a larger, ongoing community built around a shared theme or interest, such as a professional track or a life stage. Chapters are free to join, have no member cap, and typically outlast any single sprint. Pods often form inside chapters, and a chapter can host many pods running at once.</p>
+      <p style="margin-top:8px">Every chapter has a Host, a light touch role focused on welcoming new members and checking in on people who have gone quiet, and sometimes a Chapter Lead who serves a fixed term. Neither role has authority to remove your content or your membership without cause.</p>
+    `)}
+
+    ${helpBlock('Your tree and RootPrint', `
+      <p>Your tree is a visual representation of your current sprint. It grows a little with every daily line you log, and it can wilt slightly if you go a few days without checking in, though it recovers as soon as you post again. Wilting is a gentle nudge, not a penalty. It never resets your progress.</p>
+      <p style="margin-top:8px">You may change your tree species once per sprint, at any point during that sprint. This uses a permanent visual transition and cannot be undone or repeated until your next sprint begins.</p>
+      <p style="margin-top:8px">RootPrint is a generated image built from real data about your sprint, such as how many entries you wrote and how your reflections trended over time. Every RootPrint is unique to you and is not reused between users. The rings on it are intentionally irregular, the same way a real cross section of a tree trunk is never a perfect circle.</p>
+      <p style="margin-top:8px">My Collection shows every ring from every sprint you have completed. It is a permanent record and cannot be edited or deleted from within the app.</p>
+    `)}
+
+    ${helpBlock('Notifications and reminders', `
+      <p>You can turn on a Sunday check in reminder, a daily line reminder, a Friday win reminder, and activity alerts for your pod and chapter, all from Settings. Every one of these is off by default and fully optional. Turning them all off does not affect your ability to use any part of the app.</p>
+    `)}
+
+    ${helpBlock('Account and data', `
+      <p>Your callsign is the name other members see. You can change it from Settings at any time. Your email is used only for account access and confirmation, never shown to other members.</p>
+      <p style="margin-top:8px">You can request full account deletion from the bottom of the Settings screen. Deletion requires an email confirmation as a safeguard against accidental or malicious requests, and it permanently removes your account, your pod history, and your collection. It cannot be reversed once completed.</p>
+    `)}
+
+    ${helpBlock('Safety features', `
+      <p>Merros is built around small, accountable groups rather than a public feed, which limits exposure to strangers by design. On top of that, a few specific protections are in place.</p>
+      <p style="margin-top:8px"><b>Visibility controls.</b> You can hide your callsign from the Root Network and from your chapter independently. When hidden, other members see your activity as Anonymous rather than under your name.</p>
+      <p style="margin-top:8px"><b>Reporting and blocking.</b> Any message, post, or profile can be reported for review. Reported content is looked at by a human, not resolved automatically. You can also block another member, which immediately stops their messages and posts from reaching you.</p>
+      <p style="margin-top:8px"><b>No public strangers by default.</b> Matching only places you with people who share your stage, track, and tone preference. You are never added to a pod or chapter without an explicit action from you, whether that is entering a code, accepting a match, or requesting to join.</p>
+      <p style="margin-top:8px"><b>Data protection.</b> Your daily lines, journal entries, and personal reflections are private to you and your pod by default and are never sold to third parties. See the Privacy Policy for the full detail on what is collected and why.</p>
+      <p style="margin-top:8px">If you ever feel unsafe because of another member's behavior, use Send Feedback with the category set to Safety Concern, and describe what happened. Safety reports are treated as priority and are not queued behind general feedback.</p>
+    `)}
+
+    ${helpBlock('Troubleshooting', `
+      <p><b>The app seems stuck loading.</b> Close and reopen it. If a specific screen consistently fails to load, use Send Feedback and describe exactly what you tapped before it happened.</p>
+      <p style="margin-top:8px"><b>I do not see my pod's activity.</b> Make sure you are looking at the Pod tab rather than the Root Network, which only shows content people have chosen to share publicly.</p>
+      <p style="margin-top:8px"><b>I made a mistake in a daily line.</b> Daily lines are meant to be quick and low pressure. There is currently no edit function for a posted line, by design, since the goal is honest daily logging rather than a polished record.</p>
+    `)}
+
+    <p class="faint section">Could not find what you needed? <span style="text-decoration:underline;cursor:pointer" onclick="go('feedback')">Send us feedback</span> and we will get back to you.</p>
+  </div>
+  ${bottomNav('settings')}`;
+}
+
+function screenFeedback(){
+  const cat = state._feedbackCategory || 'General';
+  const cats = ['General','Bug Report','Feature Request','Safety Concern','Account Issue'];
+  return `<div class="app-shell">
+    <div class="back-link" onclick="go('settings')">← Back to Settings</div>
+    <div class="eyebrow" style="margin-top:10px">Support</div>
+    <h2 style="font-size:22px">Send Feedback</h2>
+    <p class="muted small section">Tell us what is working, what is not, or what you wish existed. Every message is read. If you are reporting a safety concern, choose that category so it gets priority handling.</p>
+    <div class="card section">
+      <div class="small" style="font-weight:700">Category</div>
+      <div class="row gap wrap" style="margin-top:8px">
+        ${cats.map(c=>`<div class="choice-card chip ${cat===c?'selected':''}" style="padding:7px 13px;width:auto" onclick="state._feedbackCategory='${c}';renderKeepScroll()">${c}</div>`).join('')}
+      </div>
+      <div class="small section" style="font-weight:700">Your message</div>
+      <textarea id="feedbackMessage" placeholder="Describe what happened, what you'd like to see, or how we can help..." style="margin-top:8px;min-height:120px"></textarea>
+      <div class="small section" style="font-weight:700">Email (optional)</div>
+      <p class="faint" style="margin-top:2px">Leave this if you want a reply. We will not add you to any mailing list from this form.</p>
+      <input id="feedbackEmail" placeholder="you@example.com" style="margin-top:8px" value="${state.user.email||''}"/>
+      <button class="btn btn-primary btn-block section" onclick="submitFeedback()">Send feedback</button>
+    </div>
+    <p class="faint section">For account access issues, include your callsign so we can locate your account faster.</p>
+  </div>
+  ${bottomNav('settings')}`;
+}
+function submitFeedback(){
+  const msg = document.getElementById('feedbackMessage').value.trim();
+  if(!msg){ toast('Write a message first'); return; }
+  const cat = state._feedbackCategory || 'General';
+  toast(cat==='Safety Concern' ? 'Sent. Safety reports are reviewed as priority.' : 'Thank you, your feedback was sent.');
+  document.getElementById('feedbackMessage').value='';
+  state._feedbackCategory = 'General';
+}
+
+function screenTermsOfUse(){
+  return `<div class="app-shell">
+    <div class="back-link" onclick="go('settings')">← Back to Settings</div>
+    <div class="eyebrow" style="margin-top:10px">Legal</div>
+    <h2 style="font-size:22px">Terms of Use</h2>
+    <p class="faint section">Last updated: August 2026</p>
+
+    ${helpBlock('1. Acceptance of these terms', `
+      <p>By creating an account or otherwise using Merros, you agree to these Terms of Use and to our Privacy Policy. If you do not agree to them, do not use the service. We may update these terms from time to time, and if we make a material change we will let you know inside the app before it takes effect.</p>
+    `)}
+
+    ${helpBlock('2. Who can use Merros', `
+      <p>You must be at least 16 years old to create an account. If your local law sets a higher minimum age for using services like this one, that higher age applies to you instead. By creating an account you confirm that the information you provide, including your age, is accurate.</p>
+    `)}
+
+    ${helpBlock('3. Your account', `
+      <p>You are responsible for keeping your login credentials confidential and for all activity that happens under your account. Tell us right away if you believe your account has been accessed without your permission. You may use one account per person. Creating multiple accounts to circumvent pod matching, chapter limits, or feedback moderation is not allowed.</p>
+    `)}
+
+    ${helpBlock('4. What Merros is for', `
+      <p>Merros is a goal tracking and accountability tool built around sprints, pods, and chapters. It is not a substitute for professional advice of any kind, including medical, psychological, financial, or legal advice. Any wellness, habit, or health related goal you track is entirely your own responsibility to pursue safely.</p>
+    `)}
+
+    ${helpBlock('5. Acceptable use', `
+      <p>When using Merros, you agree not to harass, threaten, or demean other members, not to post content that is illegal, obscene, or infringes someone else's rights, not to impersonate another person or misrepresent your affiliation with anyone, and not to use automated tools to scrape, spam, or otherwise abuse the service. We may suspend or terminate accounts that violate this section, with or without prior notice depending on severity.</p>
+    `)}
+
+    ${helpBlock('6. Content you post', `
+      <p>You keep ownership of the daily lines, journal entries, chapter posts, and any other content you create. By posting content visible to your pod, your chapter, or the Root Network, you grant Merros a limited license to store, display, and transmit that content solely for the purpose of operating the service. We do not sell your content, and we do not use it to train third party advertising products.</p>
+    `)}
+
+    ${helpBlock('7. Pods, chapters, and other members', `
+      <p>Pods and chapters connect you with other real people. Merros facilitates these connections but is not responsible for the conduct of other members. Use the reporting and blocking tools described in the Help Center if another member's behavior is inappropriate. We reserve the right to remove any member from a pod or chapter for violating these terms.</p>
+    `)}
+
+    ${helpBlock('8. Subscriptions and payment', `
+      <p>Certain features of Merros may be offered on a paid subscription basis, currently structured as a monthly or quarterly plan, with your first pod free. Prices are shown in the app before you are charged. Subscriptions renew automatically until canceled, and you can cancel at any time from Settings, effective at the end of the current billing period. We do not offer partial refunds for unused time within a billing period unless required by applicable law.</p>
+    `)}
+
+    ${helpBlock('9. Termination', `
+      <p>You may stop using Merros and delete your account at any time from Settings. We may suspend or terminate your account if you violate these terms, if required by law, or if we discontinue the service, and where practical we will give you advance notice.</p>
+    `)}
+
+    ${helpBlock('10. Disclaimers and limitation of liability', `
+      <p>Merros is provided as is, without warranties of any kind, express or implied. We do not guarantee that the service will be uninterrupted, error free, or that it will produce any particular outcome for your goals. To the fullest extent permitted by law, Merros and its team are not liable for indirect, incidental, or consequential damages arising from your use of the service.</p>
+    `)}
+
+    ${helpBlock('11. Changes and contact', `
+      <p>We may revise these terms as the product evolves. Continued use of Merros after a change takes effect means you accept the revised terms. If you have questions about these terms, use Send Feedback with the category set to General.</p>
+    `)}
+  </div>
+  ${bottomNav('settings')}`;
+}
+
+function screenPrivacyPolicy(){
+  return `<div class="app-shell">
+    <div class="back-link" onclick="go('settings')">← Back to Settings</div>
+    <div class="eyebrow" style="margin-top:10px">Legal</div>
+    <h2 style="font-size:22px">Privacy Policy</h2>
+    <p class="faint section">Last updated: August 2026</p>
+
+    ${helpBlock('1. What this policy covers', `
+      <p>This policy explains what information Merros collects, how it is used, who it is shared with, and the choices you have about it. It applies to your use of the Merros app across all supported devices.</p>
+    `)}
+
+    ${helpBlock('2. Information we collect', `
+      <p><b>Account information.</b> Your email address, your chosen callsign, and basic authentication details are collected when you sign up.</p>
+      <p style="margin-top:8px"><b>Goal and sprint data.</b> The goals you select, your sprint length, your chosen tree species, and your roadmap pins are stored so the app can function.</p>
+      <p style="margin-top:8px"><b>Activity content.</b> Daily lines, journal entries, pod channel messages, chapter posts, and check ins you choose to write are stored as part of the core service.</p>
+      <p style="margin-top:8px"><b>Usage information.</b> We collect basic technical information such as when you log in and which features you use, in order to keep the service reliable and to understand which parts of the product are actually useful.</p>
+      <p style="margin-top:8px">We do not collect precise location data, and we do not access your device contacts, photos, or microphone unless you explicitly use a feature that requires it, such as attaching a photo to a chapter post.</p>
+    `)}
+
+    ${helpBlock('3. How we use your information', `
+      <p>We use your information to operate the core features of Merros, including sprints, pods, chapters, your tree, and RootPrint, to send you notifications you have opted into, to respond when you contact us through Send Feedback, to detect and prevent abuse, spam, and safety violations, and to understand overall usage patterns so we can improve the product. We do not use your journal entries or daily lines to train external advertising systems, and we do not sell your personal information to data brokers.</p>
+    `)}
+
+    ${helpBlock('4. Who can see your information', `
+      <p>Your pod members can see your daily lines, status, and pod channel messages by design, since that is the purpose of a pod. Your chapter members can see what you post to the chapter, subject to your visibility setting. The Root Network shows a public style feed of shared moments, but only content you have explicitly opted to share there, and your callsign can be hidden from it entirely in Settings. Your journal is private and is never shown to any other member under any circumstance.</p>
+    `)}
+
+    ${helpBlock('5. Third party service providers', `
+      <p>We use a small number of infrastructure providers to run the service, such as our hosting and database provider and our email delivery provider. These providers process data strictly on our behalf, under contractual obligations to protect it, and are not permitted to use it for their own purposes.</p>
+    `)}
+
+    ${helpBlock('6. Data retention', `
+      <p>We retain your account and activity data for as long as your account is active. If you request account deletion, we permanently remove your personal data within a reasonable operational window, except where a short retention period is required to comply with legal obligations or to resolve an active safety report you are involved in.</p>
+    `)}
+
+    ${helpBlock('7. Your rights and choices', `
+      <p>You can access, correct, or export the personal information tied to your account by contacting us through Send Feedback. You can control notification preferences and callsign visibility directly in Settings. You can request full deletion of your account and associated data at any time, also from Settings. Depending on where you live, you may have additional rights under local law, such as the right to object to certain processing or to lodge a complaint with a data protection authority.</p>
+    `)}
+
+    ${helpBlock('8. Security', `
+      <p>We use industry standard measures to protect your information, including encrypted connections between the app and our servers, access controls limiting who on our team can view raw account data, and row level security rules on our database that restrict what any single account can read or write. No system is perfectly secure, and we cannot guarantee absolute security, but we treat safeguarding your data as a core responsibility, not an afterthought.</p>
+    `)}
+
+    ${helpBlock('9. Children', `
+      <p>Merros is not directed at children under 16, and we do not knowingly collect personal information from anyone under that age. If we learn that an account belongs to a child under the applicable minimum age, we will take steps to delete it.</p>
+    `)}
+
+    ${helpBlock('10. International data transfers', `
+      <p>Because Merros serves people in multiple countries, your information may be processed in a country other than the one you live in. Where this happens, we take steps to ensure the data continues to receive an appropriate level of protection, consistent with this policy.</p>
+    `)}
+
+    ${helpBlock('11. Changes to this policy', `
+      <p>We may update this policy as the product and applicable law evolve. If we make a material change, we will notify you inside the app before it takes effect. The date at the top of this page always reflects the most recent version.</p>
+    `)}
+
+    ${helpBlock('12. Contact', `
+      <p>If you have questions about this policy or how your data is handled, use Send Feedback with the category set to Account Issue, or General if it does not fit that category.</p>
+    `)}
+  </div>
+  ${bottomNav('settings')}`;
+}
+
 /* ===================== RENDER ROUTER ===================== */
 const Screens = {
   landing: screenLanding, identity: screenIdentity, checkEmail: screenCheckEmail, goalPicker: screenGoalPicker, sprintSetup: screenSprintSetup, treeAwaits: screenTreeAwaits, soloSetup: screenSoloSetup, lifeStage: screenLifeStage, tracks: screenTracks,
@@ -3576,12 +4104,15 @@ const Screens = {
   commons: screenCommons, pulse: screenPulse, journal: screenJournal, settings: screenSettings,
   browseChapters: screenBrowseChapters, chapter: chapterHub, createChapter: screenCreateChapter,
   chapterGoal: screenChapterGoal, myCollection: screenMyCollection,
-  hostDash: screenHostDash
+  hostDash: screenHostDash,
+  helpCenter: screenHelpCenter, feedback: screenFeedback, termsOfUse: screenTermsOfUse, privacyPolicy: screenPrivacyPolicy
 };
+const ONBOARDING_SCREENS = new Set(['identity','checkEmail','goalPicker','sprintSetup','treeAwaits','soloSetup','lifeStage','tracks','tone','join','founderWaiting','done']);
 function render(){
   const y = window.scrollY;
   const fn = Screens[state.screen] || screenLanding;
   document.getElementById('app').innerHTML = fn();
+  document.body.classList.toggle('onb-atmosphere', ONBOARDING_SCREENS.has(state.screen));
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
       window.scrollTo(0, y);
@@ -3590,7 +4121,7 @@ function render(){
 }
 // Show a lightweight placeholder instead of a full screen render here.
 // boot() below is what determines the real starting screen (guest vs.
-// authenticated, with or without a pod) and does the one real paint —
+// authenticated, with or without a pod) and does the one real paint,
 // this avoids the "flash of wrong content" that showed up as a double
 // render/blink once boot() started completing successfully.
 document.getElementById('app').innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-size:13px">Loading…</div>';
