@@ -297,6 +297,8 @@ nav.top{padding:20px 0;}
 }
 .identity-layout{display:flex;gap:24px;align-items:flex-start;}
 @media(max-width:900px){.identity-layout{flex-direction:column;}}
+.goalpicker-layout{display:flex;gap:24px;align-items:flex-start;}
+@media(max-width:860px){.goalpicker-layout{flex-direction:column;} .goalpicker-layout>div:last-child{position:static !important;}}
 .identity-col{flex:1;min-width:0;}
 .tree-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
 @media(max-width:520px){.tree-grid{grid-template-columns:repeat(4,1fr);}}
@@ -500,6 +502,25 @@ nav.top{padding:20px 0;}
 .roadmap-day-pill.selected .rdp-dot{background:#fff;}
 .collection-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px;}
 .tts-btn.speaking{background:var(--green-light);color:var(--green-dark);}
+@keyframes treeFlashPop{0%{transform:scale(.7);}45%{transform:scale(1.18);}70%{transform:scale(.95);}100%{transform:scale(1);}}
+.tree-flash-pop{animation:treeFlashPop .5s cubic-bezier(.34,1.56,.64,1) both, treeSway 2.8s ease-in-out .5s infinite;}
+@keyframes flashBurst{0%{opacity:0;transform:scale(.3);}35%{opacity:.9;transform:scale(1.3);}100%{opacity:0;transform:scale(1.9);}}
+.tree-flash-burst{position:absolute;inset:-24px;border-radius:50%;background:radial-gradient(circle,rgba(232,178,61,.6) 0%,rgba(232,178,61,0) 70%);pointer-events:none;animation:flashBurst .6s ease-out forwards;z-index:0;}
+.flash-banner{position:relative;overflow:hidden;cursor:pointer;background:linear-gradient(135deg,#2C3E50,#34495E);border:none;}
+.flash-fog{position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.18),transparent 60%);pointer-events:none;animation:fogDrift 6s ease-in-out infinite;}
+@keyframes fogDrift{0%,100%{opacity:.5;}50%{opacity:.9;}}
+.flash-fog-full{position:fixed;inset:0;background:radial-gradient(ellipse at 30% 10%,rgba(180,200,220,.28),transparent 55%),radial-gradient(ellipse at 80% 90%,rgba(150,170,200,.2),transparent 55%),rgba(244,241,234,.4);pointer-events:none;z-index:0;}
+.flash-timer{font-size:44px;font-weight:800;font-family:'Courier New',monospace;letter-spacing:2px;}
+.rootprint-glint{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;}
+.rootprint-glint::after{
+  content:'';position:absolute;top:-55%;left:-65%;width:38%;height:230%;
+  background:linear-gradient(75deg,transparent 0%,rgba(255,255,255,0) 38%,rgba(255,255,255,var(--glint-op,.4)) 50%,rgba(255,255,255,0) 62%,transparent 100%);
+  animation:rootprintGlintSweep var(--glint-dur,6s) ease-in-out infinite;
+}
+@keyframes rootprintGlintSweep{0%{left:-65%;}18%{left:145%;}100%{left:145%;}}
+.rootprint-palette{margin-top:10px;}
+.rootprint-swatch{display:flex;align-items:center;gap:6px;background:var(--bg-alt);border-radius:8px;padding:4px 8px;}
+.rootprint-swatch-chip{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.15);flex:none;}
 .choice-card:active{transform:scale(.97);}
 .choice-card.selected{border-width:2px;font-weight:700;}
 .bg-blob{position:fixed;border-radius:50%;filter:blur(50px);opacity:.32;z-index:-1;pointer-events:none;animation:floatBlob 10s ease-in-out infinite;}
@@ -1050,6 +1071,46 @@ function rootprintGetRarity(hashHex, consistencyPct){
   const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
   return rootprintRollRarity(nums[7]/255, consistencyPct);
 }
+function rootprintHslDegToHex(hueDeg, satPct, lightPct){
+  const [r,g,b] = rootprintHslToRgb((hueDeg%360)/360, satPct/100, lightPct/100);
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();
+}
+/* The exact palette a given piece rolled, exposed for display, e.g. next to
+   the piece in Collection, the same way a jeweler's certificate lists the
+   stone's actual measurements rather than just calling it "pretty." */
+function rootprintGetPalette(hashHex, speciesHue, consistencyPct){
+  const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
+  const rarity = rootprintRollRarity(nums[7]/255, consistencyPct);
+  const isLegendary = rarity.key==='legendary', isRare = rarity.key==='rare'||isLegendary;
+  const hueDeg = Math.round((speciesHue%1)*360);
+  const secondHueDeg = (hueDeg + 34 + (nums[9]%20)) % 360;
+  const thirdHueDeg = (hueDeg + 320 - (nums[10]%20) + 360) % 360;
+  const frameStops = ROOTPRINT_FRAME_STOPS[rarity.key];
+  const swatches = [{ label:'Core hue', hex: rootprintHslDegToHex(hueDeg, 40, 45) }];
+  if(isRare) swatches.push({ label:'Secondary hue', hex: rootprintHslDegToHex(secondHueDeg, 40, 40) });
+  if(isLegendary) swatches.push({ label:'Tertiary hue', hex: rootprintHslDegToHex(thirdHueDeg, 40, 30) });
+  swatches.push({ label:'Frame', hex: frameStops[0].length===7?frameStops[0].toUpperCase():frameStops[0] });
+  return { rarity, swatches };
+}
+function rootprintPaletteHTML(hashHex, speciesHue, consistencyPct){
+  const { rarity, swatches } = rootprintGetPalette(hashHex, speciesHue, consistencyPct);
+  return `<div class="rootprint-palette">
+    <div class="faint" style="font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:10px">${rarity.label} palette</div>
+    <div class="row gap wrap" style="margin-top:6px">
+      ${swatches.map(s=>`<div class="rootprint-swatch">
+        <span class="rootprint-swatch-chip" style="background:${s.hex}"></span>
+        <span class="faint" style="font-family:'Courier New',monospace;font-size:10.5px">${s.hex}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+/* Glint: a light streak sweeping across the piece the way sunlight catches
+   polished metal. Intensity and frequency scale with rarity so the rarer
+   pieces genuinely feel more alive, not just differently colored. */
+function rootprintGlintOverlay(rarityKey){
+  const cfg = { common:{op:.35,dur:'7s'}, uncommon:{op:.45,dur:'6s'}, rare:{op:.6,dur:'5s'}, legendary:{op:.85,dur:'3.6s'} }[rarityKey] || {op:.35,dur:'7s'};
+  return `<div class="rootprint-glint" style="--glint-op:${cfg.op};--glint-dur:${cfg.dur}"></div>`;
+}
 function rootprintRenderMedallionSVG(hashHex, opts={}){
   const {
     speciesHue=0.3, consistencyPct=70,
@@ -1125,6 +1186,7 @@ function rootprintRenderMedallionSVG(hashHex, opts={}){
         </g>
       </g>
     </svg>
+    ${rootprintGlintOverlay(rarity.key)}
   </div>`;
 }
 // Drag-to-spin, roulette-style: rotor follows the pointer while dragging,
@@ -1538,6 +1600,8 @@ function screenIdentity(){
   const displayIcon = selected ? selected.icon : 'sprout';
   const displayName = selected ? selected.name : 'Sprout';
   const displayEpithet = selected ? selected.epithet : 'Undecided';
+  const justPicked = !!state.user._treeJustPicked;
+  state.user._treeJustPicked = false; // one-shot, consumed on this render
   return `<div class="app-shell">
     <div class="back-link" onclick="go('landing')">← Back to landing</div>
     <div class="eyebrow" style="margin-top:14px">${mode==='login' ? 'Log in' : 'Step 1 of 4: Who you are here'}</div>
@@ -1589,7 +1653,10 @@ function screenIdentity(){
           </div>
         </div>
         <div class="card section plaque-card">
-          <div class="tree-anim">${treeImg(displayIcon,120)}</div>
+          <div class="tree-anim ${justPicked?'tree-flash-pop':''}" style="position:relative">
+            ${justPicked?'<div class="tree-flash-burst"></div>':''}
+            ${treeImg(displayIcon,120)}
+          </div>
           <div>
             <div class="small" style="font-weight:700">${state.user.callsign || '···'}</div>
             <div class="faint">${displayEpithet}</div>
@@ -1649,7 +1716,12 @@ function checkPasswordMatch(){
   el.textContent = c.value===p.value ? '✓ Passwords match' : 'Passwords do not match';
 }
 function renderKeepScroll(){ render(); }
-function pickTreeSpecies(key){ state.user.treeSpecies = state.user.treeSpecies===key ? null : key; renderKeepScroll(); }
+function pickTreeSpecies(key){
+  const newKey = state.user.treeSpecies===key ? null : key;
+  state.user.treeSpecies = newKey;
+  if(newKey) state.user._treeJustPicked = true; // flash on selecting, not on deselecting
+  renderKeepScroll();
+}
 
 /* Text-to-speech, the real Web Speech API, no backend or key needed. A
    genuine accessibility win for people with visual or reading disabilities,
@@ -1730,52 +1802,214 @@ async function joinMatchedPod(podId){
   }
 }
 
-/* Weekly mission, Wayk-inspired: a short, goal-relevant prompt that rotates
-   roughly twice a week (not a countdown timer, just a stable window computed
-   from the date, so it doesn't need its own backend field yet). Unlike
-   Wayk's "find a random object," every prompt here is actually tied to the
-   thing the app is for, so it earns its place instead of being novelty. */
-const MERROS_MISSIONS = [
-  "Write down one thing about this sprint you're proud of, even if it's small.",
-  "Send your pod a two-line update on how this week is actually going, not the polished version.",
-  "Reread your very first daily line this sprint. What's changed since then?",
-  "Do the smallest possible version of today's task, just to keep the streak honest.",
-  "Tell someone outside Merros one specific thing you're working on right now.",
-  "Reread the goal you picked at onboarding. Still the right one? Note it either way.",
-  "Spend five minutes tidying whatever's cluttering the space you work in.",
-  "Write one sentence you'd want to read on a hard day, later in this sprint.",
-  "Send a podmate something encouraging about their week. No reason needed.",
-  "Name one thing that's making this goal harder than it needs to be.",
+/* ===== Rare Flash Event =====
+   Replaces the earlier twice-weekly mission rotation. A mission system that
+   drops constantly degrades into a casual game and undercuts the app's
+   quieter, serious tone, so this is deliberately rare: roughly once or
+   twice a month, date-seeded so it's stable rather than re-rolled on every
+   visit, opt-in with zero penalty for skipping it, and the payoff is a
+   permanent, visually distinct "Burl Wood" RootPrint fused into the
+   collection instead of a generic badge.
+
+   Verification is honest about what a web page can actually observe: the
+   Page Visibility API can genuinely tell if you left the tab, so that's
+   what "you stayed present" is based on here. Nothing claims to monitor a
+   locked phone or read device sensors in the background, because a web
+   page cannot actually do that. */
+const FLASH_EVENTS = [
+  { key:'digital_solitude', name:'The Digital Solitude Event',
+    prompt:"Step away from every screen for the next ten minutes. Just be where you are. Come back when it's done.",
+    durationMin:10, logText:'Voluntarily disconnected to anchor the day.' },
 ];
-function currentMission(){
-  const windowIndex = Math.floor(Date.now() / (1000*60*60*84)); // rotates roughly twice a week
-  const seed = (state.user.callsign||'you') + '|' + windowIndex;
-  let h = 0;
-  for(let i=0;i<seed.length;i++){ h = (h*31 + seed.charCodeAt(i)) >>> 0; }
-  return { id: windowIndex, text: MERROS_MISSIONS[h % MERROS_MISSIONS.length] };
+function todaysFlashSeed(){
+  const dateStr = new Date().toISOString().slice(0,10);
+  const seed = (state.user.callsign||'you')+'|flash|'+dateStr;
+  let h=0; for(let i=0;i<seed.length;i++){ h=(h*31+seed.charCodeAt(i))>>>0; }
+  return h;
 }
-function missionCard(){
-  const m = currentMission();
-  const done = state.user._completedMissionId === m.id;
-  return `<div class="card section" style="border:1.5px dashed var(--gold)">
-    <div class="small" style="font-weight:700">This week's mission</div>
-    <p class="small" style="margin-top:6px">${m.text}</p>
-    <button class="btn ${done?'btn-outline':'btn-primary'} btn-sm section" ${done?'disabled':''} onclick="completeMission(${m.id})">${done?'Completed':'Mark done'}</button>
+function flashEventToday(){
+  const h = todaysFlashSeed();
+  if((h % 1000) >= 67) return null; // ~6.7% of days, roughly twice a month on average
+  const startHour = h % 20; // window fits inside the day
+  return { event: FLASH_EVENTS[h % FLASH_EVENTS.length], startHour, endHour: startHour+4, dateStr: new Date().toISOString().slice(0,10) };
+}
+function isFlashEventActiveNow(){
+  const f = flashEventToday();
+  if(!f) return null;
+  const hr = new Date().getHours() + new Date().getMinutes()/60;
+  return (hr>=f.startHour && hr<f.endHour) ? f : null;
+}
+function flashEventBanner(){
+  const f = isFlashEventActiveNow();
+  if(!f || state.user._flashEventWon===f.dateStr) return '';
+  return `<div class="card section flash-banner" onclick="go('flashEvent')">
+    <div class="flash-fog"></div>
+    <div class="small" style="font-weight:700;position:relative;color:#fff">An environmental shift has occurred.</div>
+    <p class="small" style="margin-top:4px;position:relative;color:#fff">A rare growth opportunity is active. Opt in to adapt.</p>
   </div>`;
 }
-function completeMission(id){
-  state.user._completedMissionId = id;
-  toast('Nice. A new one lands in a few days.');
+function screenFlashEvent(){
+  const f = isFlashEventActiveNow();
+  const stage = state.user._flashStage || 'intro';
+  if(!f && stage!=='done'){
+    return `<div class="app-shell center">
+      <div class="back-link" style="text-align:left" onclick="go('dashboard')">← Back to Dashboard</div>
+      <h2 class="section" style="font-size:20px">This event has passed.</h2>
+      <p class="faint section">Rare growth opportunities come and go on their own schedule. Nothing lost by missing one, another will come.</p>
+    </div>
+    ${bottomNav('dashboard')}`;
+  }
+  const ev = f ? f.event : FLASH_EVENTS[0];
+  if(stage==='active'){
+    return `<div class="app-shell center">
+      <div class="flash-fog-full"></div>
+      <div class="eyebrow section" style="position:relative">${ev.name}</div>
+      <div class="flash-timer section" id="flashTimerDisplay" style="position:relative">${String(ev.durationMin).padStart(2,'0')}:00</div>
+      <p class="faint section" style="position:relative;max-width:300px;margin-left:auto;margin-right:auto">Keep this tab open. If you switch away before time's up, the attempt just quietly ends, no penalty, try again next time.</p>
+      <button class="btn btn-ghost btn-block section" style="position:relative" onclick="cancelFlashEvent()">Stop</button>
+    </div>`;
+  }
+  if(stage==='done'){
+    const hue = ROOTPRINT_SPECIES_HUES[state.user.treeSpecies||'sprout']||0.3;
+    const hashHex = state.user._flashHash || '00';
+    return `<div class="app-shell center">
+      <div class="back-link" style="text-align:left" onclick="state.user._flashStage=null;go('dashboard')">← Back to Dashboard</div>
+      <div class="eyebrow section">Anomaly Logged</div>
+      <h2 style="font-size:22px">A Burl Wood ring has fused into your RootPrint.</h2>
+      <p class="muted small section" style="max-width:320px;margin-left:auto;margin-right:auto">${ev.logText}</p>
+      <div style="width:260px;margin:20px auto 0">${rootprintRenderBurlSVG(hashHex, hue)}</div>
+      <div style="max-width:280px;margin:0 auto">${rootprintBurlPaletteHTML(hashHex, hue)}</div>
+      <button class="btn btn-outline btn-sm section" onclick="exportRootPrint('${hashHex}', ${hue}, 100, 'burl')">Export</button>
+      <button class="btn btn-primary btn-block section" onclick="state.user._flashStage=null;go('dashboard')">Done</button>
+    </div>`;
+  }
+  return `<div class="app-shell center">
+    <div class="back-link" style="text-align:left" onclick="go('dashboard')">← Back to Dashboard</div>
+    <div class="flash-fog-full"></div>
+    <div class="eyebrow section" style="position:relative">Rare Growth Opportunity</div>
+    <h2 style="font-size:22px;position:relative">${ev.name}</h2>
+    <p class="muted small section" style="max-width:320px;margin-left:auto;margin-right:auto;position:relative">${ev.prompt}</p>
+    <p class="faint section" style="position:relative">Completely optional. Skip it and nothing about your sprint changes.</p>
+    <button class="btn btn-primary btn-block section" style="position:relative" onclick="beginFlashEvent()">Opt in</button>
+    <button class="btn btn-ghost btn-block" style="position:relative" onclick="go('dashboard')">Not now</button>
+  </div>`;
+}
+function beginFlashEvent(){
+  state.user._flashStage = 'active';
   renderKeepScroll();
+  const ev = (isFlashEventActiveNow()||{}).event || FLASH_EVENTS[0];
+  let remaining = ev.durationMin*60;
+  let cancelled = false;
+  const onHidden = ()=>{ if(document.visibilityState==='hidden') cancelled = true; };
+  document.addEventListener('visibilitychange', onHidden);
+  clearInterval(state._flashInterval);
+  state._flashInterval = setInterval(()=>{
+    if(cancelled || state.user._flashStage!=='active'){
+      clearInterval(state._flashInterval);
+      document.removeEventListener('visibilitychange', onHidden);
+      if(cancelled){
+        state.user._flashStage = null;
+        toast('Left the tab, the attempt ended. Try again next time.');
+        renderKeepScroll();
+      }
+      return;
+    }
+    remaining--;
+    const el = document.getElementById('flashTimerDisplay');
+    if(el) el.textContent = Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0');
+    if(remaining<=0){
+      clearInterval(state._flashInterval);
+      document.removeEventListener('visibilitychange', onHidden);
+      completeFlashEvent();
+    }
+  }, 1000);
+}
+function cancelFlashEvent(){
+  state.user._flashStage = null;
+  clearInterval(state._flashInterval);
+  go('dashboard');
+}
+async function completeFlashEvent(){
+  const f = isFlashEventActiveNow() || flashEventToday();
+  const dateStr = (f && f.dateStr) || new Date().toISOString().slice(0,10);
+  const hashHex = await rootprintSha256Hex((state.user.callsign||'you')+'|flash|'+dateStr+'|'+Date.now());
+  state.user._flashHash = hashHex;
+  state.user._flashEventWon = dateStr;
+  state.user._flashStage = 'done';
+  renderKeepScroll();
+}
+/* Burl Wood: deliberately NOT circular, unlike every other RootPrint. Real
+   burl wood grain is chaotic and swirled, which is the point here, this
+   piece is meant to look different from the calm concentric ones because
+   it represents adapting under sudden pressure, not routine consistency. */
+function rootprintRenderBurlSVG(hashHex, speciesHue){
+  const size = 320, cx=size/2, cy=size/2;
+  const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
+  const hueDeg = Math.round((speciesHue%1)*360);
+  let swirls = '';
+  const layers = 7;
+  for(let i=0;i<layers;i++){
+    const rBase = 20 + i*((size/2-30)/layers);
+    const turns = 1.4 + (nums[i%nums.length]/255)*1.8;
+    const dir = i%2===0 ? 1 : -1;
+    const hue = (hueDeg + i*27 + (nums[(i*2)%nums.length]%40)) % 360;
+    const pts=[];
+    const nPts=90;
+    for(let p=0;p<=nPts;p++){
+      const t = p/nPts;
+      const a = dir*t*turns*Math.PI*2 + (nums[(i*3)%nums.length]/255)*Math.PI*2;
+      const wobble = Math.sin(t*Math.PI*2*(2+nums[(i*5+1)%nums.length]%3)+i) * (6+nums[(i*4)%nums.length]%10);
+      const r = rBase + t*18 + wobble;
+      pts.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1));
+    }
+    swirls += `<polyline points="${pts.join(' ')}" fill="none" stroke="hsl(${hue},58%,${38+i*3}%)" stroke-width="${(2.2+i*0.3).toFixed(1)}" opacity="${(0.5+i*0.06).toFixed(2)}" stroke-linecap="round"/>`;
+  }
+  const frameStops = ROOTPRINT_FRAME_STOPS.legendary;
+  return `<div style="width:${size}px;height:${size}px;max-width:100%;margin:0 auto;position:relative">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;width:100%;height:auto;filter:drop-shadow(0 10px 22px rgba(20,14,8,.4)) drop-shadow(0 0 16px hsla(${hueDeg},70%,60%,.5))">
+      <defs>
+        <radialGradient id="burlbg" cx="50%" cy="42%" r="70%"><stop offset="0%" stop-color="hsl(${hueDeg},40%,30%)"/><stop offset="100%" stop-color="hsl(${hueDeg},44%,12%)"/></radialGradient>
+        <linearGradient id="burlframe" x1="0%" y1="0%" x2="100%" y2="100%">${frameStops.map((c,i)=>`<stop offset="${Math.round(i/(frameStops.length-1)*100)}%" stop-color="${c}"/>`).join('')}</linearGradient>
+      </defs>
+      <circle cx="${cx}" cy="${cy}" r="${size/2-4}" fill="url(#burlbg)"/>
+      ${swirls}
+      <circle cx="${cx}" cy="${cy}" r="${size/2-4}" fill="none" stroke="url(#burlframe)" stroke-width="5"/>
+    </svg>
+    ${rootprintGlintOverlay('legendary')}
+  </div>`;
+}
+function rootprintGetBurlPalette(hashHex, speciesHue){
+  const nums=[]; for(let i=0;i<hashHex.length;i+=2) nums.push(parseInt(hashHex.substr(i,2),16));
+  const hueDeg = Math.round((speciesHue%1)*360);
+  const swatches = [0,2,4,6].map(i=>{
+    const hue = (hueDeg + i*27 + (nums[(i*2)%nums.length]%40)) % 360;
+    return { label:'Swirl layer '+(i+1), hex: rootprintHslDegToHex(hue, 58, 38+i*3) };
+  });
+  swatches.push({ label:'Frame', hex: ROOTPRINT_FRAME_STOPS.legendary[0].toUpperCase() });
+  return { swatches };
+}
+function rootprintBurlPaletteHTML(hashHex, speciesHue){
+  const { swatches } = rootprintGetBurlPalette(hashHex, speciesHue);
+  return `<div class="rootprint-palette">
+    <div class="faint" style="font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:10px">Burl Wood palette</div>
+    <div class="row gap wrap" style="margin-top:6px;justify-content:center">
+      ${swatches.map(s=>`<div class="rootprint-swatch">
+        <span class="rootprint-swatch-chip" style="background:${s.hex}"></span>
+        <span class="faint" style="font-family:'Courier New',monospace;font-size:10.5px">${s.hex}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
 }
 
 /* Export a RootPrint as an image. Tries the native share sheet first
    (that's the actual "share screen" on mobile), falls back to a direct PNG
    download, and falls back once more to raw SVG if canvas conversion fails
    for any reason, so the person always gets something out of it. */
-function exportRootPrint(hashHex, speciesHue, consistencyPct){
+function exportRootPrint(hashHex, speciesHue, consistencyPct, variant){
   const wrap = document.createElement('div');
-  wrap.innerHTML = rootprintRenderMedallionSVG(hashHex, {speciesHue, consistencyPct});
+  wrap.innerHTML = variant==='burl'
+    ? rootprintRenderBurlSVG(hashHex, speciesHue)
+    : rootprintRenderMedallionSVG(hashHex, {speciesHue, consistencyPct});
   const svgEl = wrap.querySelector('svg');
   if(!svgEl){ toast('Could not prepare that for export'); return; }
   let markup = svgEl.outerHTML;
@@ -2010,28 +2244,40 @@ function screenGoalPicker(){
     <div class="back-link" onclick="go('identity')">← Back to Screen 1</div>
     <div class="eyebrow" style="margin-top:14px">Step 2 of 4: What Are You Working On?</div>
     <h2 style="font-size:24px;margin-top:6px">Pick 1–3 goals. These become your sprint.</h2>
-    <div class="section">
-      ${GOAL_CATEGORIES.map(cat=>{
-        const c = GOAL_CATEGORY_COLORS[cat.name] || {accent:'var(--green)', bg:'var(--bg-alt)', chipBg:'#fff'};
-        return `
-        <div class="card section" style="border-left:4px solid ${c.accent}">
-          <div class="eyebrow" style="color:${c.accent}">${cat.name}</div>
-          <div class="row wrap gap section" style="margin-top:10px">
-            ${cat.goals.map(g=>{
-              const isSel = selected.includes(g);
-              return `<div class="choice-card chip goal-chip ${isSel?'selected':''}" style="padding:9px 15px;width:auto;background:${isSel?c.deep:'#fff'};border:1.5px solid ${isSel?c.deep:c.bold};color:${isSel?'#fff':c.deep};font-weight:${isSel?700:500}" onclick="toggleGoalChip('${g.replace(/'/g,"\\'")}')">${g}</div>`;
-            }).join('')}
+    <div class="section goalpicker-layout">
+      <div style="flex:1.6;min-width:0">
+        ${GOAL_CATEGORIES.map(cat=>{
+          const c = GOAL_CATEGORY_COLORS[cat.name] || {accent:'var(--green)', bg:'var(--bg-alt)', chipBg:'#fff'};
+          return `
+          <div class="card section" style="border-left:4px solid ${c.accent}">
+            <div class="eyebrow" style="color:${c.accent}">${cat.name}</div>
+            <div class="row wrap gap section" style="margin-top:10px">
+              ${cat.goals.map(g=>{
+                const isSel = selected.includes(g);
+                return `<div class="choice-card chip goal-chip ${isSel?'selected':''}" style="padding:9px 15px;width:auto;background:${isSel?c.deep:'#fff'};border:1.5px solid ${isSel?c.deep:c.bold};color:${isSel?'#fff':c.deep};font-weight:${isSel?700:500}" onclick="toggleGoalChip('${g.replace(/'/g,"\\'")}')">${g}</div>`;
+              }).join('')}
+            </div>
+          </div>`;}).join('')}
+        <div class="card section">
+          <label class="field-label">Or write your own goal</label>
+          <div class="row gap section" style="margin-top:8px">
+            <input id="customGoalInput" placeholder="Write your own goal..." style="flex:1"/>
+            <button class="btn btn-outline" onclick="addCustomGoal()">Add →</button>
           </div>
-        </div>`;}).join('')}
-      <div class="card section">
-        <label class="field-label">Or write your own goal</label>
-        <div class="row gap section" style="margin-top:8px">
-          <input id="customGoalInput" placeholder="Write your own goal..." style="flex:1"/>
-          <button class="btn btn-outline" onclick="addCustomGoal()">Add →</button>
+        </div>
+        <button class="btn btn-primary btn-block section" onclick="submitGoalPicker()">${selected.length} goal${selected.length===1?'':'s'} selected. Continue →</button>
+        ${onboardStepFooter(2,4,'Set Up Your Sprint')}
+      </div>
+      <div style="flex:1;min-width:0;position:sticky;top:90px">
+        <div class="card" style="background:var(--bg-alt);border:none">
+          <div class="small" style="font-weight:700">Your sprint so far</div>
+          ${selected.length ? `<div class="stack gap8 section">
+            ${selected.map((g,i)=>`<div class="small">Goal ${i+1}: ${g}</div>`).join('')}
+          </div>` : `<p class="faint section">Pick a goal on the left and it'll show up here.</p>`}
+          <hr class="rule"/>
+          <p class="faint">Next you'll choose how long this sprint runs. Once that's set, we build a real week-by-week roadmap for these goals, with AI-suggested milestones you can drag onto a calendar.</p>
         </div>
       </div>
-      <button class="btn btn-primary btn-block section" onclick="submitGoalPicker()">${selected.length} goal${selected.length===1?'':'s'} selected. Continue →</button>
-      ${onboardStepFooter(2,4,'Set Up Your Sprint')}
     </div>
   </div>`;
 }
@@ -2929,7 +3175,7 @@ function screenDashboard(){
       ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
     </div>
 
-    ${missionCard()}
+    ${flashEventBanner()}
 
     <div class="card section">
       <div class="small" style="font-weight:700">Weekly Focus</div>
@@ -2995,7 +3241,7 @@ function screenSoloDashboard(){
       ${wiltCaption() ? `<p class="faint" style="margin-top:6px;font-style:italic">${wiltCaption()}</p>` : ''}
     </div>
 
-    ${missionCard()}
+    ${flashEventBanner()}
 
     <div class="card section">
       <div class="small" style="font-weight:700">Your goals this sprint</div>
@@ -3575,6 +3821,7 @@ async function showRootPrintPreview(){
       ${medallion}
       <p class="small" style="font-weight:700;margin-top:10px">RootPrint (preview)</p>
       <p class="faint" style="margin-top:8px">Drag to spin it</p>
+      <div style="max-width:220px;margin:0 auto">${rootprintPaletteHTML(result.hash, ROOTPRINT_SPECIES_HUES[species]||0.3, entries.length?100:0)}</div>
       <button class="btn btn-outline btn-sm section" onclick="exportRootPrint('${result.hash}', ${ROOTPRINT_SPECIES_HUES[species]||0.3}, ${entries.length?100:0})">Export</button>
     </div>`;
   setTimeout(()=>initRootPrintSpin(uid), 30);
@@ -3622,6 +3869,7 @@ async function loadMyCollectionTrunk(){
         <p class="small section" style="font-weight:700;margin-top:10px">${speciesName}</p>
         <p class="faint" style="font-weight:700;color:var(--green-dark)">${rarity.label}</p>
         <p class="faint">${r.weeks_completed} week${r.weeks_completed===1?'':'s'} · ${dateLabel}</p>
+        ${rootprintPaletteHTML(r.seed_hash, rHue, r.consistency_pct)}
         <button class="btn btn-outline btn-sm section" onclick="exportRootPrint('${r.seed_hash}', ${rHue}, ${r.consistency_pct})">Export</button>
       </div>`;
     }).join('');
@@ -4231,7 +4479,7 @@ const Screens = {
   chapterGoal: screenChapterGoal, myCollection: screenMyCollection,
   hostDash: screenHostDash,
   helpCenter: screenHelpCenter, feedback: screenFeedback, termsOfUse: screenTermsOfUse, privacyPolicy: screenPrivacyPolicy,
-  podMatch: screenPodMatch, trackRoadmap: screenTrackRoadmap
+  podMatch: screenPodMatch, trackRoadmap: screenTrackRoadmap, flashEvent: screenFlashEvent
 };
 const ONBOARDING_SCREENS = new Set(['identity','checkEmail','goalPicker','sprintSetup','treeAwaits','soloSetup','lifeStage','tracks','trackRoadmap','tone','join','founderWaiting','done']);
 function render(){
