@@ -12,7 +12,9 @@
 <meta name="apple-mobile-web-app-title" content="Merros">
 <title>Merros. Your goals. Your pace. Your people.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
 <style>
 :root{
   --bg:#FFFFFF; --bg-alt:#F4F6F2; --card:#FFFFFF;
@@ -29,11 +31,7 @@
 @media(min-width:768px){ :root{ --shell-w:760px; } }
 @media(min-width:1080px){ :root{ --shell-w:920px; } }
 @media(min-width:1440px){ :root{ --shell-w:1040px; } }
-.theme-grove{ --bg:#FFFFFF; --bg-alt:#F4F6F2; --card:#FFFFFF; --ink:#1E2A1E; --ink-soft:#6B7A66; --ink-faint:#9AA894; --green:#4F8A4A; --green-dark:#3D6E3A; --green-light:#E3F1DE; --terracotta:#D98B4A; --terracotta-light:#FBE8D5; --rose:#E893A0; --rose-light:#FCE6EA; --gold:#E8B23D; --gold-light:#FCEFCF; --border:#E5E9DE; }
-.theme-mountain{ --bg:#F7F8FA; --bg-alt:#EEF1F4; --card:#FFFFFF; --ink:#232A31; --ink-soft:#66727C; --ink-faint:#9AA6AF; --green:#3B4A5A; --green-dark:#28323E; --green-light:#E7EBEF; --terracotta:#8C7A5C; --terracotta-light:#EFE8DC; --rose:#9C8CA0; --rose-light:#EDE7EF; --gold:#B49A5E; --gold-light:#F2ECD9; --border:#E1E6EA; }
-.theme-ocean{ --bg:#F4FAFA; --bg-alt:#E9F4F5; --card:#FFFFFF; --ink:#132C31; --ink-soft:#4F7278; --ink-faint:#8FAEB2; --green:#1F5C6B; --green-dark:#153F49; --green-light:#E1EEF0; --terracotta:#C97F52; --terracotta-light:#F7E4D6; --rose:#C08497; --rose-light:#F5E4EA; --gold:#CBA23D; --gold-light:#F5EBCE; --border:#DCEBEC; }
-.theme-autumn{ --bg:#FDF8F2; --bg-alt:#F7EEE1; --card:#FFFFFF; --ink:#33231A; --ink-soft:#8A6A54; --ink-faint:#BFA491; --green:#8A6A3A; --green-dark:#6E5028; --green-light:#F0E4CC; --terracotta:#B5502A; --terracotta-light:#F3DBC9; --rose:#C1633A; --rose-light:#F6E0D2; --gold:#D69A3D; --gold-light:#F7E8C9; --border:#EDE0D0; }
-.theme-midnight{ --bg:#14181A; --bg-alt:#1C2124; --card:#1F2528; --ink:#EAEDE9; --ink-soft:#A6B0A9; --ink-faint:#707B74; --green:#6FBF6A; --green-dark:#56A052; --green-light:#233029; --terracotta:#E0966A; --terracotta-light:#3A2A1F; --rose:#E6A0AC; --rose-light:#332025; --gold:#F0C766; --gold-light:#332C1C; --border:#2A3134; }
+
 *{box-sizing:border-box;}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
 h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:0em;margin:0;}
@@ -528,12 +526,8 @@ nav.top{padding:20px 0;}
 .rp-hue-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .12s;}
 .rp-hue-swatch:hover{transform:scale(1.1);}
 .rp-hue-swatch.selected{border-color:var(--ink);box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--ink);}
-.theme-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
-.theme-swatch-card{border:2px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;transition:border-color .15s,transform .1s;}
-.theme-swatch-card:hover{transform:translateY(-1px);}
-.theme-swatch-card.selected{border-color:var(--green);}
-.theme-swatch-preview{display:flex;height:32px;border-radius:8px;overflow:hidden;}
-.theme-swatch-preview span{flex:1;}
+
+
 .choice-card:active{transform:scale(.97);}
 .choice-card.selected{border-width:2px;font-weight:700;}
 .bg-blob{position:fixed;border-radius:50%;filter:blur(50px);opacity:.32;z-index:-1;pointer-events:none;animation:floatBlob 10s ease-in-out infinite;}
@@ -624,7 +618,7 @@ const state = {
   journal: [
     {when:'Week 2 · Tuesday', text:'Sent 2 applications. One company already replied.\n\nRewrote my CV. It\'s clearer now.'}
   ],
-  settings: { pulseVisible:false, chapterVisible:true, sundayReminder:true, dailyReminder:true, fridayReminder:true, podActivity:true, chapterActivity:true, theme:'grove' },
+  settings: { pulseVisible:false, chapterVisible:true, sundayReminder:true, dailyReminder:true, fridayReminder:true, podActivity:true, chapterActivity:true },
   chapterCreated:false,
   chapter: {
     name:'Tech Chapter', desc:"Builders, breakers and the people who ship on Fridays.",
@@ -730,7 +724,13 @@ async function boot(fromAuthAction){
     const user = await Merros.auth.getUser();
     if(!user){ render(); document.getElementById('jumpSelect').value=state.screen; return; }
     state.authUser = user;
-    let profile = await Merros.profile.getMyProfile();
+    // getMyProfile() and getMyPod() don't depend on each other, they were
+    // being awaited one after the other as an unnecessary waterfall. Running
+    // them together cuts a real network round-trip off every logged-in load.
+    let [profile, membership] = await Promise.all([
+      Merros.profile.getMyProfile(),
+      Merros.pods.getMyPod()
+    ]);
     const pending = localStorage.getItem('merros_pending_callsign');
     if(pending){
       try{
@@ -744,7 +744,6 @@ async function boot(fromAuthAction){
     state.authProfile = profile;
     state.user.callsign = profile.callsign;
     state.user.email = user.email;
-    const membership = await Merros.pods.getMyPod();
     if(membership && membership.pods){
       state.realMember = membership;
       state.realPod = membership.pods;
@@ -1151,6 +1150,15 @@ function rootprintRenderMedallionSVG(hashHex, opts={}){
   const secondHueDeg = (hueDeg + 34 + (nums[9]%20)) % 360;
   const thirdHueDeg = (hueDeg + 320 - (nums[10]%20) + 360) % 360;
 
+  // Precision vs. weathering: how much geometric noise gets injected is now
+  // tied directly to actual consistency, not just hash-derived randomness.
+  // High consistency tightens toward clean, symmetrical structure; low
+  // consistency weathers the same shape into something rougher and more
+  // gnarled. This runs underneath whichever ring style the person picked,
+  // style is still their choice, precision is earned.
+  const precision = Math.max(0, Math.min(1, consistencyPct/100));
+  const noiseFactor = 1.35 - precision; // ranges ~0.35 (very consistent) to ~1.35 (very inconsistent)
+
   // Three ring styles, entirely a personal display choice, not tied to
   // earned data: Circular (clean, calm), Organic (real tree rings are
   // never true circles, off-center and wobbly), Staggered (broken, rhythmic
@@ -1167,9 +1175,9 @@ function rootprintRenderMedallionSVG(hashHex, opts={}){
       const opacity = (0.55+(i%4)*0.1).toFixed(2);
       const ringHue = (hueDeg + (nums[(i*4)%nums.length]/255-0.5)*22 + 360) % 360;
       const leanAngle = (nums[(i*2)%nums.length]/255) * Math.PI*2;
-      const leanStrength = baseR * (0.05 + (nums[(i*2+1)%nums.length]/255)*0.09);
+      const leanStrength = baseR * (0.05 + (nums[(i*2+1)%nums.length]/255)*0.09) * noiseFactor;
       const wobFreq = 3 + (nums[(i*3+2)%nums.length]%4);
-      const wobAmp = baseR * 0.02 * (0.6 + (nums[(i*3+5)%nums.length]/255));
+      const wobAmp = baseR * 0.02 * (0.6 + (nums[(i*3+5)%nums.length]/255)) * noiseFactor;
       const phase = (nums[(i*5+7)%nums.length]/255) * Math.PI*2;
       const pts = [];
       for(let p=0;p<72;p++){
@@ -1191,7 +1199,10 @@ function rootprintRenderMedallionSVG(hashHex, opts={}){
       const ringHue = (hueDeg + (nums[(i*4)%nums.length]/255-0.5)*22 + 360) % 360;
       const circumference = 2*Math.PI*r;
       const segLen = circumference / (6 + (i%5));
-      const gapLen = segLen * (0.5 + (nums[(i*7)%nums.length]/255)*0.5);
+      // Gap variance is the "precision" signal here: tight and even for a
+      // consistent sprint, ragged and uneven for an erratic one.
+      const gapRand = nums[(i*7)%nums.length]/255 - 0.5;
+      const gapLen = segLen * Math.max(0.15, 0.75 + gapRand*noiseFactor);
       const dashOffset = (nums[(i*8+3)%nums.length]/255) * circumference;
       ringParts.push(`<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="none" stroke="hsl(${ringHue.toFixed(0)},${sat}%,${light}%)" stroke-width="${strokeW.toFixed(1)}" opacity="${opacity}" stroke-dasharray="${segLen.toFixed(1)} ${gapLen.toFixed(1)}" stroke-dashoffset="${dashOffset.toFixed(1)}"/>`);
       const gapFrac = 0.052 + (nums[(i*6+13)%nums.length]/255)*0.028;
@@ -1206,7 +1217,10 @@ function rootprintRenderMedallionSVG(hashHex, opts={}){
       const strokeW = (1.3+(nums[(i+3)%nums.length]%3)*0.7);
       const opacity = (0.55+(i%4)*0.1).toFixed(2);
       const ringHue = (hueDeg + (nums[(i*4)%nums.length]/255-0.5)*22 + 360) % 360;
-      ringParts.push(`<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" fill="none" stroke="hsl(${ringHue.toFixed(0)},${sat}%,${light}%)" stroke-width="${strokeW.toFixed(1)}" opacity="${opacity}"/>`);
+      // A perfectly consistent sprint keeps rings evenly spaced; an erratic
+      // one lets each ring's radius drift slightly off its expected spot.
+      const jitter = (nums[(i*9+5)%nums.length]/255 - 0.5) * size * 0.02 * noiseFactor;
+      ringParts.push(`<circle cx="${cx}" cy="${cy}" r="${(r+jitter).toFixed(1)}" fill="none" stroke="hsl(${ringHue.toFixed(0)},${sat}%,${light}%)" stroke-width="${strokeW.toFixed(1)}" opacity="${opacity}"/>`);
       const gapFrac = 0.052 + (nums[(i*6+13)%nums.length]/255)*0.028;
       r -= (size/2) * gapFrac;
       if(r < size*0.3125) break;
@@ -1390,7 +1404,7 @@ function screenLanding(){
 
   <div class="hero-section container">
     <h1 class="hero-headline">Start something. Finish it. Then start the next thing.</h1>
-    <p class="hero-lines"><b>Start solo. Build your rhythm.</b><br/>Then choose your path.</p>
+    <p class="hero-lines">Finish a sprint. A tree grows. That tree is a record of what you did.<br/>Over time, your trees become a timeline of your consistency, showing you exactly where your focus went.</p>
     ${ctaJourneyBlock()}
     <hr class="rule section" style="max-width:280px;margin-left:auto;margin-right:auto"/>
     <div class="hero-visual-box">
@@ -1407,26 +1421,97 @@ function screenLanding(){
       <div class="feature-grid cols-4">
         <div class="feature-card">
           <div class="feature-icon-circle" style="background:var(--green-light);color:var(--green);">${svgIcon('calendar',24)}</div>
-          <h3>Choose your sprint</h3>
-          <p>1 week or 12. Start solo. Build your rhythm.</p>
+          <h3>1. Pick your sprint</h3>
+          <p>1&ndash;12 weeks. You choose the length that fits your goal.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon-circle" style="background:var(--amber-bg,var(--gold-light));color:var(--terracotta);">${svgIcon('pencil',24)}</div>
-          <h3>Show up every day</h3>
-          <p>Write one line. Check in every Sunday. Solo first, your daily lines are your record.</p>
+          <h3>2. Write one line every day</h3>
+          <p>Just one sentence or an attachment. No pressure. Proof you showed up.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon-circle" style="background:var(--rose-light);color:#a24f53;">${svgIcon('tree',24)}</div>
-          <h3>Finish and a tree appears</h3>
-          <p>Complete the sprint. Pick your species. That tree is proof of what you finished.</p>
+          <div class="feature-icon-circle" style="background:var(--rose-light);color:#a24f53;">${svgIcon('eye',24)}</div>
+          <h3>3. Check in every Sunday</h3>
+          <p>A quick reflection. What's working? What's not?</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon-circle" style="background:var(--terracotta-light);color:#a1552a;">${svgIcon('compass',24)}</div>
-          <h3>Then choose your next step</h3>
-          <p>Another solo sprint. Join a pod. Or get matched to one.</p>
+          <div class="feature-icon-circle" style="background:var(--terracotta-light);color:#a1552a;">${svgIcon('tree',24)}</div>
+          <h3>4. Finish the sprint</h3>
+          <p>A tree grows. A record of what you did.</p>
         </div>
       </div>
+      <p class="section-sub center" style="margin-top:20px">You pick the length. You show up. A tree grows.</p>
       ${ctaBlock()}
+    </div>
+  </div>
+
+  <div class="marketing-section">
+    <div class="container">
+      <div class="section-title center">Why a Tree?</div>
+      <div class="grid grid-2" style="max-width:820px;margin:0 auto;gap:16px">
+        <div class="card" style="padding:26px">
+          <p class="small">A tree is a living record of time passing.</p>
+          <p class="small" style="margin-top:10px">When you look at a tree, you don't see one moment. You see years. You see growth. You see what happened.</p>
+          <p class="small" style="margin-top:10px;font-weight:700">That's what your collection is.</p>
+        </div>
+        <div class="card" style="padding:26px">
+          <p class="small">One sprint. One tree. Another sprint. Another tree.</p>
+          <p class="small" style="margin-top:10px">Over time, your trees become a record of what you've done. You can look back and see exactly where your focus went.</p>
+        </div>
+      </div>
+      <div class="card section" style="max-width:820px;margin-left:auto;margin-right:auto;padding:26px">
+        <div class="row gap wrap center" style="justify-content:center;gap:28px">
+          ${['1st sprint','2nd sprint','3rd sprint','4th sprint'].map((label,i)=>`<div class="center">
+            <div class="faint" style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">${label}</div>
+            ${treeImg(TREE_VARIANTS[i%TREE_VARIANTS.length],64)}
+          </div>`).join('')}
+        </div>
+        <p class="section-sub center" style="margin-top:18px">Over time, your trees become a timeline of your consistency.</p>
+      </div>
+      <p class="small center section" style="font-style:italic;max-width:500px;margin-left:auto;margin-right:auto">One tree is a memory. A forest is a story.</p>
+    </div>
+  </div>
+
+  <div class="marketing-section tint">
+    <div class="container">
+      <div class="section-title center">Your Community</div>
+      <p class="section-sub center" style="max-width:560px;margin-left:auto;margin-right:auto">Finish a solo sprint, you grow a tree. Finish with a pod, your roots connect. But the forest doesn't stop there.</p>
+      <div class="grid grid-2 section" style="max-width:900px;margin:0 auto;gap:20px">
+        <div class="card" style="padding:28px">
+          <div class="eyebrow">Chapters</div>
+          <p class="small section">After your first sprint, you join a Chapter, a free, ongoing community around your interests.</p>
+          <p class="small section">Join an existing Chapter or create your own. Set its theme and goals. Choose your role: Chapter Lead, Host, or Member.</p>
+          <p class="small section" style="font-weight:700">A Chapter is the structure. The community is what happens inside.</p>
+        </div>
+        <div class="card" style="padding:28px">
+          <div class="eyebrow">The Root Network</div>
+          <p class="small section">Underground, trees are connected. They share nutrients. They support each other. That's what the Root Network is.</p>
+          <p class="small section">A place to share anything you're learning. Funny. Serious. Goofy. Raw. Whatever you're figuring out. The response is always rooted in the same values: Witness, Celebrate, Support.</p>
+          <p class="small section" style="font-weight:700">Your trees are your collection. Your roots are your connections.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="marketing-section">
+    <div class="container">
+      <div class="section-title center">What Is a Tree Marker?</div>
+      <p class="section-sub center" style="max-width:560px;margin-left:auto;margin-right:auto">A Tree Marker is a one-of-a-kind digital token, visual proof of a finished sprint. Every Tree Marker is generated from your sprint data, not a pre-made image, a unique visual generated in real time.</p>
+      <div class="grid grid-3 section" style="max-width:960px;margin:0 auto;gap:18px">
+        <div class="card" style="padding:24px">
+          <div class="eyebrow">How it works</div>
+          <p class="faint section" style="margin-top:8px">You choose a tree species at the start. Every action during your sprint shapes it: sprint length sets height, consistency sets canopy density, timing sets symmetry, missed days weather the silhouette.</p>
+          <p class="small" style="margin-top:10px;font-weight:700">Your Tree Marker is honest. It records the truth of your journey.</p>
+        </div>
+        <div class="card" style="padding:24px">
+          <div class="eyebrow">Built for uniqueness</div>
+          <p class="faint section" style="margin-top:8px">Underneath the visual is a cryptographic seed bound to your account. No two Tree Markers are identical. Yours is yours alone.</p>
+        </div>
+        <div class="card" style="padding:24px">
+          <div class="eyebrow">Your collection</div>
+          <p class="faint section" style="margin-top:8px">Every finished sprint adds a Tree Marker to your collection. Look back and see your growth. Download it, show it, share it.</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1548,24 +1633,6 @@ function screenLanding(){
     </div>
   </div>
 
-  <div class="marketing-section tint">
-    <div class="container">
-      <div class="section-title center">Your Community</div>
-      <div class="stack-cards">
-        <div class="stack-card">
-          <h3><span style="display:inline-flex;vertical-align:middle;margin-right:6px;color:var(--terracotta)">${svgIcon('community',22)}</span>Chapters</h3>
-          <div class="tagline">After your first sprint, you join a Chapter: a free, ongoing community around your interests.</div>
-          <ul class="diamond-list">
-            <li>Create your own chapter</li>
-            <li>Set its theme and goals</li>
-            <li>Chapter Lead, Host, and member-defined roles</li>
-            <li>Stay forever</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="marketing-section">
     <div class="container">
       <div class="section-title center">Pricing</div>
@@ -1632,11 +1699,12 @@ function screenLanding(){
           <h4>MERROS</h4>
           <a onclick="state._authMode='login';go('identity')">Web Login</a>
           <a onclick="go('helpCenter')">Help Center</a>
+          <a onclick="go('helpCenter')">FAQ</a>
           <a onclick="go('feedback')">Contact</a>
         </div>
         <div class="footer-col">
           <h4>COMMUNITY</h4>
-          <a onclick="toast('Blog coming soon')">Blog</a>
+          <a href="/blog">Blog</a>
           <a onclick="go('feedback')">Feedback</a>
         </div>
         <div class="footer-col">
@@ -1947,7 +2015,7 @@ function screenFlashEvent(){
     return `<div class="app-shell center">
       <div class="back-link" style="text-align:left" onclick="state.user._flashStage=null;go('dashboard')">← Back to Dashboard</div>
       <div class="eyebrow section">Anomaly Logged</div>
-      <h2 style="font-size:22px">A Burl Wood ring has fused into your RootPrint.</h2>
+      <h2 style="font-size:22px">A Burl Wood ring has fused into your Tree Marker.</h2>
       <p class="muted small section" style="max-width:320px;margin-left:auto;margin-right:auto">${ev.logText}</p>
       <div style="width:260px;margin:20px auto 0">${rootprintRenderBurlSVG(hashHex, hue)}</div>
       <div style="max-width:280px;margin:0 auto">${rootprintBurlPaletteHTML(hashHex, hue)}</div>
@@ -2101,7 +2169,7 @@ function exportRootPrint(hashHex, speciesHue, consistencyPct, opts={}){
         if(!blob){ downloadSvgFallback(markup); return; }
         const file = new File([blob], 'rootprint.png', {type:'image/png'});
         if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-          try{ await navigator.share({files:[file], title:'My RootPrint', text:'My RootPrint from Merros'}); return; }
+          try{ await navigator.share({files:[file], title:'My Tree Marker', text:'My Tree Marker from Merros'}); return; }
           catch(e){ /* cancelled or unsupported mid-flow, fall through to download */ }
         }
         const url = URL.createObjectURL(blob);
@@ -3858,7 +3926,7 @@ function screenJournal(){
       <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveJournal()">Save to journal</button>
     </div>
     <div class="card section center" id="rootPrintPreviewCard">
-      <div class="eyebrow">RootPrint Preview</div>
+      <div class="eyebrow">Tree Marker Preview</div>
       <p class="faint" style="margin-top:4px">A live preview generated from your journal entries so far. This is not final until a sprint completes.</p>
       <div id="rootPrintPreviewArea" style="display:flex;justify-content:center;margin-top:14px">
         <button class="btn btn-outline" onclick="showRootPrintPreview()">Generate preview</button>
@@ -3909,14 +3977,14 @@ function renderRootPrintPreview(){
   area.innerHTML = `
     <div class="center">
       ${medallion}
-      <p class="small" style="font-weight:700;margin-top:10px">RootPrint (preview)</p>
+      <p class="small" style="font-weight:700;margin-top:10px">Tree Marker (preview)</p>
       <p class="faint" style="margin-top:8px">Drag to spin it</p>
       <div style="max-width:220px;margin:0 auto">${rootprintPaletteHTML(hashHex, paletteHue, consistencyPct)}</div>
       <button class="btn btn-outline btn-sm section" onclick="exportRootPrint('${hashHex}', ${paletteHue}, ${consistencyPct}, {ringStyle:'${ringStyle}',sizeScale:${sizeScale},customHueDeg:${customHue==null?'null':customHue}})">Export</button>
     </div>
     <div class="card section" style="background:var(--bg-alt);border:none;text-align:left">
-      <div class="small" style="font-weight:700">Design your RootPrint</div>
-      <p class="faint" style="margin-top:2px">Style is yours to choose. Rarity, sparkle, and frame still reflect your real consistency.</p>
+      <div class="small" style="font-weight:700">Design your Tree Marker</div>
+      <p class="faint" style="margin-top:2px">Style is yours to choose. How steady or weathered it looks, and its rarity, sparkle, and frame, still reflect your real consistency.</p>
       <div class="faint section" style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em">Ring style</div>
       <div class="row gap wrap" style="margin-top:6px">
         ${[['circular','Circular'],['organic','Organic'],['staggered','Staggered']].map(([k,label])=>
@@ -4043,19 +4111,6 @@ function screenSettings(){
     <div class="eyebrow" style="margin-top:10px">Settings</div>
     <h2 style="font-size:22px">Settings</h2>
     <div class="card section">
-      <div class="small" style="font-weight:700">Theme</div>
-      <p class="faint" style="margin-top:2px">Changes the look of the whole app, not just this screen.</p>
-      <div class="theme-picker section">
-        ${THEMES.map(t=>`<div class="theme-swatch-card ${s.theme===t.key?'selected':''}" onclick="setTheme('${t.key}')">
-          <div class="theme-swatch-preview">
-            ${t.swatch.map(c=>`<span style="background:${c}"></span>`).join('')}
-          </div>
-          <div class="small" style="font-weight:700;margin-top:6px">${t.name}</div>
-          <div class="faint" style="font-size:10.5px">${t.desc}</div>
-        </div>`).join('')}
-      </div>
-    </div>
-    <div class="card section">
       <div class="small" style="font-weight:700">Your tree</div>
       <div id="settingsTreeVisual" class="center" style="margin-top:10px;position:relative;min-height:200px">
         <div class="tree-anim ${justMaterialized?'tree-materializing':''}">${treeImg(currentSpecies?currentSpecies.icon:'sprout',190)}</div>
@@ -4121,22 +4176,6 @@ function screenSettings(){
   ${bottomNav('settings')}`;
 }
 function toggleSetting(k){ state.settings[k]=!state.settings[k]; render(); }
-const THEMES = [
-  {key:'grove', name:'Grove', desc:'Forest green & cream (default)', swatch:['#4F8A4A','#F4F6F2','#E8B23D']},
-  {key:'mountain', name:'Mountain', desc:'Cool slate & stone', swatch:['#3B4A5A','#EEF1F4','#B49A5E']},
-  {key:'ocean', name:'Ocean', desc:'Deep teal & pale aqua', swatch:['#1F5C6B','#E9F4F5','#CBA23D']},
-  {key:'autumn', name:'Autumn', desc:'Warm rust & cream', swatch:['#8A6A3A','#F7EEE1','#D69A3D']},
-  {key:'midnight', name:'Midnight', desc:'True dark mode', swatch:['#6FBF6A','#14181A','#F0C766']},
-];
-function applyTheme(key){
-  document.body.className = document.body.className.replace(/\btheme-\w+\b/g,'').trim();
-  document.body.classList.add('theme-'+(THEMES.some(t=>t.key===key)?key:'grove'));
-}
-function setTheme(key){
-  state.settings.theme = key;
-  applyTheme(key);
-  render();
-}
 async function doLogout(){
   try{ await Merros.auth.signOut(); }catch(e){ console.error(e); }
   state.realPod=null; state.realMember=null; state.authUser=null; state.podInviteCode=null;
@@ -4450,10 +4489,10 @@ function screenHelpCenter(){
       <p style="margin-top:8px">Every chapter has a Host, a light touch role focused on welcoming new members and checking in on people who have gone quiet, and sometimes a Chapter Lead who serves a fixed term. Neither role has authority to remove your content or your membership without cause.</p>
     `)}
 
-    ${helpBlock('Your tree and RootPrint', `
+    ${helpBlock('Your tree and your Tree Marker', `
       <p>Your tree is a visual representation of your current sprint. It grows a little with every daily line you log, and it can wilt slightly if you go a few days without checking in, though it recovers as soon as you post again. Wilting is a gentle nudge, not a penalty. It never resets your progress.</p>
       <p style="margin-top:8px">You may change your tree species once per sprint, at any point during that sprint. This uses a permanent visual transition and cannot be undone or repeated until your next sprint begins.</p>
-      <p style="margin-top:8px">RootPrint is a generated image built from real data about your sprint, such as how many entries you wrote and how your reflections trended over time. Every RootPrint is unique to you and is not reused between users. The rings on it are intentionally irregular, the same way a real cross section of a tree trunk is never a perfect circle.</p>
+      <p style="margin-top:8px">Your Tree Marker is a generated image built from real data about your sprint, such as how many entries you wrote and how your reflections trended over time. Every Tree Marker is unique to you and is not reused between users. The rings on it are intentionally irregular, the same way a real cross section of a tree trunk is never a perfect circle.</p>
       <p style="margin-top:8px">My Collection shows every ring from every sprint you have completed. It is a permanent record and cannot be edited or deleted from within the app.</p>
     `)}
 
@@ -4593,7 +4632,7 @@ function screenPrivacyPolicy(){
     `)}
 
     ${helpBlock('3. How we use your information', `
-      <p>We use your information to operate the core features of Merros, including sprints, pods, chapters, your tree, and RootPrint, to send you notifications you have opted into, to respond when you contact us through Send Feedback, to detect and prevent abuse, spam, and safety violations, and to understand overall usage patterns so we can improve the product. We do not use your journal entries or daily lines to train external advertising systems, and we do not sell your personal information to data brokers.</p>
+      <p>We use your information to operate the core features of Merros, including sprints, pods, chapters, your tree, and your Tree Marker, to send you notifications you have opted into, to respond when you contact us through Send Feedback, to detect and prevent abuse, spam, and safety violations, and to understand overall usage patterns so we can improve the product. We do not use your journal entries or daily lines to train external advertising systems, and we do not sell your personal information to data brokers.</p>
     `)}
 
     ${helpBlock('4. Who can see your information', `
@@ -4664,7 +4703,6 @@ function render(){
 // authenticated, with or without a pod) and does the one real paint,
 // this avoids the "flash of wrong content" that showed up as a double
 // render/blink once boot() started completing successfully.
-applyTheme(state.settings.theme);
 document.getElementById('app').innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-size:13px">Loading…</div>';
 document.getElementById('jumpSelect').value=state.screen;
 boot();
