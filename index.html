@@ -1144,6 +1144,47 @@ function treeMarkerGlintOverlay(rarityKey){
   }
   return `<div class="tree-marker-glint" style="--glint-op:${cfg.op};--glint-dur:${cfg.dur}">${stars}</div>`;
 }
+/* Scaled-down sacred-geometry accent: a 12-node frame, 6 radiating spokes,
+   and 3 core nodes, echoing the "12 outer / 3 core / 6 branches" idea
+   without the 10,000-point pointillist system that would genuinely lag on
+   a phone. Subtlety and node brightness both scale with rarity. */
+function treeMarkerGeometricUnderlay(cx, cy, size, rarityKey, hueDeg){
+  const isLegendary = rarityKey==='legendary', isRare = rarityKey==='rare'||isLegendary;
+  const frameOp = isLegendary?0.32:isRare?0.22:0.12;
+  const spokeOp = isLegendary?0.20:isRare?0.13:0.07;
+  const r12 = size/2 - 16;
+  const rSpoke = size*0.32;
+  const pts12 = Array.from({length:12},(_,i)=>{
+    const a = (i/12)*Math.PI*2 - Math.PI/2;
+    return [cx+r12*Math.cos(a), cy+r12*Math.sin(a)];
+  });
+  const dodecagon = `<polygon points="${pts12.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="hsl(${hueDeg},30%,85%)" stroke-width="0.8" opacity="${frameOp}"/>`;
+  let spokes = '';
+  for(let i=0;i<6;i++){
+    const a = (i/6)*Math.PI*2;
+    const x2 = cx+rSpoke*Math.cos(a), y2 = cy+rSpoke*Math.sin(a);
+    spokes += `<line x1="${cx}" y1="${cy}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="hsl(${hueDeg},30%,80%)" stroke-width="0.6" opacity="${spokeOp}"/>`;
+  }
+  return `<g class="tm-geo-underlay">${dodecagon}${spokes}</g>`;
+}
+function treeMarkerGeometricNodes(cx, cy, size, rarityKey, hueDeg){
+  const isLegendary = rarityKey==='legendary', isRare = rarityKey==='rare'||isLegendary;
+  const nodeOp = isLegendary?0.9:isRare?0.7:0.45;
+  const r12 = size/2 - 16;
+  const rCore = size*0.09;
+  let nodes = '';
+  for(let i=0;i<12;i++){
+    const a = (i/12)*Math.PI*2 - Math.PI/2;
+    const x = cx+r12*Math.cos(a), y = cy+r12*Math.sin(a);
+    nodes += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isLegendary?2.6:1.8}" fill="hsl(${hueDeg},60%,88%)" opacity="${nodeOp}"/>`;
+  }
+  for(let i=0;i<3;i++){
+    const a = (i/3)*Math.PI*2 - Math.PI/2;
+    const x = cx+rCore*Math.cos(a), y = cy+rCore*Math.sin(a);
+    nodes += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isLegendary?2.2:1.5}" fill="hsl(${hueDeg},50%,92%)" opacity="${nodeOp}"/>`;
+  }
+  return `<g class="tm-geo-nodes">${nodes}</g>`;
+}
 function treeMarkerRenderMedallionSVG(hashHex, opts={}){
   const {
     speciesHue=0.3, consistencyPct=70,
@@ -1271,8 +1312,10 @@ function treeMarkerRenderMedallionSVG(hashHex, opts={}){
       </defs>
       <g id="${uid}rotor">
         <circle cx="${cx}" cy="${cy}" r="${size/2-4}" fill="url(#${uid}wood)"/>
+        ${treeMarkerGeometricUnderlay(cx, cy, size, rarity.key, hueDeg)}
         ${ringParts.join('')}
         ${flecks}
+        ${treeMarkerGeometricNodes(cx, cy, size, rarity.key, hueDeg)}
         <circle cx="${cx}" cy="${cy}" r="${(size*0.2).toFixed(1)}" fill="none" stroke="url(#${uid}brass)" stroke-width="${isLegendary?5:4}"/>
         <circle cx="${cx}" cy="${cy}" r="${(size*0.18125).toFixed(1)}" fill="url(#${uid}metal)" stroke="#4a4a4a" stroke-width="1"/>
         <g transform="translate(${cx},${cy}) scale(${(0.72*sizeScale).toFixed(2)})">
